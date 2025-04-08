@@ -1,0 +1,22 @@
+# Ignore results from testing
+work/
+results*/
+.nextflow*
+fastp.html
+Rplots.pdf
+slurm*
+Notes.md
+
+# Builds
+build/
+*.egg-info/
+
+# Pesky vscode
+.vscode/
+
+# pycaches
+__pycache__
+*.pyc
+
+# Vim editor
+*.swp

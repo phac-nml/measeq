@@ -1,0 +1,22 @@
+##gff-version 3
+#!gff-spec-version 1.21
+#!processor NCBI annotwriter
+##sequence-region OK424844.1 1 15900
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=170525
+OK424844.1	Genbank	region	1	15900	.	+	.	ID=OK424844.1:1..15900;Dbxref=taxon:170525;collection-date=2011-05-27;country=Canada;gbkey=Src;genome=genomic;genotype=D4;isolate=VE11-0684;isolation-source=urine;mol_type=viral cRNA;nat-host=Homo sapiens;old-name=Measles morbillivirus genotype D4;strain=MVs/Ontario.CAN/21.11/1[D4]
+OK424844.1	Genbank	gene	56	1744	.	+	.	ID=gene-N;Name=N;gbkey=Gene;gene=N;gene_biotype=protein_coding
+OK424844.1	Genbank	CDS	108	1685	.	+	0	ID=cds-UES74759.1;Parent=gene-N;Dbxref=NCBI_GP:UES74759.1;Name=UES74759.1;gbkey=CDS;gene=N;product=nucleocapsid protein;protein_id=UES74759.1
+OK424844.1	Genbank	gene	1748	3402	.	+	.	ID=gene-P/V/C;Name=P/V/C;gbkey=Gene;gene=P/V/C;gene_biotype=protein_coding
+OK424844.1	Genbank	CDS	1807	3330	.	+	0	ID=cds-UES74760.1;Parent=gene-P/V/C;Dbxref=NCBI_GP:UES74760.1;Name=UES74760.1;gbkey=CDS;gene=P/V/C;product=phosphoprotein;protein_id=UES74760.1
+OK424844.1	Genbank	CDS	1807	2705	.	+	0	ID=cds-UES74758.1;Parent=gene-P/V/C;Dbxref=NCBI_GP:UES74758.1;Name=UES74758.1;Note=translated from mRNA co-transcriptionally modified by the addition of a non-templated G residue;exception=RNA editing;gbkey=CDS;gene=P/V/C;product=V protein;protein_id=UES74758.1
+OK424844.1	Genbank	CDS	1829	2389	.	+	0	ID=cds-UES74761.1;Parent=gene-P/V/C;Dbxref=NCBI_GP:UES74761.1;Name=UES74761.1;gbkey=CDS;gene=P/V/C;product=C protein;protein_id=UES74761.1
+OK424844.1	Genbank	gene	3406	4878	.	+	.	ID=gene-M;Name=M;gbkey=Gene;gene=M;gene_biotype=protein_coding
+OK424844.1	Genbank	CDS	3438	4445	.	+	0	ID=cds-UES74762.1;Parent=gene-M;Dbxref=NCBI_GP:UES74762.1;Name=UES74762.1;gbkey=CDS;gene=M;product=matrix protein;protein_id=UES74762.1
+OK424844.1	Genbank	sequence_feature	4443	5466	.	+	.	ID=id-OK424844.1:4443..5466;Note=M-F NCR%3B M-F intergenic spacer with M stop codon and F start codon;gbkey=misc_feature
+OK424844.1	Genbank	gene	4882	7253	.	+	.	ID=gene-F;Name=F;gbkey=Gene;gene=F;gene_biotype=protein_coding
+OK424844.1	Genbank	CDS	5464	7116	.	+	0	ID=cds-UES74763.1;Parent=gene-F;Dbxref=NCBI_GP:UES74763.1;Name=UES74763.1;gbkey=CDS;gene=F;product=fusion protein;protein_id=UES74763.1
+OK424844.1	Genbank	gene	7257	9214	.	+	.	ID=gene-H;Name=H;gbkey=Gene;gene=H;gene_biotype=protein_coding
+OK424844.1	Genbank	CDS	7277	9130	.	+	0	ID=cds-UES74764.1;Parent=gene-H;Dbxref=NCBI_GP:UES74764.1;Name=UES74764.1;gbkey=CDS;gene=H;product=hemagglutinin protein;protein_id=UES74764.1
+OK424844.1	Genbank	gene	9218	15860	.	+	.	ID=gene-L;Name=L;gbkey=Gene;gene=L;gene_biotype=protein_coding
+OK424844.1	Genbank	CDS	9240	15791	.	+	0	ID=cds-UES74765.1;Parent=gene-L;Dbxref=NCBI_GP:UES74765.1;Name=UES74765.1;gbkey=CDS;gene=L;product=large polymerase protein;protein_id=UES74765.1
+

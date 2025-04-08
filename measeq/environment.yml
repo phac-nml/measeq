@@ -1,0 +1,22 @@
+name: measeq
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - bedtools=2.31.1
+  - nextclade=3.8.2
+  - nextflow=24.04.2
+  - pysamstats=1.1.2
+  - pandas=2.2.3
+  - pyvcf3
+  - r-base=4.4.1
+  - r-data.table=1.15.4
+  - r-dt=0.33
+  - r-flexdashboard=0.6.2
+  - r-htmltools=0.5.8.1
+  - r-htmlwidgets=1.6.4
+  - r-plotly=4.10.4
+  - r-rmarkdown=2.27
+  - r-tidyverse=2.0.0
+  - r-shidashi=0.1.6
+  - samtools=1.20

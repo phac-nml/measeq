@@ -1,0 +1,21 @@
+##gff-version 3
+#!gff-spec-version 1.21
+#!processor NCBI annotwriter
+##sequence-region MH356245.1 1 15894
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=170528
+MH356245.1	Genbank	region	1	15894	.	+	.	ID=MH356245.1:1..15894;Dbxref=taxon:170528;country=India;gbkey=Src;genome=genomic;genotype=D8;isolation-source=TCF;mol_type=viral cRNA;nat-host=Homo sapiens;old-name=Measles morbillivirus genotype D8;strain=MVi/Calcutta.IND/17.14/1[D8]
+MH356245.1	Genbank	gene	56	1744	.	+	.	ID=gene-N;Name=N;gbkey=Gene;gene=N;gene_biotype=protein_coding
+MH356245.1	Genbank	CDS	108	1685	.	+	0	ID=cds-AXI82386.1;Parent=gene-N;Dbxref=NCBI_GP:AXI82386.1;Name=AXI82386.1;gbkey=CDS;gene=N;product=nucleoprotein;protein_id=AXI82386.1
+MH356245.1	Genbank	gene	1748	3402	.	+	.	ID=gene-P/V/C;Name=P/V/C;gbkey=Gene;gene=P/V/C;gene_biotype=protein_coding
+MH356245.1	Genbank	CDS	1807	3330	.	+	0	ID=cds-AXI82387.1;Parent=gene-P/V/C;Dbxref=NCBI_GP:AXI82387.1;Name=AXI82387.1;gbkey=CDS;gene=P/V/C;product=phosphoprotein;protein_id=AXI82387.1
+MH356245.1	Genbank	CDS	1829	2389	.	+	0	ID=cds-AXI82388.1;Parent=gene-P/V/C;Dbxref=NCBI_GP:AXI82388.1;Name=AXI82388.1;gbkey=CDS;gene=P/V/C;product=C protein;protein_id=AXI82388.1
+MH356245.1	Genbank	sequence_feature	1807	2705	.	+	.	ID=id-P/V/C;Note=similar to V protein;gbkey=misc_feature;gene=P/V/C
+MH356245.1	Genbank	gene	3406	4871	.	+	.	ID=gene-M;Name=M;gbkey=Gene;gene=M;gene_biotype=protein_coding
+MH356245.1	Genbank	CDS	3438	4445	.	+	0	ID=cds-AXI82389.1;Parent=gene-M;Dbxref=NCBI_GP:AXI82389.1;Name=AXI82389.1;gbkey=CDS;gene=M;product=matrix protein;protein_id=AXI82389.1
+MH356245.1	Genbank	gene	4875	7247	.	+	.	ID=gene-F;Name=F;gbkey=Gene;gene=F;gene_biotype=protein_coding
+MH356245.1	Genbank	CDS	5458	7110	.	+	0	ID=cds-AXI82390.1;Parent=gene-F;Dbxref=NCBI_GP:AXI82390.1;Name=AXI82390.1;gbkey=CDS;gene=F;product=fusion protein;protein_id=AXI82390.1
+MH356245.1	Genbank	gene	7251	9208	.	+	.	ID=gene-H;Name=H;gbkey=Gene;gene=H;gene_biotype=protein_coding
+MH356245.1	Genbank	CDS	7271	9124	.	+	0	ID=cds-AXI82391.1;Parent=gene-H;Dbxref=NCBI_GP:AXI82391.1;Name=AXI82391.1;gbkey=CDS;gene=H;product=hemagglutinin;protein_id=AXI82391.1
+MH356245.1	Genbank	gene	9212	15854	.	+	.	ID=gene-L;Name=L;gbkey=Gene;gene=L;gene_biotype=protein_coding
+MH356245.1	Genbank	CDS	9234	15785	.	+	0	ID=cds-AXI82392.1;Parent=gene-L;Dbxref=NCBI_GP:AXI82392.1;Name=AXI82392.1;gbkey=CDS;gene=L;product=large protein;protein_id=AXI82392.1
+
