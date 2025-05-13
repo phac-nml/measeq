@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "3.0.0",
+  "files": {
+    "reference": "reference.fasta",
+    "pathogenJson": "pathogen.json",
+    "genomeAnnotation": "genome_annotation.gff3",
+    "readme": "README.md",
+    "changelog": "CHANGELOG.md"
+  },
+  "attributes": {
+    "name": "Measles Virus",
+    "reference name": "Measles virus, complete genome",
+    "reference accession": "NC_001498.1"
+  },
+  "qc": {
+    "missingData": {
+      "enabled": true,
+      "missingDataThreshold": 1000,
+      "scoreBias": 500,
+      "scoreWeight": 50
+    },
+    "snpClusters": {
+      "enabled": true,
+      "windowSize": 100,
+      "clusterCutOff": 6,
+      "scoreWeight": 50
+    },
+    "mixedSites": {
+      "enabled": true,
+      "mixedSitesThreshold": 15,
+      "scoreWeight": 50
+    },
+    "frameShifts": {
+      "enabled": true,
+      "scoreWeight": 20
+    },
+    "stopCodons": {
+      "enabled": true,
+      "scoreWeight": 50
+    }
+  }
+}

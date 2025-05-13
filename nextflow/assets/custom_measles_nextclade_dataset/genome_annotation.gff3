@@ -1,0 +1,15 @@
+##gff-version 3
+#!gff-spec-version 1.21
+#!processor NCBI annotwriter
+##sequence-region NC_001498.1 1 15894
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=11234
+NC_001498.1	RefSeq	region	1	15894	.	+	.	ID=NC_001498.1:1..15894;Dbxref=taxon:11234;gbkey=Src;genome=genomic;mol_type=viral cRNA;old-name=Measles virus;strain=Ichinose-B95a
+NC_001498.1	RefSeq	CDS	108	1685	.	+	0	Name=N;ID=cds-N;product=nucleoprotein;protein_id=NP_056918.1
+NC_001498.1	RefSeq	CDS	1807	2499	.	+	0	Name=V;ID=cds-V;Note=Manually annotated V protein based on refseq seq NC_001498.1;protein_id=YP_003873249.2
+NC_001498.1	RefSeq	CDS	2499	2705	.	+	0	Name=V;ID=cds-V;Note=Manually annotated V protein based on refseq seq NC_001498.1;protein_id=NP_056919.1
+NC_001498.1	RefSeq	CDS	1807	3330	.	+	0	Name=P;ID=cds-P;product=phosphoprotein;protein_id=YP_003873249.2
+NC_001498.1	RefSeq	CDS	1829	2389	.	+	0	Name=C;ID=cds-C;product=C protein;protein_id=NP_056920.1
+NC_001498.1	RefSeq	CDS	3438	4445	.	+	0	Name=M;ID=cds-M;product=matrix protein;protein_id=NP_056921.1
+NC_001498.1	RefSeq	CDS	5458	7110	.	+	0	Name=F;ID=cds-F;product=fusion protein;protein_id=NP_056922.1
+NC_001498.1	RefSeq	CDS	7271	9124	.	+	0	Name=H;ID=cds-H;product=hemagglutinin protein;protein_id=NP_056923.1
+NC_001498.1	RefSeq	CDS	9234	15785	.	+	0	Name=L;ID=cds-L;product=large polymerase protein;protein_id=NP_056924.1

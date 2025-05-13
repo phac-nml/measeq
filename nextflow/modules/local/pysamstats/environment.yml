@@ -1,0 +1,6 @@
+name: pysamstats
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - bioconda::pysamstats=1.1.2

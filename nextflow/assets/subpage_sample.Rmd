@@ -1,0 +1,315 @@
+<!-- Dynamically create individual sample rmd pages under the same datanav menu -->
+`r paste0('# ', sample, '{data-navmenu="Sample Reports"}')`
+
+Row
+------------------------------
+
+### Sample Name
+```{r, echo=FALSE, error=TRUE}
+valueBox(sample, icon = "")
+```
+
+### Genome Coverage
+```{r, echo=FALSE, error=TRUE}
+completeness <- sample_df["Genome Completeness (%)"][1]
+valueBox(completeness, icon = "")
+```
+
+### Sample Status
+```{r, echo=FALSE, error=TRUE}
+status_color = "#18BC9C"
+if (sample %in% failed_samples) {
+  status <- "Failed"
+  status_color <- "#E74C3C"
+} else {
+  status <- sample_df["warning"][1]
+  if (status == "Warning") {
+    status_color <- "#F39C12"
+  }
+}
+valueBox(
+  status,
+  icon = "",
+  color = status_color
+)
+```
+
+Row
+------------------------------
+
+### {-}
+```{r, variant_plot, echo=FALSE, error=TRUE}
+#### Variants Plot ####
+# Create table from bam info CSV showing variants and subvariants
+var_f <- paste0("results_measeq/all_variation_positions/", sample, "_variation.csv")
+
+# Default data if it exists or doesn't
+if (file.exists(var_f)) {
+  variants <- read.table(var_f, header = TRUE, sep = ",")
+} else {
+  variants <- data.frame(matrix(ncol = 12, nrow = 1))
+  colv <- c("position", "ref_base", "percentage_nonref", "variant_type", "total_reads", "A", "T", "C", "G", "del", "ins", "distribution")
+  colnames(variants) <- colv
+}
+
+# Text info for hover
+text_info <- paste(
+    'Position: ', variants[['position']], '<br>',
+    'Reference: ', variants[['ref_base']], '<br>',
+    'Total Reads: ', variants[['total_reads']], '<br>',
+    '  A: ', variants[['A']], '<br>',
+    '  T: ', variants[['T']], '<br>',
+    '  G: ', variants[['G']], '<br>',
+    '  C: ', variants[['C']], '<br>',
+    '  Del:', variants[['del']], '<br>',
+    '  Ins:', variants[['ins']], '<br>',
+    'Insertion Distribution: ', variants[['distribution']], '<br>',
+    sep = ''
+)
+variants$text_info <- text_info
+
+# Plot variation table
+#  Also customdata instead of text due to https://github.com/plotly/plotly.R/issues/1859
+p <- plot_ly(variants) %>%
+  add_trace(x = variants[['position']], y = variants[['percentage_nonref']],
+    type = 'scatter', mode = 'markers',
+    color = ~factor(variant_type, levels = c("A SNP", "T SNP", "G SNP", "C SNP", "Ref", "Mixed", "Deletion", "Insertion")),
+    marker = list(sizemode = 'diameter', size = 15.0, opacity = 0.7),
+    customdata = ~text_info,
+    hovertemplate = paste(
+        '<b>Percentage</b>: %{y:.2f}<br>',
+        '%{customdata}<extra></extra>',
+        sep=''
+    )
+  )
+
+# Add final layout to plot
+p <- p %>%
+  layout(
+    xaxis = list (title = "Position", tickformat = ".0f"),
+    yaxis = list (title = "Percent Non Reference Base", tickformat = '2.%'),
+    shapes = hline(75)
+  )
+
+p
+```
+
+> **Figure 1.** Subconsensus Variant Read Counts. The sample pileup was analyzed to find positions in the genome where the non-reference allele percentage was >=15%. All positions with >=10 reads, a positional read base quality of >=10 and a map quality >=30 were included in the analysis.
+
+## Row
+
+### **Table III.** iVar Variants Summary
+```{r, variant_table, echo=FALSE, error=TRUE}
+#### Variants Table ####
+# Get data
+var_f <- paste0("results_viralrecon/variants/ivar/", sample, ".tsv")
+var_c_names <- c("POS", "REF", "ALT", "ALT_FREQ", "TOTAL_DP", "REF_QUAL",
+                  "ALT_QUAL", "PVAL", "GFF_FEATURE", "REF_AA", "ALT_AA")
+
+# Create table
+if (file.exists(var_f)) {
+  variants <- read.table(var_f, header = TRUE, sep = "\t")
+  variants <- select(variants, var_c_names)
+  ddt <- variants %>%
+    datatable(rownames = FALSE,
+      options = list(
+        pageLength = 10,
+        scrollX = FALSE,
+        scrollY = "",
+        columnDefs = list(
+          list(className = 'dt-left', targets = "_all")
+        )
+      )
+    ) %>%
+    # Bars to show at a glance
+    formatStyle(
+      'ALT_FREQ',
+      background = styleColorBar(range(0,1), 'lightblue', angle = -90),
+      backgroundSize = '88% 88%',
+      backgroundRepeat = 'no-repeat',
+      backgroundPosition = 'left'
+    ) %>%
+    formatStyle(
+      'REF_QUAL',
+      background = styleColorBar(range(0,40), 'lightblue', angle = -90),
+      backgroundSize = '88% 88%',
+      backgroundRepeat = 'no-repeat',
+      backgroundPosition = 'left'
+    ) %>%
+    formatStyle(
+      'ALT_QUAL',
+      background = styleColorBar(range(0,40), 'lightblue', angle = -90),
+      backgroundSize = '88% 88%',
+      backgroundRepeat = 'no-repeat',
+      backgroundPosition = 'left'
+    )
+
+} else {
+  variants <- data.frame(matrix(ncol = 11, nrow = 0))
+  colnames(variants) <- var_c_names
+  ddt <- variants %>%
+    datatable(rownames = FALSE)
+}
+ddt
+```
+
+
+The summary table contains all of the variants called by [`iVar variants`](https://github.com/andersen-lab/ivar?tab=readme-ov-file#ivar) with a minimum alternate allele threshold of `>=60%` and a minimum read depth of `10`.
+
+This table may not exactly match the variants called in the final consensus sequence as there is a slight difference in how `iVar variants` and `iVar consensus` call them, mostly surrounding indels, along with the `iVar consensus` threshold being set at `>=75%`. The threshold difference between the two is there to hopefully catch most of these rare indel differences.
+
+Row
+------------------------------
+
+### {-}
+```{r, depth_plot, echo=FALSE, error=TRUE}
+#### Depth Plots ####
+# Get data
+coverage <- read.table(paste0("positional_depth/", sample, ".tsv"), sep = "\t", header = FALSE)
+colnames(coverage) <- c("chrom", "position", "depth")
+
+# Set depths of 0 to 1 to allow continuous visualization with log plot
+coverage$depth[coverage$depth == 0] <- 1
+depthp <- plot_ly(x = ~coverage$position, y = ~coverage$depth, type = "scatter", mode = "lines", line = list(color = "black")) %>%
+  layout(
+    yaxis = list(
+    type = "log",
+    title = "Sequencing Depth (Log Scale)",
+    tickvals = c(10, 30, 100, 1000),
+    ticktext = c(10, 30, 100, 1000)
+  ),
+  xaxis = list(
+    title = "Genomic Position (nt)",
+    tickformat = ".0f"
+  ),
+  shapes = list(
+    list(
+      type = "rect",
+      fillcolor = "red",
+      opacity = 0.2,
+      x0 = min(coverage$position),
+      x1 = max(coverage$position),
+      y0 = 1,
+      y1 = 10
+    ),
+    list(
+      type = "rect",
+      fillcolor = "yellow",
+      opacity = 0.2,
+      x0 = min(coverage$position),
+      x1 = max(coverage$position),
+      y0 = 10,
+      y1 = 30
+    ),
+    list(
+      type = "rect",
+      fillcolor = "green",
+      opacity = 0.2,
+      x0 = min(coverage$position),
+      x1 = max(coverage$position),
+      y0 = 30,
+      y1 = max(coverage$depth)
+    )
+  )
+)
+depthp
+```
+> **Figure 2.** Positional genomic depth. The Y-axis is log-scaled so positions with no genomic depth have been set to 1 to allow a continuous visualization. Zones have been marked using a colour scheme where: 0-10 is red corresponding to masked sites, 10-30 is yellow corresponding to sites where there is a basecall but limited depth, and 30+ is green for positions with acceptable or better depth.
+
+Row
+------------------------------
+
+### {-}
+```{r, qual_plot, echo=FALSE, error=TRUE}
+#### Quality Plots ####
+# Data
+quality <- read.table(paste0("positional_baseq/", sample, ".baseq.stats.tsv"), sep = "\t", header = TRUE)
+custom_tickvals <- c(0,10,20,30)
+
+# Plot
+qualityp <- plot_ly(quality ,x = ~quality$'pos', y = ~quality$'rms_baseq', type = "scatter", mode = "lines", line = list(color = "black")) %>%
+  layout(
+    yaxis = list(
+      tickvals = custom_tickvals,
+      ticktext = c("0", "10", "20", "30"),
+      title = "RMS Base Quality Score"),
+    xaxis = list(
+      title = "Genomic Position (nt)",
+      tickformat = ".0f"
+    ),
+    shapes = list(
+      list(
+        type = "rect",
+        fillcolor = "red",
+        opacity = 0.2,
+        x0 = min(quality$pos),
+        x1 = max(quality$pos),
+        y0 = 0,
+        y1 = 20
+      ),
+      list(
+        type = "rect",
+        fillcolor = "yellow",
+        opacity = 0.2,
+        x0 = min(quality$pos),
+        x1 = max(quality$pos),
+        y0 = 20,
+        y1 = 30
+      ),
+      list(
+        type = "rect",
+        fillcolor = "green",
+        opacity = 0.2,
+        x0 = min(quality$pos),
+        x1 = max(quality$pos),
+        y0 = 30,
+        y1 = 60
+      )
+    )
+  )
+qualityp
+```
+> **Figure 3.** Average root-mean-square read base quality score per genomic position
+
+Row
+------------------------------
+
+### {-}
+```{r, n_content_plot, echo=FALSE, error=TRUE}
+#### N Content Plots ####
+n_content <- read.table(paste0("positional_n_depth/", sample, ".per_base_n.tsv"), sep = "\t", header = TRUE)
+coverage <- read.table(paste0("positional_depth/", sample, ".tsv"), sep = "\t", header = FALSE)
+colnames(coverage) <- c("chrom", "position", "depth")
+coverage <- select(coverage, c(4:5))
+n_cov <- merge(n_content, coverage, by = "position")
+n_cov$n_cov <- ((n_cov$N_density)/n_cov$depth)*100
+n_cov$n_cov <- ifelse(is.nan(n_cov$n_cov), 0, n_cov$n_cov)
+Q1 <- quantile(n_cov$n_cov, 0.25)
+Q3 <- quantile(n_cov$n_cov, 0.75)
+IQR <- Q3 - Q1
+IQR <- unname(IQR)
+outliers <- n_cov$n_cov[n_cov$n_cov < Q1 - 1.5 * IQR | n_cov$n_cov > Q3 + 1.5 * IQR ]
+dr <- n_cov[(n_cov$n_cov %in% outliers), ]
+if (IQR == 0 | is.na(IQR) |is.nan(IQR)) {
+  cat("The figure for this sample couldn't be processed. The per-base N density across the sample is within the interquartile range for this sample with no outliers.\n\n")
+} else {
+  nplot <- plot_ly(dr, x = dr$position, y = dr$n_cov, type = "scatter", mode = "lines", line = list(color = "#000000")) %>%
+    layout(
+      xaxis = list(
+        title = "Genomic Position (nt)",
+        tickformat = ".0f"
+      ),
+      yaxis = list(
+        title = "Percentage (%) of N's"
+      )
+    )
+  nplot
+}
+```
+> **Figure 4.** The percentage of base calls at each position for which an N was called along the genome. The displayed positions are those identified as outliers by using quartile ranges.
+
+## Row {data-height=50}
+
+<footer>
+`r footer_str`
+</footer>
