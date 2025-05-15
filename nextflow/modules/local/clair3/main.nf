@@ -14,7 +14,7 @@ process CLAIR3_POOL {
     input:
     tuple val(meta), path(bam), path(bai), val(pool), path(pool_bed)
     tuple val(meta2), path(reference)
-    path(fai)
+    path fai
     path model
 
     output:
@@ -74,7 +74,7 @@ process CLAIR3_NO_POOL {
     input:
     tuple val(meta), path(bam), path(bai)
     tuple val(meta2), path(reference)
-    path(fai)
+    path fai
     path model
 
     output:

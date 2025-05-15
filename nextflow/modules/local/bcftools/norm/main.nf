@@ -23,8 +23,8 @@ process BCFTOOLS_NORM {
         $pass_vcf \\
         > ${meta.id}.pass.norm.vcf
 
-    bgzip ${meta.id}.pass.norm.vcf
-    tabix ${meta.id}.pass.norm.vcf.gz
+    bgzip -f ${meta.id}.pass.norm.vcf
+    tabix -p vcf ${meta.id}.pass.norm.vcf.gz
 
     # Versions #
     cat <<-END_VERSIONS > versions.yml

@@ -58,7 +58,7 @@ def init_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         '-r',
         '--read_json',
-        required=True,
+        required=False,
         type=Path,
         help='Nanoq stats json file'
     )
@@ -436,7 +436,7 @@ def grade_qc(completeness: float, mean_dep: float, median_dep: float, divisible:
     # Completeness
     if completeness < 0.9:
         if completeness < 0.5:
-            qc_status.append('INCOMPLETE_GENOME')
+            return 'INCOMPLETE_GENOME'
         else:
             qc_status.append('PARTIAL_GENOME')
     # Coverage Depth
@@ -470,7 +470,8 @@ def main() -> None:
 
     # Do something with the data
     strain = get_strain(args.nextclade_n450, args.sample)
-    num_input_reads = parse_nanoq_json(args.read_json)
+    #num_input_reads = parse_nanoq_json(args.read_json)
+    num_input_reads = 1000
     num_aligned_reads = get_read_count(args.bam)
     consensus = SeqIO.read(args.consensus, "fasta")
     count_n, completeness, seq_len, divisible = parse_consensus(consensus)

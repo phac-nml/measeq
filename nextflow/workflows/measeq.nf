@@ -8,11 +8,9 @@ include { paramsSummaryMultiqc    } from '../subworkflows/nf-core/utils_nfcore_p
 include { softwareVersionsToYAML  } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText  } from '../subworkflows/local/utils_nfcore_measeq_pipeline'
 include { SETUP_REFERENCE_DATA    } from '../subworkflows/local/setup_reference_data'
-include { GENERATE_CONSENSUS      } from '../subworkflows/local/generate_consensus'
-include { ARTIC_GET_MODELS        } from '../modules/local/artic/get_model/main'
+include { NANOPORE_CONSENSUS      } from '../subworkflows/local/nanopore_consensus'
+include { ILLUMINA_CONSENSUS      } from '../subworkflows/local/illumina_consensus'
 include { FASTQC                  } from '../modules/nf-core/fastqc/main'
-include { NANOQ                   } from '../modules/nf-core/nanoq/main'
-include { MINIMAP2_ALIGN          } from '../modules/local/minimap2/main'
 include { NEXTCLADE_DATASETGET    } from '../modules/nf-core/nextclade/datasetget/main'
 include { NEXTCLADE_RUN as NEXTCLADE_RUN_N450   } from '../modules/nf-core/nextclade/run/main'
 include { NEXTCLADE_RUN as NEXTCLADE_RUN_CUSTOM } from '../modules/nf-core/nextclade/run/main'
@@ -67,19 +65,6 @@ workflow MEASEQ {
     ch_versions                 = ch_versions.mix(SETUP_REFERENCE_DATA.out.versions)
 
     //
-    // MODULE: Model download if not a local one
-    //
-    if ( params.local_model ) {
-        ch_model = Channel.value(file(params.local_model, type: 'dir', checkIfExists: true))
-    } else {
-        ARTIC_GET_MODELS(
-            params.model
-        )
-        ch_model = ARTIC_GET_MODELS.out.model
-        ch_versions = ch_versions.mix(ARTIC_GET_MODELS.out.versions)
-    }
-
-    //
     // MODULE: Run FastQC
     //
     FASTQC(
@@ -89,38 +74,34 @@ workflow MEASEQ {
     ch_versions = ch_versions.mix(FASTQC.out.versions.first())
 
     //
-    // MODULE: Run Nanoq
+    // WORKFLOW: Generate Consensus for either Nanopore or Illumina data
     //
-    NANOQ(
-        ch_input_fastqs,
-        'fastq'
-    )
-    ch_versions = ch_versions.mix(NANOQ.out.versions.first())
-
-    //
-    // MODULE: Run Minimap2
-    //
-    MINIMAP2_ALIGN(
-        NANOQ.out.reads,
-        ch_reference
-    )
-    ch_versions = ch_versions.mix(MINIMAP2_ALIGN.out.versions.first())
-
-    //
-    // WORKFLOW: Generate Consensus
-    //
-    GENERATE_CONSENSUS(
-        ch_reference,
-        ch_reference_fai,
-        MINIMAP2_ALIGN.out.bam_bai,
-        ch_model,
-        ch_primer_bed,
-        ch_split_amp_pools_bed
-    )
-    ch_consensus = GENERATE_CONSENSUS.out.consensus
-    ch_bam_bai   = GENERATE_CONSENSUS.out.bam_bai
-    ch_vcf       = GENERATE_CONSENSUS.out.vcf
-    ch_versions  = ch_versions.mix(GENERATE_CONSENSUS.out.versions)
+    if( params.platform == 'nanopore' ){
+        NANOPORE_CONSENSUS(
+            ch_reference,
+            ch_reference_fai,
+            ch_input_fastqs,
+            ch_primer_bed,
+            ch_split_amp_pools_bed
+        )
+        ch_nanoq_stats = NANOPORE_CONSENSUS.out.nanoq_stats
+        ch_bam_bai     = NANOPORE_CONSENSUS.out.bam_bai
+        ch_consensus   = NANOPORE_CONSENSUS.out.consensus
+        ch_vcf         = NANOPORE_CONSENSUS.out.vcf
+        ch_versions    = ch_versions.mix(NANOPORE_CONSENSUS.out.versions)
+    } else if( params.platform == 'illumina' ){ 
+        ILLUMINA_CONSENSUS(
+            ch_reference,
+            ch_input_fastqs,
+            ch_primer_bed
+        )
+        ch_bam_bai     = ILLUMINA_CONSENSUS.out.bam_bai
+        ch_consensus   = ILLUMINA_CONSENSUS.out.consensus
+        ch_vcf         = ILLUMINA_CONSENSUS.out.vcf
+        ch_versions    = ch_versions.mix(ILLUMINA_CONSENSUS.out.versions)
+    } else {
+        error "Please provide the --platform parameter with either 'nanopore' or 'illumina' to run"
+    }
 
     //
     // MODULE: Nextclade Run
@@ -159,12 +140,11 @@ workflow MEASEQ {
         ch_bam_bai
             .join(ch_consensus, by: [0])
             .join(SAMTOOLS_DEPTH.out.tsv, by: [0])
-            .join(NANOQ.out.stats, by: [0])
             .join(NEXTCLADE_RUN_N450.out.csv, by: [0])
             .join(NEXTCLADE_RUN_CUSTOM.out.csv, by: [0])
             .join(ch_vcf, by: [0]),
         ch_strain,
-        ch_primer_bed.ifEmpty([])
+        ch_primer_bed.collect().ifEmpty([])
     )
     ch_versions = ch_versions.mix(MAKE_SAMPLE_QC_CSV.out.versions.first())
 

@@ -11,7 +11,7 @@ process MAKE_SAMPLE_QC_CSV {
         'biocontainers/artic:1.6.2--pyhdfd78af_0' }"
 
     input:
-    tuple val(meta), path(bam), path(bai), path(consensus), path(depth_bed), path(nanoq_json), path(nextclade_n450), path(nextclade_full), path(vcf), path(tbi)
+    tuple val(meta), path(bam), path(bai), path(consensus), path(depth_bed), path(nextclade_n450), path(nextclade_full), path(vcf), path(tbi)
     val strain
     path primer_bed
 
@@ -27,7 +27,6 @@ process MAKE_SAMPLE_QC_CSV {
         --bam $bam \\
         --consensus $consensus \\
         --depth $depth_bed \\
-        --read_json $nanoq_json \\
         --nextclade_n450 $nextclade_n450 \\
         --nextclade_custom $nextclade_full \\
         --strain $strain \\

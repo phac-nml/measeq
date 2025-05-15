@@ -7,7 +7,22 @@
                 "nf-core": {
                     "bcftools/consensus": {
                         "branch": "master",
-                        "git_sha": "c9c3ef86c1892413b3c86fb38c4e39fd7288512f",
+                        "git_sha": "2efa3f86f20c99d23a231d631a94badde8e3501c",
+                        "installed_by": ["modules"]
+                    },
+                    "bwamem2/index": {
+                        "branch": "master",
+                        "git_sha": "a29f18660f5e3748d44d6f716241e70c942c065d",
+                        "installed_by": ["modules"]
+                    },
+                    "bwamem2/mem": {
+                        "branch": "master",
+                        "git_sha": "a29f18660f5e3748d44d6f716241e70c942c065d",
+                        "installed_by": ["modules"]
+                    },
+                    "fastp": {
+                        "branch": "master",
+                        "git_sha": "d082103d7976a2804f21225446cc110cbd822f4c",
                         "installed_by": ["modules"]
                     },
                     "fastqc": {
@@ -30,12 +45,22 @@
                         "git_sha": "cbd77a16449815913be03c6e7206e0693ddb4cca",
                         "installed_by": ["modules"]
                     },
+                    "quast": {
+                        "branch": "master",
+                        "git_sha": "57ddeee519c2410c9c80c72f3f78e69633f0c549",
+                        "installed_by": ["modules"]
+                    },
                     "samtools/depth": {
                         "branch": "master",
                         "git_sha": "b13f07be4c508d6ff6312d354d09f2493243e208",
                         "installed_by": ["modules"]
                     },
                     "samtools/flagstat": {
+                        "branch": "master",
+                        "git_sha": "05954dab2ff481bcb999f24455da29a5828af08d",
+                        "installed_by": ["modules"]
+                    },
+                    "samtools/index": {
                         "branch": "master",
                         "git_sha": "05954dab2ff481bcb999f24455da29a5828af08d",
                         "installed_by": ["modules"]
