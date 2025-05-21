@@ -12,7 +12,7 @@ process MAKE_FINAL_QC_CSV {
     input:
     path concat_csv
     path metadata
-    val neg_control_threshold
+    val neg_control_pct_threshold
     val neg_ctrl_substrings
 
     output:
@@ -26,7 +26,7 @@ process MAKE_FINAL_QC_CSV {
     summary_qc.py \\
         --csv $concat_csv \\
         $metadataArg \\
-        --threshold $neg_control_threshold \\
+        --threshold $neg_control_pct_threshold \\
         --neg_ctrl_substrings '$neg_ctrl_substrings' \\
         --version $version
 

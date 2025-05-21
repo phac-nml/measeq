@@ -33,8 +33,8 @@ process ARTIC_ALIGN_TRIM {
 
     script:
     def argsList = []
-    if ( params.normalise ) {
-        argsList.add("--normalise ${params.normalise}")
+    if ( params.normalise_ont ) {
+        argsList.add("--normalise ${params.normalise_ont}")
     }
     outName = "${meta.id}.trimmed.rg.sorted.bam"
     // Start mode = Trim to start of primers instead of ends
@@ -148,8 +148,8 @@ process CUSTOM_VCF_FILTER {
     """
     cs_vcf_filter.py \\
         $frameshiftArg \\
-        --min-depth ${params.min_variant_depth} \\
-        --min-qual ${params.min_variant_qual} \\
+        --min-depth ${params.min_depth} \\
+        --min-qual ${params.min_variant_qual_c3} \\
         $vcf \\
         ${meta.id}.pass.vcf \\
         ${meta.id}.fail.vcf

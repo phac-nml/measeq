@@ -2,35 +2,8 @@
 # Written by @jts from https://github.com/jts/ncov2019-artic-nf/blob/be26baedcc6876a798a599071bb25e0973261861/bin/process_gvcf.py
 # May want to adjust/update it but for now it is unchanged
 
-import itertools
 import argparse
 import pysam
-from collections import defaultdict
-
-# from https://www.geeksforgeeks.org/python-make-a-list-of-intervals-with-sequential-numbers/
-# via artic-mask
-def intervals_extract(iterable):
-    iterable = sorted(set(iterable))
-    for _, group in itertools.groupby(enumerate(iterable), lambda t: t[1] - t[0]):
-        group = list(group)
-        yield [group[0][1], group[-1][1]]
-
-# write the depth mask used with bcftools to turn consensus positions into Ns
-def write_depth_mask(out_filename, contig_depths, min_coverage):
-    maskfh = open(out_filename, 'w')
-    for contig_name, depths in contig_depths.items():
-        # from artic-mask, create list of positions that fail the depth check
-        mask_vector = []
-        for pos, depth in enumerate(depths):
-            if depth < min_coverage:
-                mask_vector.append(pos)
-
-        # get the intervals from the mask_vector
-        intervals = list(intervals_extract(mask_vector))
-
-        for i in intervals:
-            maskfh.write("%s\t%s\t%s\n" % (contig_name, i[0]+1, i[1]+1))
-    maskfh.close()
 
 # calculate the variant allele fraction for each alt allele using freebayes' read/alt observation tags
 def calculate_vafs(record):
@@ -52,10 +25,6 @@ def make_simple_record(vcf_header, parent_record, position, ref, alt, vaf):
     r.qual = parent_record.qual
     r.info["DP"] = parent_record.info["DP"]
     r.info["VAF"] = vaf
-
-    # Have to add in atleast the Genotype for bcftools 1.20 to apply the variant
-    #  So as were only filtering to 1 genotype use that
-    r.samples[0]['GT'] = (1,)
     return r
 
 # process indel variants found by freebayes into a variant that should be
@@ -71,12 +40,6 @@ def handle_indel(vcf_header, record):
     # is the best we can do.
     if sum(vafs) < 0.5:
         return output
-    
-    # Some spots have extremely low quality (under 1), want to filter those out for indels
-    #  Might need to add a proper calculation here for it based on depth but based on data
-    #  nothing really is this low unless its very mixed or low low depth
-    if record.qual < 2:
-        return(output)
 
     # argmax without bringing in numpy
     max_idx = None
@@ -87,6 +50,11 @@ def handle_indel(vcf_header, record):
             max_idx = idx
     
     r = make_simple_record(vcf_header, record, record.pos, record.ref, record.alts[max_idx], [ max_vaf ])
+
+    # Have to add in atleast the Genotype for bcftools 1.20 to apply the variant
+    #  So as were only filtering to 1 genotype use that
+    #  SNPS slightly different to account for iupac codes
+    r.samples[0]['GT'] = (1,)
 
     output.append(r)
     return output
@@ -138,77 +106,64 @@ def main():
     description = 'Process a .gvcf file to create a file of consensus variants, low-frequency variants and a coverage mask'
     parser = argparse.ArgumentParser(description=description)
 
-    parser.add_argument('-m', '--mask-output', required=True,
-            help=f"The output file name for the coverage mask\n")
-
     parser.add_argument('-v', '--variants-output', required=True,
-            help=f"The output file name for variants (non-reference gVCF records)\n")
+            help=f"The output file name for variants (VCF records)\n")
 
     parser.add_argument('-c', '--consensus-sites-output', required=True,
             help=f"The output file name for variants that will be applied to generate the consensus sequence\n")
 
     parser.add_argument('-d', '--min-depth', type=int, default=10,
-            help=f"Mask reference positions with depth less than this threshold")
+            help=f"Minimum depth to call a variant")
 
     parser.add_argument('-l', '--lower-ambiguity-frequency', type=float, default=0.25,
             help=f"Variants with frequency less than -l will be discarded")
 
     parser.add_argument('-u', '--upper-ambiguity-frequency', type=float, default=0.75,
             help=f"Substitution variants with frequency less than -u will be encoded with IUPAC ambiguity codes")
+    
+    parser.add_argument('-q', '--min-quality', type=int, default=20,
+            help=f"Minimum quality to call a variant")
+    
+    parser.add_argument('-n', '--no-frameshifts', action="store_true",
+            help=f"Skip indel mutations that are not divisible by 3")
 
     parser.add_argument('file', action='store', nargs=1)
 
     args = parser.parse_args()
+
+    # Load VCF
     vcf = pysam.VariantFile(open(args.file[0],'r'))
 
     # Initalize depth mask to all zeros for all contigs
-    contig_depth = defaultdict(list)
     for r in vcf.header.records:
         if r.type == "CONTIG":
             genome_length = int(r['length'])
-            contig_depth[r['ID']] = [0] * genome_length
 
     out_header = vcf.header
 
-    # open the output file with the filtered variant sites
+    # Open the output file with the filtered variant sites
     out_header.info.add("VAF", number="A", type='Float', description="Variant allele fraction, called from observed reference/alt reads")
     variants_out = pysam.VariantFile(args.variants_output, 'w', header=out_header)
 
-    # open the output file with the changes to apply to the consensus fasta
-    # this includes an additional tag in the VCF file
+    # Open the output file with the changes to apply to the consensus fasta
+    # This includes an additional tag in the VCF file
     out_header.info.add("ConsensusTag", number=1, type='String', description="The type of base to be included in the consensus sequence (ambiguous or fixed)")
     consensus_sites_out = pysam.VariantFile(args.consensus_sites_output, 'w', header=out_header)
 
     for record in vcf:
 
-        is_gvcf_ref = record.alts[0] == "<*>"
-
-        # set depth for this part of the genome
+        # Set depth for this part of the genome
         # this works for both gVCF blocks and regular variants
         # because pos/stop are set appropriately
         v_start = record.pos
         v_end = record.stop
         depth = record.info["DP"]
 
-        # disallow gvcf records that are longer than a single base
-        assert(not is_gvcf_ref or v_start == v_end)
-
-        # Don't go past the end of the genome
-        if(v_start > genome_length or v_end > genome_length):
+        # Do nothing with Records that don't meet our minimum depth
+        if depth < args.min_depth:
             continue
 
-        # update depth mask
-        for i in range(v_start, v_end + 1):
-            assert(i > 0)
-            # VCF coordinates are 1-based, we record the depth vector as 0-based
-            # to be consistent with artic-mask
-            contig_depth[record.chrom][i-1] = depth
-
-        # do nothing else with ref records, or records that don't meet our minimum depth
-        if is_gvcf_ref or depth < args.min_depth:
-            continue
-
-        # determine if any allele in the variant is an indel
+        # Determine if any allele in the variant is an indel
         has_indel = False
         for i in range(0, len(record.alts)):
             has_indel = has_indel or len(record.ref) != len(record.alts[i])
@@ -231,12 +186,24 @@ def main():
             vaf = out_r.info["VAF"][0]
             is_indel = len(out_r.ref) != len(out_r.alts[0])
 
-            # discard low frequency variants
+            # Discard low frequency variants
             if vaf < args.lower_ambiguity_frequency:
+                continue
+
+            # Discard fs indels if provided the arg
+            if is_indel and len(out_r.alts[0]) % 3 != 0 and args.no_frameshifts:
+                continue
+
+            # Discard low quality sites as recommended by freebayes
+            #  Might need to add a proper calculation here for it based on depth but based on data
+            #  nothing really is this low unless its very mixed or low low depth
+            if record.qual < args.min_quality:
+                print(out_r.qual)
                 continue
 
             # Write a tag describing what to do with the variant
             consensus_tag = "None"
+            genotype = (1,)
 
             # high-frequency subs and indels are always applied without ambiguity
             # we don't have to do an indel VAF check here as it is dealt with in handle_indel
@@ -246,15 +213,16 @@ def main():
             else:
                 # record ambiguous SNPs in the consensus sequence with IUPAC codes
                 consensus_tag = "ambiguous"
+                # Genotype needs to be mixed to get an iupac
+                genotype = (0,1)
             out_r.info["ConsensusTag"] = consensus_tag
+            out_r.samples[0]['GT'] = genotype
             consensus_sites_out.write(out_r)
             accept_variant = True
 
         if accept_variant:
             record.info["VAF"] = calculate_vafs(record)
             variants_out.write(record)
-
-    write_depth_mask(args.mask_output, contig_depth, args.min_depth)
 
 if __name__ == "__main__":
     main()

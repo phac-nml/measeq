@@ -12,7 +12,7 @@ process FREEBAYES {
     tuple val(meta2), path(reference)
 
     output:
-    tuple val(meta), path("${meta.id}.gvcf"), emit: gvcf
+    tuple val(meta), path("${meta.id}.vcf"), emit: vcf
     path "versions.yml", emit: versions
 
     script:
@@ -22,12 +22,11 @@ process FREEBAYES {
         -f $reference \\
         -p 1 \\
         -C 1 \\
-        -F 0.2 \\
+        -F 0.05 \\
         --pooled-continuous \\
-        --min-coverage 10 \\
-        --gvcf \\
-        --gvcf-dont-use-chunk true \\
-        | sed s/QR,Number=1,Type=Integer/QR,Number=1,Type=Float/ > ${meta.id}.gvcf
+        --min-coverage 5 \\
+        --standard-filters \\
+        | sed s/QR,Number=1,Type=Integer/QR,Number=1,Type=Float/ > ${meta.id}.vcf
 
     # Versions #
     cat <<-END_VERSIONS > versions.yml
@@ -38,7 +37,7 @@ process FREEBAYES {
 
     stub:
     """
-    touch ${meta.id}.gvcf
+    touch ${meta.id}.vcf
 
     # Versions #
     cat <<-END_VERSIONS > versions.yml

@@ -45,17 +45,16 @@ workflow GENERATE_REPORT {
     )
     ch_versions = ch_versions.mix(PYSAMSTATS.out.versions.first())
 
-    // Report is broken for the moment which is expected with the changes
-    // MAKE_CUSTOM_REPORT(
-    //     ch_overall_qc,
-    //     ch_depth_tsv.collect{ it[1] },
-    //     POSITIONAL_N_DEPTH.out.tsv.collect{ it[1] },
-    //     PYSAMSTATS.out.tsv.collect{ it[1] },
-    //     ch_strain,
-    //     ch_report_template,
-    //     ch_report_subpages.collect()
-    // )
-    // ch_versions = ch_versions.mix(MAKE_CUSTOM_REPORT.out.versions)
+    MAKE_CUSTOM_REPORT(
+        ch_overall_qc,
+        ch_depth_tsv.collect{ it[1] },
+        POSITIONAL_N_DEPTH.out.tsv.collect{ it[1] },
+        PYSAMSTATS.out.tsv.collect{ it[1] },
+        ch_strain,
+        ch_report_template,
+        ch_report_subpages.collect()
+    )
+    ch_versions = ch_versions.mix(MAKE_CUSTOM_REPORT.out.versions)
 
     emit:
     versions = ch_versions

@@ -153,7 +153,7 @@ workflow MEASEQ {
             .map{ it -> it[1] }
             .collectFile(keepHeader: true, skip: 1, name: 'concat.qc.csv'),
         ch_metadata,
-        params.neg_control_threshold,
+        params.neg_control_pct_threshold,
         params.neg_ctrl_substrings
     )
     ch_versions = ch_versions.mix(MAKE_FINAL_QC_CSV.out.versions)

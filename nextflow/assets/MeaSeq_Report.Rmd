@@ -136,34 +136,16 @@ failed_samples <- summary_df %>%
   filter(`genome_completeness_percent` < 50) %>%
   pull(sample)
 
-# Read nextclade output and modify sample column for merge
-nextclade_df <- fread("nextclade_results.csv")
-colnames(nextclade_df)[2] <- "sample"
-nextclade_df[,2] <- str_extract(nextclade_df$sample, "^[^ ]+")
-
-# Extract Mutated stop codons
-patterns <- c("N:\\*", "C:\\*", "P:\\*", "V:\\*", "M:\\*", "F:\\*", "H:\\*", "L:\\*" )
-mutated_stop_codons <- function(value){
-  extract_pattern <- paste0('(', paste(patterns, collapse = '|'), ')[^,]*')
-  match <- str_extract(value, extract_pattern)
-  return(match)
-}
-nextclade_df <- nextclade_df %>%
-  mutate('Mutated Stop Codon' = sapply(nextclade_df[["aaSubstitutions"]], mutated_stop_codons))
-final_nextclade_df <- select(nextclade_df, sample, qc.frameShifts.frameShifts, qc.stopCodons.stopCodons, 'Mutated Stop Codon')
-
-# Merge genome length and nextclade outputs with multiqc
-summary_df <- full_join(summary_df, final_nextclade_df, by = "sample")
-
 # Create formatting conditions for Warnings
 summary_df[summary_df == ""] <- NA
 for (i in 1:nrow(summary_df)) {
   ifelse(
       summary_df[[i,"strain"]] != strain |
       is.na(summary_df[[i,"strain"]]) |
-      !is.na(summary_df[[i,"qc.frameShifts.frameShifts"]]) |
-      !is.na(summary_df[[i,"qc.stopCodons.stopCodons"]]) |
-      !is.na(summary_df[[i,"Mutated Stop Codon"]]),
+      summary_df[[i,"divisible_by_6"]] != "true" |
+      !is.na(summary_df[[i,"frameshifts"]]) |
+      !is.na(summary_df[[i,"nonsense_mutation"]]) |
+      !is.na(summary_df[[i,"mutated_stop_codon"]]),
     summary_df$warning[[i]] <- "Warning", summary_df$warning[[i]] <- "PASS")
 }
 warning_samples_count <- (sum(summary_df[["warning"]] != "PASS", na.rm = FALSE)) - (failed_samples_count)
@@ -186,9 +168,9 @@ summary_df <- select(summary_df,
     `num_insertion_sites`,
     genome_length,
     divisible_by_6,
-    qc.frameShifts.frameShifts,
-    qc.stopCodons.stopCodons,
-    `Mutated Stop Codon`,
+    frameshifts,
+    nonsense_mutation,
+    `mutated_stop_codon`,
     warning,
     `qc_status`,
     `run_status`,
@@ -212,8 +194,9 @@ summary_df <- summary_df %>%
     "# Insertion Sites" = `num_insertion_sites`,
     "Genome Length" = genome_length,
     "Divisible by 6" = divisible_by_6,
-    "Frameshifts" = qc.frameShifts.frameShifts,
-    "Premature Stop Codon" = qc.stopCodons.stopCodons,
+    "Frameshifts" = frameshifts,
+    "Premature Stop Codon" = nonsense_mutation,
+    "Mutated Stop Codon" = mutated_stop_codon,
     "QC Status" = `qc_status`,
     "Run Status" = `run_status`,
     "Run Summary" = `run_summary`
@@ -310,11 +293,11 @@ metrics_dt <- summary_df %>%
     target = "cell",
     fontWeight = styleEqual(
       unique(summary_df$'Divisible by 6'),
-      ifelse(unique(tolower(summary_df$'Divisible by 6')) != "True", "bold", "")
+      ifelse(unique(tolower(summary_df$'Divisible by 6')) != "true", "bold", "")
     ),
     `text-decoration` = styleEqual(
       unique(summary_df$'Divisible by 6'),
-      ifelse(unique(tolower(summary_df$'Divisible by 6')) != "True", "underline", "")
+      ifelse(unique(tolower(summary_df$'Divisible by 6')) != "true", "underline", "")
     )
   ) %>%
   # Highlight cells where the nextclade strain doesn't match the reference strain
