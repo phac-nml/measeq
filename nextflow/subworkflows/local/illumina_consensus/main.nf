@@ -92,7 +92,7 @@ workflow ILLUMINA_CONSENSUS {
         .set{ ch_ambiguous_vcf_restructured }
 
     CUSTOM_MAKE_DEPTH_MASK(
-        IVAR_TRIM.out.bam,
+        ch_bam_bai,
         ch_reference
     )
 
