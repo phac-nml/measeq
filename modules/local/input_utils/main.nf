@@ -42,7 +42,7 @@ process GENERATE_REF_INTERMEDIATES {
     """
 }
 
-process CREATE_AMPLICON_BED {
+process GENERATE_AMPLICON_BED {
     label 'process_single'
 
     conda "conda-forge::python=3.10.2"

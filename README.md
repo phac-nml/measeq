@@ -1,5 +1,10 @@
 # MeaSeq: Measles Illumina Sequence Analysis Automation
 
+- [Updates](#updates)
+  - [2025-05-22](#2025-05-22)
+    - [Reasons for Updating](#reasons-for-updating)
+    - [Nextlow Running](#nextflow-running)
+    - [Nextflow Results](#nextflow-results)
 - [Introduction](#introduction)
 - [Installation](#installation)
   - [Installation Steps](#installation-steps)
@@ -13,6 +18,99 @@
 - [Citations](#citations)
 - [Contributing](#legal)
 - [Legal](#legal)
+
+## Updates
+
+### *2025-05-22*
+
+- Working on switching to running with the internal nextflow pipeline developed specifically for measles virus data and surveillance. During this transition, the README and other usage docs won't be as up-to-date as usual so there will be some slight inconsistencies while we work to switch over
+
+- Focus is **currently on Illumina data** although the nanopore side *should* still work
+
+#### Reasons for Updating
+
+1. More control over all of the steps
+  - Different tools and outputs that could be measles specific as the pipeline only does MeV data
+
+2. Easier usage
+  - No need to install the tool, normal nextflow processes
+  - All data in one final spot instead of slightly split up
+  - Better support of different dependency management solutions
+
+3. Eventual implementation into IRIDA Next
+  - Needs specifics to work that were impossible to add originally
+
+#### Nextflow Running
+
+To run the pipeline for illumina data:
+```bash
+nextflow run phac-nml/measeq \
+  -r dev \
+  -profile <PROFILE> \
+  --input samplesheet.csv \
+  --platform illumina \
+  --reference <REF.fasta> \
+  --outdir results \
+  --primer_bed <PRIMER_POSITIONS.bed>
+```
+
+With the primer bed formatted as such:
+```
+MH356245.1      1       25      MSV_1_LEFT      1       +
+MH356245.1      400     425     MSV_2_LEFT      2       +
+MH356245.1      500     525     MSV_1_RIGHT     1       -
+MH356245.1      900     925     MSV_2_RIGHT     2       -
+<CHROM>         <START> <END>   <PRIMER_NAME>   <POOL>  <DIRECTION>
+```
+
+#### Nextflow Results
+
+Results are all in the `--outdir <RESULTS>` directory created and are organized based on grouping file types (BAMs/VCFs/Consensus)
+
+The outputs should be good, the structure and final reporting are still actively being worked on
+
+Format:
+```
+bam
+├── bwamem
+|   ├── SAMPLE.sorted.bam
+|   └── SAMPLE.sorted.bam.bai
+|
+└── ivar
+    ├── SAMPLE.ivar.log
+    ├── SAMPLE.primertrimmed.sorted.bam
+    └── SAMPLE.primertrimmed.sorted.bam.bai
+
+consensus
+├── SAMPLE.N450.cfasta
+└── SAMPLE.consensus.fasta
+
+overall.qc.csv
+
+sample_csv
+└── SAMPLE.qc.csv
+
+reference
+├── amplicon.bed
+├── amplicon_regions
+|   ├── 1.bed
+|   ├── 2.bed
+|   └── etc
+├── bwamem
+|   └── <INDEX FILES>
+├── genome.bed
+└── refstats.txt
+
+vcf
+├── freebayes
+|   └── SAMPLE.vcf
+└── processed_vcf
+    ├── SAMPLE.ambiguous.norm.vcf.gz
+    ├── SAMPLE.ambiguous.norm.vcf.gz.tbi
+    ├── SAMPLE.fixed.norm.vcf.gz
+    ├── SAMPLE.fixed.norm.vcf.gz.tbi
+    └── SAMPLE.variants.vcf
+```
 
 ## Introduction
 

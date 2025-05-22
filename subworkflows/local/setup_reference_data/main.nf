@@ -9,7 +9,7 @@
 */
 include { GENERATE_REF_INTERMEDIATES } from '../../../modules/local/input_utils/main'
 include { SPLIT_AMPLICON_REGION      } from '../../../modules/local/input_utils/main'
-include { CREATE_AMPLICON_BED        } from '../../../modules/local/input_utils/main'
+include { GENERATE_AMPLICON_BED      } from '../../../modules/local/input_utils/main'
 include { NEXTCLADE_RUN as NEXTCLADE_RUN_REFERENCE } from '../../../modules/nf-core/nextclade/run/main'
 include { ADJUST_FASTA_HEADER        } from '../../../modules/local/artic/subcommands/main'
 
@@ -66,11 +66,11 @@ workflow SETUP_REFERENCE_DATA {
         //
         // MODULE: Generate amplicon bed for reporting
         //
-        CREATE_AMPLICON_BED(
+        GENERATE_AMPLICON_BED(
             ch_primer_bed
         )
-        ch_versions = ch_versions.mix(CREATE_AMPLICON_BED.out.versions)
-        ch_amplicon_bed = CREATE_AMPLICON_BED.out.bed
+        ch_versions = ch_versions.mix(GENERATE_AMPLICON_BED.out.versions)
+        ch_amplicon_bed = GENERATE_AMPLICON_BED.out.bed
 
         //
         // MODULE: Generate Bed files for clair3 and reporting
