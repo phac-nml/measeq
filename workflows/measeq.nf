@@ -18,6 +18,7 @@ include { ADJUST_FASTA_HEADER     } from '../modules/local/artic/subcommands/mai
 include { SAMTOOLS_DEPTH          } from '../modules/nf-core/samtools/depth/main'
 include { MAKE_SAMPLE_QC_CSV      } from '../modules/local/qc/sample/main'
 include { MAKE_FINAL_QC_CSV       } from '../modules/local/qc/summary/main'
+include { GENERATE_AMPLICON_STATS } from '../subworkflows/local/generate_amplicon_stats'
 include { GENERATE_REPORT         } from '../subworkflows/local/generate_report'
 
 /*
@@ -59,6 +60,7 @@ workflow MEASEQ {
     ch_reference                = SETUP_REFERENCE_DATA.out.reference
     ch_reference_fai            = SETUP_REFERENCE_DATA.out.fai
     ch_primer_bed               = SETUP_REFERENCE_DATA.out.primer_bed
+    ch_amplicon_bed             = SETUP_REFERENCE_DATA.out.amplicon_bed
     ch_split_amp_pools_bed      = SETUP_REFERENCE_DATA.out.split_amp_pools_bed
     ch_ref_n450                 = SETUP_REFERENCE_DATA.out.ref_n450
     ch_strain                   = SETUP_REFERENCE_DATA.out.strain
@@ -157,6 +159,18 @@ workflow MEASEQ {
         params.neg_ctrl_substrings
     )
     ch_versions = ch_versions.mix(MAKE_FINAL_QC_CSV.out.versions)
+
+    //
+    // Amplicon Statistics
+    //
+    if( params.primer_bed ){
+        GENERATE_AMPLICON_STATS(
+            ch_bam_bai,
+            ch_consensus,
+            ch_amplicon_bed
+        )
+        ch_versions = ch_versions.mix(GENERATE_AMPLICON_STATS.out.versions)
+    }
 
     //
     // Report
