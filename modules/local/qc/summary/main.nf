@@ -14,6 +14,7 @@ process MAKE_FINAL_QC_CSV {
     path metadata
     val neg_control_pct_threshold
     val neg_ctrl_substrings
+    val skip_negative_grading
 
     output:
     path "overall.qc.csv", emit: csv
@@ -22,10 +23,12 @@ process MAKE_FINAL_QC_CSV {
     script:
     def version = workflow.manifest.version
     def metadataArg = metadata ? "--metadata $metadata" : ""
+    def negativeGradingArg = skip_negative_grading ? "--skip_ctrl_grading" : ""
     """
     summary_qc.py \\
         --csv $concat_csv \\
         $metadataArg \\
+        $negativeGradingArg \\
         --threshold $neg_control_pct_threshold \\
         --neg_ctrl_substrings '$neg_ctrl_substrings' \\
         --version $version

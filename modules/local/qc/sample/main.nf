@@ -11,7 +11,7 @@ process MAKE_SAMPLE_QC_CSV {
         'biocontainers/artic:1.6.2--pyhdfd78af_0' }"
 
     input:
-    tuple val(meta), path(bam), path(bai), path(consensus), path(depth_bed), path(nextclade_n450), path(nextclade_full), path(vcf), path(tbi)
+    tuple val(meta), path(bam), path(bai), path(consensus), path(depth_bed), path(nextclade_n450), path(nextclade_full), path(vcf), path(tbi), path(dsid)
     val strain
     path primer_bed
 
@@ -20,6 +20,8 @@ process MAKE_SAMPLE_QC_CSV {
     path "versions.yml", emit: versions
 
     script:
+    // Add matched dsid if we have it
+    def dsidArg = dsid ? "--matched_dsid $dsid" : ""
     // Add primer bed if we have it
     def seqPrimerArg = primer_bed ? "--seq_bed $primer_bed" : ""
     """
@@ -31,6 +33,7 @@ process MAKE_SAMPLE_QC_CSV {
         --nextclade_custom $nextclade_full \\
         --strain $strain \\
         --vcf $vcf \\
+        $dsidArg \\
         $seqPrimerArg \\
         --sample $meta.id
 

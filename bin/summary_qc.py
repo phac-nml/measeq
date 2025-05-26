@@ -53,6 +53,11 @@ def init_parser() -> argparse.ArgumentParser:
         type=str,
         help='Comma separated substrings to be used to find negative control samples. Default: "neg,ntc,blank"'
     )
+    parser.add_argument(
+        '--skip_ctrl_grading',
+        action='store_true',
+        help='Skip parsing and grading negative controls'
+    )
     return parser
 
 def validate_df_columns(df: pd.DataFrame, needed_columns: list) -> None:
@@ -110,9 +115,12 @@ def main() -> None:
         validate_df_columns(df, ['sample'])
         df = df.merge(metadata_df, on='sample', how='left')
 
-    # Check negative controls, can add more here
+    # Check negative controls, can add more checks here for them
     neg_df = df[df['sample'].str.contains('|'.join(neg_ctrl_substrings), na=False, case=False)]
-    if not neg_df.empty:
+    if args.skip_ctrl_grading:
+        run_control_status = 'PASS'
+        run_control_info = 'Skipped'
+    elif not neg_df.empty:
         # Check neg columns
         run_control_status = 'PASS'
         run_control_info = ''

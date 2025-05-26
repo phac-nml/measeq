@@ -11,11 +11,12 @@ include { SETUP_REFERENCE_DATA    } from '../subworkflows/local/setup_reference_
 include { NANOPORE_CONSENSUS      } from '../subworkflows/local/nanopore_consensus'
 include { ILLUMINA_CONSENSUS      } from '../subworkflows/local/illumina_consensus'
 include { FASTQC                  } from '../modules/nf-core/fastqc/main'
+include { ADJUST_FASTA_HEADER     } from '../modules/local/artic/subcommands/main'
 include { NEXTCLADE_DATASETGET    } from '../modules/nf-core/nextclade/datasetget/main'
 include { NEXTCLADE_RUN as NEXTCLADE_RUN_N450   } from '../modules/nf-core/nextclade/run/main'
 include { NEXTCLADE_RUN as NEXTCLADE_RUN_CUSTOM } from '../modules/nf-core/nextclade/run/main'
-include { ADJUST_FASTA_HEADER     } from '../modules/local/artic/subcommands/main'
 include { SAMTOOLS_DEPTH          } from '../modules/nf-core/samtools/depth/main'
+include { COMPARE_INTERNAL_DSID   } from '../modules/local/custom/compare_internal_dsid/main'
 include { MAKE_SAMPLE_QC_CSV      } from '../modules/local/qc/sample/main'
 include { MAKE_FINAL_QC_CSV       } from '../modules/local/qc/summary/main'
 include { GENERATE_AMPLICON_STATS } from '../subworkflows/local/generate_amplicon_stats'
@@ -39,6 +40,7 @@ workflow MEASEQ {
     Channel
         .value(file(params.custom_nextclade_dataset, type: 'dir', checkIfExists: true))
         .set { ch_custom_nextclade_dataset }
+    ch_id_fasta = params.dsid_fasta ? file(params.dsid_fasta, type: 'file', checkIfExists: true) : []
 
     //
     // MODULE: Setup nextclade dataset
@@ -123,6 +125,12 @@ workflow MEASEQ {
     )
     ch_versions = ch_versions.mix(ADJUST_FASTA_HEADER.out.versions.first())
 
+    NEXTCLADE_RUN_CUSTOM(
+        ch_consensus,
+        ch_custom_nextclade_dataset
+    )
+    ch_versions = ch_versions.mix(NEXTCLADE_RUN_CUSTOM.out.versions.first())
+
     //
     // QC
     //
@@ -132,11 +140,15 @@ workflow MEASEQ {
     )
     ch_versions = ch_versions.mix(SAMTOOLS_DEPTH.out.versions.first())
 
-    NEXTCLADE_RUN_CUSTOM(
-        ch_consensus,
-        ch_custom_nextclade_dataset
-    )
-    ch_versions = ch_versions.mix(NEXTCLADE_RUN_CUSTOM.out.versions.first())
+    ch_dsid_tsv = Channel.empty()
+    if( params.dsid_fasta ){
+        COMPARE_INTERNAL_DSID(
+            ADJUST_FASTA_HEADER.out.consensus,
+            ch_id_fasta
+        )
+        ch_dsid_tsv = COMPARE_INTERNAL_DSID.out.tsv
+        ch_versions = ch_versions.mix(COMPARE_INTERNAL_DSID.out.versions.first())
+    }
 
     MAKE_SAMPLE_QC_CSV(
         ch_bam_bai
@@ -144,7 +156,8 @@ workflow MEASEQ {
             .join(SAMTOOLS_DEPTH.out.tsv, by: [0])
             .join(NEXTCLADE_RUN_N450.out.csv, by: [0])
             .join(NEXTCLADE_RUN_CUSTOM.out.csv, by: [0])
-            .join(ch_vcf, by: [0]),
+            .join(ch_vcf, by: [0])
+            .join(ch_dsid_tsv, by: [0]).ifEmpty([]),
         ch_strain,
         ch_primer_bed.collect().ifEmpty([])
     )
@@ -156,7 +169,8 @@ workflow MEASEQ {
             .collectFile(keepHeader: true, skip: 1, name: 'concat.qc.csv'),
         ch_metadata,
         params.neg_control_pct_threshold,
-        params.neg_ctrl_substrings
+        params.neg_ctrl_substrings,
+        params.skip_negative_grading
     )
     ch_versions = ch_versions.mix(MAKE_FINAL_QC_CSV.out.versions)
 

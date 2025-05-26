@@ -84,6 +84,12 @@ def init_parser() -> argparse.ArgumentParser:
         help='Input sample passing vcf file'
     )
     parser.add_argument(
+        '--matched_dsid',
+        required=False,
+        type=Path,
+        help='TSV containing compared DSID calls'
+    )
+    parser.add_argument(
         '--seq_bed',
         required=False,
         type=Path,
@@ -399,6 +405,17 @@ def get_custom_nextclade_vals(nextclade_csv: Path, sample: str) -> Tuple[str, st
         return frameshifts, stop_codons, mutated_stop_codons
     else:
         return '', '', ''
+    
+def get_dsid(matched_dsid: Path, sample: str) -> str:
+    '''
+    '''
+    with open(matched_dsid, 'r') as handle:
+        reader = csv.DictReader(handle, delimiter='\t')
+        # There should only be 1 sample / 1 line but just in case
+        for d in reader:
+            if d['sample'] == sample:
+                return d['matched_dsid']
+    return 'NA'
 
 def grade_qc(completeness: float, mean_dep: float, median_dep: float, divisible: bool, 
              frameshift: bool, nonsense_mutation: bool, stop_mutation: bool, strain_match: bool) -> str:
@@ -480,6 +497,10 @@ def main() -> None:
     frameshift, nonsense, stop_mutation = get_custom_nextclade_vals(args.nextclade_custom, args.sample)
 
     # Optional inputs
+    matched_dsid = 'NA'
+    if args.matched_dsid:
+        matched_dsid = get_dsid(args.matched_dsid, args.sample)
+
     seq_primer_overlap = 'NA'
     if args.seq_bed:
         seq_primer_overlap = check_primers(args.seq_bed, variant_positions)
@@ -497,6 +518,7 @@ def main() -> None:
     final = {
         'sample': [args.sample],
         'strain': [strain],
+        'matched_dsid': [matched_dsid],
         'num_input_reads': [num_input_reads],
         'num_aligned_reads': [num_aligned_reads],
         'num_consensus_n': [count_n],

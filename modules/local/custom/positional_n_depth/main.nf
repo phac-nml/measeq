@@ -16,9 +16,6 @@ process POSITIONAL_N_DEPTH {
     tuple val(meta), path("${meta.id}.per_base_n.tsv"), emit: tsv
     path "versions.yml", emit: versions
 
-    when:
-    task.ext.when == null || task.ext.when
-
     script:
     """
     samtools mpileup \\
