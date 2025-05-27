@@ -146,8 +146,9 @@ workflow ILLUMINA_CONSENSUS {
     )
 
     emit:
-    bam_bai   = ch_bam_bai
-    consensus = ADJUST_FASTA_HEADER.out.consensus
-    vcf       = PROCESS_VCF.out.consensus_vcf
-    versions  = ch_versions
+    fastp_json = FASTP.out.json
+    bam_bai    = ch_bam_bai
+    consensus  = ADJUST_FASTA_HEADER.out.consensus
+    vcf        = PROCESS_VCF.out.consensus_vcf
+    versions   = ch_versions
 }

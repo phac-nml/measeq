@@ -106,7 +106,7 @@ def main() -> None:
     ]
 
     # Do stuff
-    df = pd.read_csv(args.csv)
+    df = pd.read_csv(args.csv, dtype={"matched_dsid": "string"}) # To not expand the integer values here
     validate_df_columns(df, ['sample', 'num_aligned_reads', 'genome_completeness_percent', 'mean_sequencing_depth', 'median_sequencing_depth', 'divisible_by_6', 'qc_status'])
 
     # Add in metadata if there is any

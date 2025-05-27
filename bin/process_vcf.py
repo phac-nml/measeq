@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # Written by @jts from https://github.com/jts/ncov2019-artic-nf/blob/be26baedcc6876a798a599071bb25e0973261861/bin/process_gvcf.py
-# May want to adjust/update it but for now it is unchanged
+# Slight adjustments made such that were focused on just the mutations and not the GVCF info
+#  Along with that, added in genotype to allow new versions of bcftools consensus to work
 
 import argparse
 import pysam
 
-# calculate the variant allele fraction for each alt allele using freebayes' read/alt observation tags
 def calculate_vafs(record):
+    '''Calculate the variant allele fraction for each alt allele using freebayes' read/alt observation tags'''
     vafs = list()
     total_depth = float(record.info["DP"])
     for i in range(0, len(record.alts)):
@@ -15,8 +16,8 @@ def calculate_vafs(record):
         vafs.append(vaf)
     return vafs
 
-# make a simple VCF record with the minimal information needed to make the consensus sequence
 def make_simple_record(vcf_header, parent_record, position, ref, alt, vaf):
+    '''Make a simple VCF record with the minimal information needed to make the consensus sequence'''
     r = vcf_header.new_record()
     r.chrom = parent_record.chrom
     r.pos = position
@@ -27,9 +28,11 @@ def make_simple_record(vcf_header, parent_record, position, ref, alt, vaf):
     r.info["VAF"] = vaf
     return r
 
-# process indel variants found by freebayes into a variant that should be
-# applied to the consensus sequence
 def handle_indel(vcf_header, record):
+    '''
+    Process indel variants found by freebayes into a variant that should be
+    applied to the consensus sequence
+    '''
     output = list()
     vafs = calculate_vafs(record)
 
@@ -59,9 +62,11 @@ def handle_indel(vcf_header, record):
     output.append(r)
     return output
 
-# return the base with the highest value in vaf_by_base,
-# optionally skipping a character (eg. the reference base)
 def base_max(vaf_by_base, skip=None):
+    '''
+    Return the base with the highest value in vaf_by_base
+    Optionally skipping a character (eg. the reference base)
+    '''
     max_vaf = 0.0
     max_b = None
     for b in "ACGT":
@@ -71,6 +76,10 @@ def base_max(vaf_by_base, skip=None):
     return max_b
 
 def handle_sub(vcf_header, record):
+    '''
+    Process substitution variants found by freebayes into a variant that can be applied to the
+    final consensus sequence
+    '''
     output = list()
 
     # this code is general enough to handle multi-allelic MNPs
@@ -102,7 +111,7 @@ def handle_sub(vcf_header, record):
     return output
 
 def main():
-
+    '''Main entry point'''
     description = 'Process a .gvcf file to create a file of consensus variants, low-frequency variants and a coverage mask'
     parser = argparse.ArgumentParser(description=description)
 

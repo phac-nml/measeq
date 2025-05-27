@@ -204,7 +204,7 @@ workflow NANOPORE_CONSENSUS {
     ch_versions = ch_versions.mix(ADJUST_FASTA_HEADER.out.versions.first())
 
     emit:
-    nanoq_stats = NANOQ.out.stats
+    nanoq_json  = NANOQ.out.stats
     consensus   = ADJUST_FASTA_HEADER.out.consensus
     bam_bai     = ARTIC_ALIGN_TRIM.out.bam
     vcf         = BCFTOOLS_NORM.out.vcf

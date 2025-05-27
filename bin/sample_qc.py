@@ -56,13 +56,6 @@ def init_parser() -> argparse.ArgumentParser:
         help='Nextclade CSV file from Measles Custom dataset'
     )
     parser.add_argument(
-        '-r',
-        '--read_json',
-        required=False,
-        type=Path,
-        help='Nanoq stats json file'
-    )
-    parser.add_argument(
         '-s',
         '--sample',
         required=True,
@@ -82,6 +75,18 @@ def init_parser() -> argparse.ArgumentParser:
         required=True,
         type=Path,
         help='Input sample passing vcf file'
+    )
+    parser.add_argument(
+        '--nanoq_json',
+        required=False,
+        type=Path,
+        help='Nanoq stats json file'
+    )
+    parser.add_argument(
+        '--fastp_json',
+        required=False,
+        type=Path,
+        help='Fastp stats json file'
     )
     parser.add_argument(
         '--matched_dsid',
@@ -134,6 +139,25 @@ def parse_nanoq_json(injson: Path) -> float:
     with open(injson, 'r') as handle:
         json_obj = json.load(handle)
         return json_obj['reads']
+    
+def parse_fastp_json(injson: Path) -> float:
+    '''
+    Purpose:
+    --------
+    Parse fastp json file to get wanted stats. Currently just the number of reads kept
+
+    Parameters:
+    -----------
+    injson - Path
+        Path to input fastp json file
+
+    Returns:
+    --------
+    Integer number of input reads
+    '''
+    with open(injson, 'r') as handle:
+        json_obj = json.load(handle)
+        return json_obj['filtering_result']['passed_filter_reads']
 
 def parse_depth_bed(bed: Path) -> Tuple[float, float]:
     '''
@@ -390,6 +414,20 @@ def get_strain(nextclade_csv: Path, sample: str) -> str:
 
 def get_custom_nextclade_vals(nextclade_csv: Path, sample: str) -> Tuple[str, str, str]:
     '''
+    Purpose:
+    --------
+    Parse custom nextclade CSV file to information on potential issue sites
+
+    Parameters:
+    -----------
+    nextclade_csv - Path
+        Path to nextclade CSV file. ';' delimited
+    sample - str
+        String sample name to match to nextclade CSV
+
+    Returns:
+    --------
+    Tuple of 3 strings identifying frameshifts, stop codons, and mutated stop codons
     '''
     # Nextclade CDS Checks
     d = _get_nextclade_row_dict(nextclade_csv, sample)
@@ -408,13 +446,27 @@ def get_custom_nextclade_vals(nextclade_csv: Path, sample: str) -> Tuple[str, st
     
 def get_dsid(matched_dsid: Path, sample: str) -> str:
     '''
+    Purpose:
+    --------
+    Parse matched dsid tsv file to determine if the sample matched a known dsid
+
+    Parameters:
+    -----------
+    matched_dsid - Path
+        Path to matched dsid TSV
+    sample - str
+        String sample name to match to dsid file
+
+    Returns:
+    --------
+    String DSID or 'NA'
     '''
     with open(matched_dsid, 'r') as handle:
         reader = csv.DictReader(handle, delimiter='\t')
         # There should only be 1 sample / 1 line but just in case
         for d in reader:
             if d['sample'] == sample:
-                return d['matched_dsid']
+                return str(d['matched_dsid'])
     return 'NA'
 
 def grade_qc(completeness: float, mean_dep: float, median_dep: float, divisible: bool, 
@@ -487,8 +539,12 @@ def main() -> None:
 
     # Do something with the data
     strain = get_strain(args.nextclade_n450, args.sample)
-    #num_input_reads = parse_nanoq_json(args.read_json)
-    num_input_reads = 1000
+    if args.nanoq_json:
+        num_input_reads = parse_nanoq_json(args.nanoq_json)
+    elif args.fastp_json:
+        num_input_reads = parse_fastp_json(args.fastp_json)
+    else:
+        num_input_reads = 0
     num_aligned_reads = get_read_count(args.bam)
     consensus = SeqIO.read(args.consensus, "fasta")
     count_n, completeness, seq_len, divisible = parse_consensus(consensus)

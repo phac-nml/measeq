@@ -84,7 +84,7 @@ workflow MEASEQ {
     // Consensus Generation
 
     //
-    // WORKFLOW: Generate consensus and supporting files for either Nanopore or Illumina data
+    // WORKFLOWS: Generate consensus and supporting files for either Nanopore or Illumina data
     //
     if( params.platform == 'nanopore' ) {
         //
@@ -97,7 +97,7 @@ workflow MEASEQ {
             ch_primer_bed,
             ch_split_amp_pools_bed
         )
-        ch_nanoq_stats = NANOPORE_CONSENSUS.out.nanoq_stats
+        ch_read_json   = NANOPORE_CONSENSUS.out.nanoq_json
         ch_bam_bai     = NANOPORE_CONSENSUS.out.bam_bai
         ch_consensus   = NANOPORE_CONSENSUS.out.consensus
         ch_vcf         = NANOPORE_CONSENSUS.out.vcf
@@ -112,6 +112,7 @@ workflow MEASEQ {
             ch_input_fastqs,
             ch_primer_bed
         )
+        ch_read_json   = ILLUMINA_CONSENSUS.out.fastp_json
         ch_bam_bai     = ILLUMINA_CONSENSUS.out.bam_bai
         ch_consensus   = ILLUMINA_CONSENSUS.out.consensus
         ch_vcf         = ILLUMINA_CONSENSUS.out.vcf
@@ -179,6 +180,7 @@ workflow MEASEQ {
             .join(NEXTCLADE_RUN_N450.out.csv, by: [0])
             .join(NEXTCLADE_RUN_CUSTOM.out.csv, by: [0])
             .join(ch_vcf, by: [0])
+            .join(ch_read_json, by: [0])
             .join(ch_dsid_tsv, by: [0]).ifEmpty([]),
         ch_strain,
         ch_primer_bed.collect().ifEmpty([])
