@@ -35,17 +35,17 @@ include { ADJUST_FASTA_HEADER     } from '../../../modules/local/artic/subcomman
 workflow NANOPORE_CONSENSUS {
 
     take:
-    ch_reference           //
-    ch_reference_fai       //
-    ch_input_fastqs        // 
-    ch_primer_bed          // value: path to reference file or null
-    ch_split_amp_pools_bed //
+    ch_reference           // channel: [ [id], fasta ]
+    ch_reference_fai       // channel: [ fai ]
+    ch_input_fastqs        // channel: [ [id, single_end], fastqs ]
+    ch_primer_bed          // channel: [ bed ]
+    ch_split_amp_pools_bed // channel: [ pool, bed ]
 
     main:
     ch_versions = Channel.empty()
 
     //
-    // MODULE: Model download if not a local one
+    // MODULE: Model download if we are not using a local one
     //
     if ( params.local_model ) {
         ch_model = Channel.value(file(params.local_model, type: 'dir', checkIfExists: true))
@@ -58,7 +58,7 @@ workflow NANOPORE_CONSENSUS {
     }
 
     //
-    // MODULE: Run Nanoq
+    // MODULE: Run Nanoq for input fastq quality filtering
     //
     NANOQ(
         ch_input_fastqs,
@@ -76,10 +76,12 @@ workflow NANOPORE_CONSENSUS {
     ch_versions = ch_versions.mix(MINIMAP2_ALIGN.out.versions.first())
 
     //
-    // Amplicon
+    // PROCESS: Amplicon specific steps
     //
     if ( ch_primer_bed ) {
-        // Trimming based on primers as there are a lot and don't want them
+        //
+        // MODULE: Align trim
+        //  Trimming based on primers as there are a lot and don't want them
         //  affecting the variants
         ARTIC_ALIGN_TRIM (
             MINIMAP2_ALIGN.out.bam_bai,
@@ -89,7 +91,9 @@ workflow NANOPORE_CONSENSUS {
         ch_versions = ch_versions.mix(ARTIC_ALIGN_TRIM.out.versions.first())
         ch_trimmed_bams_w_pool = ARTIC_ALIGN_TRIM.out.bam.combine(ch_split_amp_pools_bed)
 
-        // Clair3 with pools
+        //
+        // MODULE: Clair3 with pools
+        //  Each pools run separately for variant calls 
         CLAIR3_POOL(
             ch_trimmed_bams_w_pool,
             ch_reference,
@@ -104,8 +108,9 @@ workflow NANOPORE_CONSENSUS {
             .groupTuple()
             .set { ch_pooled_vcfs } // Channel: [ val(meta), [[path(vcf), val(pool)], [...]] ]
 
-        // To merge vcfs, have to utilize the transformVCFList function based on how artic handles input
-        //  For now anyway, until a better solution comes up
+        //
+        // MODULE: Merge pooled VCFs
+        //  To merge vcfs, have to utilize the transformVCFList function based on how artic handles input
         ARTIC_VCF_MERGE(
             ch_pooled_vcfs,
             ch_primer_bed
@@ -113,6 +118,9 @@ workflow NANOPORE_CONSENSUS {
         ch_versions = ch_versions.mix(ARTIC_VCF_MERGE.out.versions.first())
         ch_vcf = ARTIC_VCF_MERGE.out.vcf
 
+        //
+        // MODULE: Make depth mask based on minimum depth to call position
+        //
         ARTIC_MAKE_DEPTH_MASK(
             ARTIC_ALIGN_TRIM.out.bam,
             ch_reference
@@ -121,7 +129,11 @@ workflow NANOPORE_CONSENSUS {
         ch_depth_mask = ARTIC_MAKE_DEPTH_MASK.out.coverage_mask
     } else {
         //
-        // Non-Amplicon
+        // PROCESS: Non-Amplicon based data
+        //
+
+        //
+        // MODULE: Clair3 with no pool splitting
         //
         CLAIR3_NO_POOL(
             MINIMAP2_ALIGN.out.bam_bai,
@@ -132,6 +144,9 @@ workflow NANOPORE_CONSENSUS {
         ch_versions = ch_versions.mix(CLAIR3_NO_POOL.out.versions.first())
         ch_vcf = CLAIR3_NO_POOL.out.vcf
 
+        //
+        // MODULE: Make depth mask based on minimum depth to call position
+        //
         CUSTOM_MAKE_DEPTH_MASK(
             MINIMAP2_ALIGN.out.bam_bai,
             ch_reference
@@ -141,23 +156,35 @@ workflow NANOPORE_CONSENSUS {
 
     }
 
+    //
+    // MODULE: Filter VCF based on input parameters
+    //
     CUSTOM_VCF_FILTER(
         ch_vcf
     )
     ch_versions = ch_versions.mix(CUSTOM_VCF_FILTER.out.versions.first())
 
+    //
+    // MODULE: Masl failing regions
+    //
     ARTIC_MASK(
         ch_depth_mask.join(CUSTOM_VCF_FILTER.out.fail_vcf, by: [0]),
         ch_reference
     )
     ch_versions = ch_versions.mix(ARTIC_MASK.out.versions.first())
 
+    //
+    // MODULE: Normalize
+    //
     BCFTOOLS_NORM(
         ARTIC_MASK.out.preconsensus
             .join(CUSTOM_VCF_FILTER.out.pass_vcf, by: [0])
     )
     ch_versions = ch_versions.mix(BCFTOOLS_NORM.out.versions.first())
 
+    //
+    // MODULE: Make the final consensus
+    //
     BCFTOOLS_CONSENSUS(
         BCFTOOLS_NORM.out.vcf
             .join(ARTIC_MASK.out.preconsensus, by: [0])
@@ -165,6 +192,9 @@ workflow NANOPORE_CONSENSUS {
     )
     ch_versions = ch_versions.mix(BCFTOOLS_CONSENSUS.out.versions.first())
 
+    //
+    // MODULE: Adjust the final fasta header for easier downstream analysis
+    //
     ADJUST_FASTA_HEADER(
         BCFTOOLS_CONSENSUS.out.fasta,
         ch_reference,

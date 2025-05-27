@@ -1,5 +1,5 @@
 //
-// Subworkflow for report generation
+// Subworkflow for amplicon report generation
 //
 
 /*
@@ -23,9 +23,9 @@ include { AMPLICON_MULTIQC              } from '../../../modules/local/multiqc/a
 workflow GENERATE_AMPLICON_STATS {
 
     take:
-    ch_bam_bai              //
-    ch_consensus            //
-    ch_amplicon_bed         //
+    ch_bam_bai              // channel: [ [id], bam, bai ]
+    ch_consensus            // channel: [ [id], fasta ]
+    ch_amplicon_bed         // channel: [ bed ]
 
     main:
     ch_versions = Channel.empty()
@@ -38,34 +38,52 @@ workflow GENERATE_AMPLICON_STATS {
         .map{ it -> [it[0], it[3], it[1]] } // Channel ends [meta, bed, bam]
         .set{ ch_bedtools_input }
 
+    //
+    // MODULE: Run bedtools coverage
+    //
     BEDTOOLS_COVERAGE(
         ch_bedtools_input,
         []
     )
     ch_versions = ch_versions.mix(BEDTOOLS_COVERAGE.out.versions.first())
 
+    //
+    // MODULE: Calculate the per amplicon depth for each sample with csvtk
+    //
     SAMPLE_AMPLICON_DEPTH(
         BEDTOOLS_COVERAGE.out.bed
     )
     ch_versions = ch_versions.mix(SAMPLE_AMPLICON_DEPTH.out.versions.first())
     ch_multiqc_files = ch_multiqc_files.mix(SAMPLE_AMPLICON_DEPTH.out.tsv.collect{ it -> it[1] })
 
+    //
+    // MODULE: Summarize and reformat amplicon depth into a matrix for multiqc heatmap reporting
+    //
     AMPLICON_DEPTH_HEATMAP(
         BEDTOOLS_COVERAGE.out.bed.collect{ it[1] }
     )
     ch_multiqc_files = ch_multiqc_files.mix(AMPLICON_DEPTH_HEATMAP.out.heatmap_tsv)
 
+    //
+    // MODULE: Calculate the per-amplicon completeness with custom python script
+    //
     SAMPLE_AMPLICON_COMPLETENESS(
         ch_consensus,
         ch_amplicon_bed
     )
     ch_versions = ch_versions.mix(SAMPLE_AMPLICON_COMPLETENESS.out.versions)
 
+    //
+    // MODULE: Summarize the per-amplicon completeness with csvtk into a matrix for multiqc heatmap
+    //
     AMPLICON_COMPLETENESS_HEATMAP(
         SAMPLE_AMPLICON_COMPLETENESS.out.tsv.collect{ it -> it[1] }
     )
     ch_multiqc_files = ch_multiqc_files.mix(AMPLICON_COMPLETENESS_HEATMAP.out.heatmap_tsv)
 
+    //
+    // MODULE: Run amplicon multiqc for reporting
+    //
     AMPLICON_MULTIQC(
         ch_multiqc_files.collect(),
         ch_multiqc_config

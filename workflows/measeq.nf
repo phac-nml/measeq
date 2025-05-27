@@ -42,6 +42,9 @@ workflow MEASEQ {
         .set { ch_custom_nextclade_dataset }
     ch_id_fasta = params.dsid_fasta ? file(params.dsid_fasta, type: 'file', checkIfExists: true) : []
 
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Setup
+
     //
     // MODULE: Setup nextclade dataset
     //
@@ -77,10 +80,16 @@ workflow MEASEQ {
     ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
     ch_versions = ch_versions.mix(FASTQC.out.versions.first())
 
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Consensus Generation
+
     //
-    // WORKFLOW: Generate Consensus for either Nanopore or Illumina data
+    // WORKFLOW: Generate consensus and supporting files for either Nanopore or Illumina data
     //
-    if( params.platform == 'nanopore' ){
+    if( params.platform == 'nanopore' ) {
+        //
+        // WORKFLOW: Nanopore
+        //
         NANOPORE_CONSENSUS(
             ch_reference,
             ch_reference_fai,
@@ -93,7 +102,11 @@ workflow MEASEQ {
         ch_consensus   = NANOPORE_CONSENSUS.out.consensus
         ch_vcf         = NANOPORE_CONSENSUS.out.vcf
         ch_versions    = ch_versions.mix(NANOPORE_CONSENSUS.out.versions)
-    } else if( params.platform == 'illumina' ){ 
+
+    } else if( params.platform == 'illumina' ) { 
+        //
+        // WORKFLOW: Illumina
+        //
         ILLUMINA_CONSENSUS(
             ch_reference,
             ch_input_fastqs,
@@ -103,12 +116,13 @@ workflow MEASEQ {
         ch_consensus   = ILLUMINA_CONSENSUS.out.consensus
         ch_vcf         = ILLUMINA_CONSENSUS.out.vcf
         ch_versions    = ch_versions.mix(ILLUMINA_CONSENSUS.out.versions)
+
     } else {
         error "Please provide the --platform parameter with either 'nanopore' or 'illumina' to run"
     }
 
     //
-    // MODULE: Nextclade Run
+    // MODULE: Nextclade Run on generated consensus sequences
     //
     NEXTCLADE_RUN_N450(
         ch_consensus,
@@ -125,21 +139,26 @@ workflow MEASEQ {
     )
     ch_versions = ch_versions.mix(ADJUST_FASTA_HEADER.out.versions.first())
 
+    //
+    // MODULE: Run nextclade again using a custom dataset to help determine QC issues in consensus seqs
+    //
     NEXTCLADE_RUN_CUSTOM(
         ch_consensus,
         ch_custom_nextclade_dataset
     )
     ch_versions = ch_versions.mix(NEXTCLADE_RUN_CUSTOM.out.versions.first())
 
-    //
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // QC
-    //
     SAMTOOLS_DEPTH(
         ch_bam_bai.map{ it -> [it[0], it[1]] },
         [[:], []] // Empty as want to run whole depth
     )
     ch_versions = ch_versions.mix(SAMTOOLS_DEPTH.out.versions.first())
 
+    //
+    // MODULE: Compare to optional internal DSID fasta file to get DSID number
+    //
     ch_dsid_tsv = Channel.empty()
     if( params.dsid_fasta ){
         COMPARE_INTERNAL_DSID(
@@ -150,6 +169,9 @@ workflow MEASEQ {
         ch_versions = ch_versions.mix(COMPARE_INTERNAL_DSID.out.versions.first())
     }
 
+    //
+    // MODULE: Summarize all of the sample data into 1 CSV file per sample
+    //
     MAKE_SAMPLE_QC_CSV(
         ch_bam_bai
             .join(ch_consensus, by: [0])
@@ -163,6 +185,9 @@ workflow MEASEQ {
     )
     ch_versions = ch_versions.mix(MAKE_SAMPLE_QC_CSV.out.versions.first())
 
+    //
+    // MODULE: Summarize all individual sample CSVs into 1 final file
+    //
     MAKE_FINAL_QC_CSV(
         MAKE_SAMPLE_QC_CSV.out.csv
             .map{ it -> it[1] }
@@ -174,8 +199,11 @@ workflow MEASEQ {
     )
     ch_versions = ch_versions.mix(MAKE_FINAL_QC_CSV.out.versions)
 
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // Report Generation
+
     //
-    // Amplicon Statistics
+    // WORKFLOW: Amplicon statistics if amplicons were being run
     //
     if( params.primer_bed ){
         GENERATE_AMPLICON_STATS(
@@ -187,7 +215,7 @@ workflow MEASEQ {
     }
 
     //
-    // Report
+    // WORKFLOW: Final summary report generation
     //
     GENERATE_REPORT(
         ch_reference,

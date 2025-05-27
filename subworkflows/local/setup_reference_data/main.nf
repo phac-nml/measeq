@@ -1,6 +1,9 @@
-//
-// Subworkflow with functionality to setup reference data
-//
+/*
+Subworkflow with functionality to setup reference data
+    - Create required files using reference sequence
+    - Create amplicon files if using amplicon data
+    - Genotype and get the N450 of the reference
+*/
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -22,9 +25,9 @@ include { ADJUST_FASTA_HEADER        } from '../../../modules/local/artic/subcom
 workflow SETUP_REFERENCE_DATA {
 
     take:
-    reference         // value: path to reference file or null
-    bed               // value: path to primer bed file or null
-    nextclade_dataset //
+    reference           // value: path to reference file or null
+    bed                 // value: path to primer bed file or null
+    nextclade_dataset   // channel: [ dataset ]
 
     main:
     ch_versions            = Channel.empty()
@@ -40,7 +43,7 @@ workflow SETUP_REFERENCE_DATA {
     }
 
     //
-    // Create reference meta-map
+    // Create reference meta-map for downstream steps
     //
     Channel
         .value(file(reference, type: 'file', checkIfExists: true))
@@ -79,7 +82,8 @@ workflow SETUP_REFERENCE_DATA {
             ch_amplicon_bed
         )
 
-        // Format to...
+        // Format amplicon bed files channel to be [ val(name), path(bed_file) ]
+        //  Mostly for clair3 to run on specific pools
         SPLIT_AMPLICON_REGION.out.bed
                 .flatten()
                 .map{ bedF -> [ bedF.baseName, file(bedF) ] }
@@ -95,6 +99,9 @@ workflow SETUP_REFERENCE_DATA {
     )
     ch_versions = ch_versions.mix(NEXTCLADE_RUN_REFERENCE.out.versions)
 
+    //
+    // MODULE: Adjust fasta header to make the final output easier to work with downstream
+    //
     ADJUST_FASTA_HEADER(
         NEXTCLADE_RUN_REFERENCE.out.fasta_aligned,
         [['id': ''], []],
@@ -102,7 +109,7 @@ workflow SETUP_REFERENCE_DATA {
         '-N450'
     )
 
-    // Get the strain from the nextclade output
+    // Get the strain from the nextclade output as a value channel
     NEXTCLADE_RUN_REFERENCE.out.csv
         .map{ meta, csv -> csv }
         .splitCsv(sep: ';', header: true, limit:1)
