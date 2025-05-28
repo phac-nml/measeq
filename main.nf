@@ -13,7 +13,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { MEASEQ  } from './workflows/measeq'
+include { MEASEQ                  } from './workflows/measeq'
 include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_measeq_pipeline'
 include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_measeq_pipeline'
 /*

@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### `Deprecated`
 
 - Working to depreciate current ViralRecon code for new nextflow pipeline
-    - This will be in a final release
+    - This will be in a final release of this code
 
 ## v0.1.0 - [2025-04-08]
 

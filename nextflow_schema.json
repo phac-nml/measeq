@@ -28,11 +28,155 @@
                     "format": "directory-path",
                     "description": "The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure.",
                     "fa_icon": "fas fa-folder-open"
-                },
-                "multiqc_title": {
+                }
+            }
+        },
+        "required_options": {
+            "title": "Required options",
+            "type": "object",
+            "description": "Options that are required to run the pipeline no matter what",
+            "default": "",
+            "properties": {
+                "reference": {
                     "type": "string",
-                    "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
-                    "fa_icon": "fas fa-file-signature"
+                    "description": "Path to reference sequence to map measles fastqs to",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt"
+                },
+                "platform": {
+                    "type": "string",
+                    "description": "Sequencing platform used. Options are: 'illumina' or 'nanopore'",
+                    "enum": ["illumina", "nanopore"],
+                    "fa_icon": "fas fa-vector-square"
+                }
+            },
+            "required": ["reference", "platform"],
+            "fa_icon": "fas fa-check"
+        },
+        "amplicon_options": {
+            "title": "Amplicon options",
+            "type": "object",
+            "description": "Options relating to running amplicon data",
+            "default": "",
+            "properties": {
+                "primer_bed": {
+                    "type": "string",
+                    "description": "Path to amplicon primer bed file",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt"
+                }
+            },
+            "fa_icon": "fas fa-vials"
+        },
+        "illumina_options": {
+            "title": "Illumina options",
+            "type": "object",
+            "description": "Options specific to Illumina data",
+            "default": "",
+            "properties": {
+                "min_ambiguity_threshold": {
+                    "type": "number",
+                    "default": 0.3,
+                    "fa_icon": "far fa-minus-square"
+                },
+                "max_ambiguity_threhsold": {
+                    "type": "number",
+                    "default": 0.75,
+                    "fa_icon": "far fa-plus-square"
+                }
+            }
+        },
+        "nanopore_options": {
+            "title": "Nanopore options",
+            "type": "object",
+            "description": "Options specific to Nanopore data",
+            "default": "",
+            "properties": {
+                "model": {
+                    "type": "string",
+                    "description": "Clair3 model to use for variant calling. Will attempt to download the model",
+                    "fa_icon": "fab fa-modx"
+                },
+                "local_model": {
+                    "type": "string",
+                    "description": "Path to local clair3 model directory for variant calling",
+                    "format": "directory-path",
+                    "fa_icon": "fab fa-modx"
+                },
+                "normalise_ont": {
+                    "type": "integer",
+                    "default": 2000,
+                    "description": "Normalise each amplicon barcode to set depth"
+                },
+                "min_variant_qual_c3": {
+                    "type": "integer",
+                    "default": 8,
+                    "description": "Minimum variant quality to pass clair3 filters"
+                }
+            }
+        },
+        "analysis_options": {
+            "title": "Analysis options",
+            "type": "object",
+            "description": "Options related to the analysis of data or adding in data",
+            "default": "",
+            "properties": {
+                "metadata": {
+                    "type": "string",
+                    "pattern": "^\\S+\\.tsv$",
+                    "format": "file-path",
+                    "description": "Path to metadata TSV file containing at minimum 'sample' column to add to final output",
+                    "fa_icon": "fas fa-file-csv"
+                },
+                "dsid_fasta": {
+                    "type": "string",
+                    "description": "Path to DSID multi-fasta to match output consensus data to",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt"
+                },
+                "min_depth": {
+                    "type": "integer",
+                    "default": 10,
+                    "description": "Minimum depth to call a base"
+                },
+                "no_frameshifts": {
+                    "type": "boolean",
+                    "description": "Fail all indel variants not divisible by 3"
+                },
+                "neg_control_pct_threshold": {
+                    "type": "integer",
+                    "default": 10,
+                    "description": "Genome called threshold for negative control to be considered failed"
+                },
+                "neg_ctrl_substrings": {
+                    "type": "string",
+                    "default": "neg,ntc,blank",
+                    "description": "Substrings to match to sample names to identify negative controls. Separated by a ,"
+                },
+                "skip_negative_grading": {
+                    "type": "boolean",
+                    "description": "Skip grading negative controls and give the run a PASS",
+                    "fa_icon": "fas fa-forward"
+                }
+            }
+        },
+        "nextclade_options": {
+            "title": "Nextclade options",
+            "type": "object",
+            "description": "Options pertaining to nextclade datasets. These shouldn't be adjusted likely",
+            "default": "",
+            "properties": {
+                "nextclade_dataset_name": {
+                    "type": "string",
+                    "default": "nextstrain/measles/N450/WHO-2012"
+                },
+                "nextclade_dataset_tag": {
+                    "type": "string",
+                    "default": "2025-03-26--11-47-13Z"
+                },
+                "custom_nextclade_dataset": {
+                    "type": "string",
+                    "default": "PROJECT/assets/custom_measles_nextclade_dataset"
                 }
             }
         },
@@ -58,37 +202,11 @@
                     "enum": ["symlink", "rellink", "link", "copy", "copyNoFollow", "move"],
                     "hidden": true
                 },
-                "max_multiqc_email_size": {
-                    "type": "string",
-                    "description": "File size limit when attaching MultiQC reports to summary emails.",
-                    "pattern": "^\\d+(\\.\\d+)?\\.?\\s*(K|M|G|T)?B$",
-                    "default": "25.MB",
-                    "fa_icon": "fas fa-file-upload",
-                    "hidden": true
-                },
                 "monochrome_logs": {
                     "type": "boolean",
                     "description": "Do not use coloured log outputs.",
                     "fa_icon": "fas fa-palette",
                     "hidden": true
-                },
-                "multiqc_config": {
-                    "type": "string",
-                    "format": "file-path",
-                    "description": "Custom config file to supply to MultiQC.",
-                    "fa_icon": "fas fa-cog",
-                    "hidden": true
-                },
-                "multiqc_logo": {
-                    "type": "string",
-                    "description": "Custom logo file to supply to MultiQC. File name must also be set in the MultiQC config file",
-                    "fa_icon": "fas fa-image",
-                    "hidden": true
-                },
-                "multiqc_methods_description": {
-                    "type": "string",
-                    "description": "Custom MultiQC yaml file containing HTML including a methods description.",
-                    "fa_icon": "fas fa-cog"
                 },
                 "validate_params": {
                     "type": "boolean",
@@ -116,6 +234,24 @@
     "allOf": [
         {
             "$ref": "#/$defs/input_output_options"
+        },
+        {
+            "$ref": "#/$defs/required_options"
+        },
+        {
+            "$ref": "#/$defs/amplicon_options"
+        },
+        {
+            "$ref": "#/$defs/illumina_options"
+        },
+        {
+            "$ref": "#/$defs/nanopore_options"
+        },
+        {
+            "$ref": "#/$defs/analysis_options"
+        },
+        {
+            "$ref": "#/$defs/nextclade_options"
         },
         {
             "$ref": "#/$defs/generic_options"

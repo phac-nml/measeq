@@ -159,9 +159,12 @@ workflow MEASEQ {
 
     //
     // MODULE: Compare to optional internal DSID fasta file to get DSID number
-    //
-    ch_dsid_tsv = Channel.empty()
-    if( params.dsid_fasta ){
+    //  First make a channel to use if there is no input dsid to allow qc to be done
+    ch_dsid_tsv = ch_bam_bai
+        .map { it -> [it[0], []] }
+
+    // Then run and populate it if we can
+    if( params.dsid_fasta ) {
         COMPARE_INTERNAL_DSID(
             ADJUST_FASTA_HEADER.out.consensus,
             ch_id_fasta
@@ -181,7 +184,7 @@ workflow MEASEQ {
             .join(NEXTCLADE_RUN_CUSTOM.out.csv, by: [0])
             .join(ch_vcf, by: [0])
             .join(ch_read_json, by: [0])
-            .join(ch_dsid_tsv, by: [0]).ifEmpty([]),
+            .join(ch_dsid_tsv, by: [0]),
         ch_strain,
         ch_primer_bed.collect().ifEmpty([])
     )
@@ -207,7 +210,7 @@ workflow MEASEQ {
     //
     // WORKFLOW: Amplicon statistics if amplicons were being run
     //
-    if( params.primer_bed ){
+    if( params.primer_bed ) {
         GENERATE_AMPLICON_STATS(
             ch_bam_bai,
             ch_consensus,
