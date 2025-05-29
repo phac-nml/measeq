@@ -1,4 +1,4 @@
-# MeaSeq: Measles Illumina Sequence Analysis Automation
+# MeaSeq: Measles Sequence Analysis Automation
 
 - [Updates](#updates)
   - [2025-05-29](#2025-05-29)
@@ -171,26 +171,26 @@ The main outputs of the pipeline are the `consensus sequences` (N450 and Full), 
 1. Generate Reference and Primer Intermediates
 2. FastQC
 3. Illumina Consensus Workflow
-  1. FastP
-  2. BWAMem2
-  3. Ivar Trim (Amplicon input only)
-  4. Freebayes
-  5. Process Freebayes VCF
-  6. Make Depth Mask
-  7. Bcftools Consensus (Ambiguous and Consensus variants)
+    1. FastP
+    2. BWAMem2
+    3. Ivar Trim (Amplicon input only)
+    4. Freebayes
+    5. Process Freebayes VCF
+    6. Make Depth Mask
+    7. Bcftools Consensus (Ambiguous and Consensus variants)
 4. Nextclade (N450 and Custom datasets, N450 fasta output)
 5. Samtools depth
 6. Compare DSID (Optional with `--dsid_fasta` parameter)
 7. Make sample QC
 8. Amplicon Summary Workflow (Amp only data)
-  1. Bedtools Coverage
-  2. Summarize Amplicon Depth
-  3. Summarize Amplicon Completeness
-  4. MultiQC Amplicon Report
+    1. Bedtools Coverage
+    2. Summarize Amplicon Depth
+    3. Summarize Amplicon Completeness
+    4. MultiQC Amplicon Report
 9. Report Workflow
-  1. Samtools mpileup
-  2. Pysamstats
-  3. Rmarkdown
+    1. Samtools mpileup
+    2. Pysamstats
+    3. Rmarkdown
 
 ### Nanopore Steps
 
