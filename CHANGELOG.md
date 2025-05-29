@@ -7,15 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Added`
 
-- Nextflow pipeline
-    - Freebayes over ivar variants/consensus
-    - Illumina and Nanopore (initial) workflows
-    - Summary outputs
+- All of the pipeline has been rewritten in Nextflow
+- Illumina paired-end sequencing workflow added
+    - Freebayes for variant calling over ivar variants/consensus previously
+- Nanopore (initial) workflow added
+    - clair3
+- DSID assignment added when using `--dsid fasta` parameter
+    - Based on full sequence match
+- Summary outputs added
+    - Amplicon summary report
+    - The current Rmarkdown report needs to be fixed for the new outputs
 
 ### `Deprecated`
 
-- Working to depreciate current ViralRecon code for new nextflow pipeline
-    - This will be in a final release of this code
+- Current MeaSeq script that utilized viralrecon depreciated to make the whole pipeline nextflow
 
 ## v0.1.0 - [2025-04-08]
 

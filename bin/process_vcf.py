@@ -51,7 +51,7 @@ def handle_indel(vcf_header, record):
         if value > max_vaf:
             max_vaf = value
             max_idx = idx
-    
+
     r = make_simple_record(vcf_header, record, record.pos, record.ref, record.alts[max_idx], [ max_vaf ])
 
     # Have to add in atleast the Genotype for bcftools 1.20 to apply the variant

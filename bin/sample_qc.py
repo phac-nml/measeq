@@ -266,6 +266,7 @@ def parse_vcf(vcf_file: Path) -> Tuple[str, list, str, dict]:
             if record.ALT[0] == None:
                 continue
             # Multiple alleles not supported warning
+            #  These should have been corrected in previous processing steps as well to only have 1
             if len(record.ALT) > 1:
                 print(f'WARNING: Multiple alleles not supported currently. Using only the first one for position: {record.POS}')
 
@@ -291,15 +292,16 @@ def parse_vcf(vcf_file: Path) -> Tuple[str, list, str, dict]:
                 elif ref_len < alt_len:
                     variants.append(variant)
                     variant_positions.append(_create_variantpos_dict(variant, range(record.POS, record.POS+1)))
-                    var_count_dict['num_insertions'] += (alt_len - 1) # -1 for the included ref base
+                    var_count_dict['num_insertions'] += (alt_len - ref_len) # As ref length can differ
                     var_count_dict['num_insertion_sites'] += 1
+
                 # Multiple SNPs together
                 elif (ref_len > 1) and (ref_len == alt_len):
                     mult_snp_range = range(record.POS, record.POS+len(record.REF))
                     for i, ref_base in enumerate(record.REF):
                         # Include only snps incase the variant is like ref=ATG alt=TTC where the T isn't a SNP
                         if ref_base == alt_str[i]:
-                            pass
+                            continue
                         variant = f'{ref_base}{mult_snp_range[i]}{alt_str[i]}'
                         variants.append(variant)
                         variant_positions.append(_create_variantpos_dict(variant, range(mult_snp_range[i], mult_snp_range[i]+1)))

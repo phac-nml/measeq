@@ -21,7 +21,7 @@ process MAKE_SAMPLE_QC_CSV {
     path "versions.yml", emit: versions
 
     script:
-    // Add in which read filtering program was used
+    // Add in which read filtering program was used based on the name
     def readJsonArg = ""
     if (read_json.name.contains(".fastp.")) {
         readJsonArg = "--fastp_json $read_json"
