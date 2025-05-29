@@ -123,7 +123,7 @@ nextflow run phac-nml/measeq \
     --outdir <OUTDIR> \
     --reference <REFERENCE FASTA> \
     --platform <illumina||nanopore> \
-    --clair3_model <MODEL> \
+    --model <MODEL> \
     -profile <docker/singularity/institute/etc>
 ```
 
@@ -193,6 +193,36 @@ The main outputs of the pipeline are the `consensus sequences` (N450 and Full), 
     3. Rmarkdown
 
 ### Nanopore Steps
+
+1. Generate Reference and Primer Intermediates
+2. FastQC
+3. Illumina Consensus Workflow
+    1. Artic Get Models
+    2. NanoQ
+    3. Minimap2
+    4. Amplicon
+        1. Artic Align Trim
+        2. Clair3 Pool
+        3. Artic VCF Merge
+    5. Clair3 No Pool (non-amplicon)
+    6. Make Depth Mask
+    7. VCF Filter
+    8. Artic Mask
+    9. Bcftools Norm
+    10. Bcftools Consensus
+4. Nextclade (N450 and Custom datasets, N450 fasta output)
+5. Samtools depth
+6. Compare DSID (Optional with `--dsid_fasta` parameter)
+7. Make sample QC
+8. Amplicon Summary Workflow (Amp only data)
+    1. Bedtools Coverage
+    2. Summarize Amplicon Depth
+    3. Summarize Amplicon Completeness
+    4. MultiQC Amplicon Report
+9. Report Workflow
+    1. Samtools mpileup
+    2. Pysamstats
+    3. Rmarkdown
 
 To come
 

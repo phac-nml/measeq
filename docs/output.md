@@ -6,6 +6,8 @@ Once the pipeline has completed its run, several directories will be created wit
 
 ## Output directory format
 
+### Illumina
+
 Results are all in the `--outdir <RESULTS>` directory created and are organized based on grouping file types (BAMs/VCFs/Consensus)
 
 The outputs should be good, the structure and final reporting are still actively being worked on
@@ -75,29 +77,9 @@ OUTDIR
         └── SAMPLE.variants.vcf
 ```
 
-## Viralrecon: Pipeline highlights
+### Nanopore
 
-The viralrecon pipeline outputs are well detailed in the pipeline's [outputs documentation](https://github.com/nf-core/viralrecon/blob/master/docs/output.md).
-
-The following are highlighted outputs that are necessary for the rest of the MeaSeq pipeline.
-
-- [Bowtie 2](#bowtie-2) - Read alignment relative to reference genome
-- [SAMtools](#samtools) - Sort, index and generate metrics for alignments
-- [iVar variants](#ivar-variants) - Variant calling
-- [iVar consensus](#ivar-consensus) - Consensus sequence generation
-- [MultiQC](#multiqc) - Present QC for raw reads, alignment, assembly and variant calling
-
-### Bowtie 2
-
-<details markdown="1">
-<summary>Output files</summary>
-
-- `variants/bowtie2/log/`
-  - `*.bowtie2.log`: Bowtie 2 mapping log file.
-
-</details>
-
-[Bowtie 2](http://bio-bwa.sourceforge.net/) is an ultrafast and memory-efficient tool for aligning sequencing reads to long reference sequences. Bowtie 2 supports gapped, local, and paired-end alignment modes.
+To Add
 
 ### SAMtools
 
