@@ -68,7 +68,7 @@ workflow MEASEQ {
     ch_amplicon_bed             = SETUP_REFERENCE_DATA.out.amplicon_bed
     ch_split_amp_pools_bed      = SETUP_REFERENCE_DATA.out.split_amp_pools_bed
     ch_ref_n450                 = SETUP_REFERENCE_DATA.out.ref_n450
-    ch_strain                   = SETUP_REFERENCE_DATA.out.strain
+    ch_genotype                 = SETUP_REFERENCE_DATA.out.genotype
     ch_versions                 = ch_versions.mix(SETUP_REFERENCE_DATA.out.versions)
 
     //
@@ -185,7 +185,7 @@ workflow MEASEQ {
             .join(ch_vcf, by: [0])
             .join(ch_read_json, by: [0])
             .join(ch_dsid_tsv, by: [0]),
-        ch_strain,
+        ch_genotype,
         ch_primer_bed.collect().ifEmpty([])
     )
     ch_versions = ch_versions.mix(MAKE_SAMPLE_QC_CSV.out.versions.first())
@@ -226,7 +226,7 @@ workflow MEASEQ {
         ch_reference,
         ch_reference_fai,
         ch_bam_bai,
-        ch_strain,
+        ch_genotype,
         SAMTOOLS_DEPTH.out.tsv,
         MAKE_FINAL_QC_CSV.out.csv
     )

@@ -23,7 +23,7 @@ workflow GENERATE_REPORT {
     ch_reference             // channel: [ [id], fasta ]
     ch_reference_fai         // channel: [ fai ]
     ch_bam_bai               // channel: [ [id], bam, bai ]
-    ch_strain                // channel: [ strain ]
+    ch_genotype              // channel: [ genotype ]
     ch_depth_tsv             // channel: [ [id], depth_tsv ]
     ch_overall_qc            // channel: [ csv ]
 
@@ -59,7 +59,7 @@ workflow GENERATE_REPORT {
         ch_depth_tsv.collect{ it[1] },
         POSITIONAL_N_DEPTH.out.tsv.collect{ it[1] },
         PYSAMSTATS.out.tsv.collect{ it[1] },
-        ch_strain,
+        ch_genotype,
         ch_report_template,
         ch_report_subpages.collect()
     )

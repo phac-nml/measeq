@@ -11,7 +11,7 @@ output:
       bootswatch: flatly
     logo: phac.svg
 params:
-  strain: ""
+  genotype: ""
   overall_qc: ""
   name: ""
   email: ""
@@ -65,7 +65,7 @@ suppressPackageStartupMessages(library(shiny))
 suppressPackageStartupMessages(library(shidashi))
 
 # Assign imported parameters
-strain <- params$strain
+genotype <- params$genotype
 overall_qc <- params$overall_qc
 name <- params$name
 email <- params$email
@@ -140,8 +140,8 @@ failed_samples <- summary_df %>%
 summary_df[summary_df == ""] <- NA
 for (i in 1:nrow(summary_df)) {
   ifelse(
-      summary_df[[i,"strain"]] != strain |
-      is.na(summary_df[[i,"strain"]]) |
+      summary_df[[i,"genotype"]] != genotype |
+      is.na(summary_df[[i,"genotype"]]) |
       summary_df[[i,"divisible_by_6"]] != "true" |
       !is.na(summary_df[[i,"frameshifts"]]) |
       !is.na(summary_df[[i,"nonsense_mutation"]]) |
@@ -153,7 +153,7 @@ warning_samples_count <- (sum(summary_df[["warning"]] != "PASS", na.rm = FALSE))
 # Select and Rename wanted final columns
 summary_df <- select(summary_df,
     sample,
-    `strain`,
+    `genotype`,
     `num_input_reads`,
     `num_aligned_reads`,
     `num_consensus_n`,
@@ -179,7 +179,7 @@ summary_df <- select(summary_df,
 summary_df <- summary_df %>%
   rename(
     "Sample" = `sample`,
-    "Strain" = `strain`,
+    "Genotype" = `genotype`,
     "# Input Reads" = `num_input_reads`,
     "# Aligned Reads" = `num_aligned_reads`,
     "# Consensus Ns" = `num_consensus_n`,
@@ -202,8 +202,8 @@ summary_df <- summary_df %>%
     "Run Summary" = `run_summary`
   )
 
-# Set empty strains to NA for highlighting later
-summary_df$Strain[is.na(summary_df$Strain)] <- "NA"
+# Set empty Genotypes to NA for highlighting later
+summary_df$Genotype[is.na(summary_df$Genotype)] <- "NA"
 
 # Remove failed samples to be their own dataframe
 if (length(failed_samples) > 0) {
@@ -211,7 +211,7 @@ if (length(failed_samples) > 0) {
   summary_df <- summary_df[!summary_df$Sample %in% failed_samples, ]
   failed_df <- select(failed_df,
     Sample,
-    Strain,
+    Genotype,
     `# Input Reads`,
     `# Aligned Reads`,
     `Mean Depth`,
@@ -231,7 +231,7 @@ if (length(failed_samples) > 0) {
 ```{r create-valueboxes, include=FALSE, message=FALSE, warning=FALSE}
 # Create valueboxes for display
 value_boxes <- list(
-  reference_vbox = valueBox(strain, "Reference Strain", icon = "", color = "#343A40"),
+  reference_vbox = valueBox(genotype, "Reference Genotype", icon = "", color = "#343A40"),
   total_samples_vbox = valueBox(total_samples_count, "Total Samples", icon = "", color = "#D1D2D1"),
   passing_samples_vbox = valueBox(passing_samples_count, "Passing Samples", icon = "ion-android-checkmark-circle", color = "#18BC9C"),
   warning_samples_vbox = valueBox(warning_samples_count, "Samples with Warnings", icon = "ion-alert-circled", color = "#F39C12"),
@@ -300,17 +300,17 @@ metrics_dt <- summary_df %>%
       ifelse(unique(tolower(summary_df$'Divisible by 6')) != "true", "underline", "")
     )
   ) %>%
-  # Highlight cells where the nextclade strain doesn't match the reference strain
+  # Highlight cells where the nextclade Genotype doesn't match the reference Genotype
   formatStyle(
-    'Strain',
+    'Genotype',
     target = "cell",
     fontWeight = styleEqual(
-      unique(summary_df$Strain),
-      ifelse(unique(summary_df$'Strain') != strain, "bold", "")
+      unique(summary_df$Genotype),
+      ifelse(unique(summary_df$'Genotype') != genotype, "bold", "")
     ),
     `text-decoration` = styleEqual(
-      unique(summary_df$Strain),
-      ifelse(unique(summary_df$'Strain') != strain, "underline", "")
+      unique(summary_df$Genotype),
+      ifelse(unique(summary_df$'Genotype') != genotype, "underline", "")
     )
   ) %>%
   # Bars to show at a glance

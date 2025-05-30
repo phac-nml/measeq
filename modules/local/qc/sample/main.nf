@@ -13,7 +13,7 @@ process MAKE_SAMPLE_QC_CSV {
     input:
     tuple val(meta), path(bam), path(bai), path(consensus), path(depth_bed), path(nextclade_n450), path(nextclade_full),
             path(vcf), path(tbi), path(read_json), path(dsid)
-    val strain
+    val genotype
     path primer_bed
 
     output:
@@ -39,7 +39,7 @@ process MAKE_SAMPLE_QC_CSV {
         --depth $depth_bed \\
         --nextclade_n450 $nextclade_n450 \\
         --nextclade_custom $nextclade_full \\
-        --strain $strain \\
+        --genotype $genotype \\
         --vcf $vcf \\
         $readJsonArg \\
         $dsidArg \\

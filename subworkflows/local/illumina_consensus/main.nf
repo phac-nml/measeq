@@ -79,7 +79,7 @@ workflow ILLUMINA_CONSENSUS {
     //  the output results so trimming them is required
     //
     if( params.primer_bed ) {
-        // IVAR Trim
+        // iVar Trim
         IVAR_TRIM(
             ch_bam_bai,
             ch_primer_bed

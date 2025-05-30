@@ -173,7 +173,7 @@ The main outputs of the pipeline are the `consensus sequences` (N450 and Full), 
 3. Illumina Consensus Workflow
    1. FastP
    2. BWAMem2
-   3. Ivar Trim (Amplicon input only)
+   3. iVar Trim (Amplicon input only)
    4. Freebayes
    5. Process Freebayes VCF
    6. Make Depth Mask

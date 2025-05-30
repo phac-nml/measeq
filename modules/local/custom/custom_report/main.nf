@@ -9,7 +9,7 @@ process MAKE_CUSTOM_REPORT {
     path depth_tsvs
     path n_depth_tsvs
     path baseq_tsvs
-    val strain
+    val genotype
     path report_template
     path subpages
 
@@ -33,7 +33,7 @@ process MAKE_CUSTOM_REPORT {
     mv $baseq_tsvs positional_baseq/
 
     # Create Report #
-    Rscript -e "rmarkdown::render('$report_template', params = list(strain = '$strain', overall_qc = '$overall_qc_csv'))"
+    Rscript -e "rmarkdown::render('$report_template', params = list(genotype = '$genotype', overall_qc = '$overall_qc_csv'))"
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

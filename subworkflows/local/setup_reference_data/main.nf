@@ -91,7 +91,7 @@ workflow SETUP_REFERENCE_DATA {
     }
 
     //
-    // MODULE: Run nextclade on the reference to get the strain and N450
+    // MODULE: Run nextclade on the reference to get the genotype and N450
     //
     NEXTCLADE_RUN_REFERENCE(
         ch_reference,
@@ -109,13 +109,13 @@ workflow SETUP_REFERENCE_DATA {
         '-N450'
     )
 
-    // Get the strain from the nextclade output as a value channel
+    // Get the genotype from the nextclade output as a value channel
     NEXTCLADE_RUN_REFERENCE.out.csv
         .map{ meta, csv -> csv }
         .splitCsv(sep: ';', header: true, limit:1)
         .map{ row -> row.clade }
         .first()
-        .set { ch_strain }
+        .set { ch_genotype }
 
     emit:
     reference           = ch_reference
@@ -126,6 +126,6 @@ workflow SETUP_REFERENCE_DATA {
     amplicon_bed        = ch_amplicon_bed
     split_amp_pools_bed = ch_split_amp_pools_bed
     ref_n450            = ADJUST_FASTA_HEADER.out.consensus
-    strain              = ch_strain
+    genotype              = ch_genotype
     versions            = ch_versions
 }

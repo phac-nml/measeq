@@ -63,11 +63,11 @@ def init_parser() -> argparse.ArgumentParser:
         help='Sample name'
     )
     parser.add_argument(
-        '-s2',
-        '--strain',
+        '-g',
+        '--genotype',
         required=True,
         type=str,
-        help='Refernce Stain'
+        help='Refernce genotype'
     )
     parser.add_argument(
         '-v',
@@ -391,11 +391,11 @@ def _get_nextclade_row_dict(nextclade_csv: Path, sample: str) -> dict:
                 return d
     return {}
 
-def get_strain(nextclade_csv: Path, sample: str) -> str:
+def get_genotype(nextclade_csv: Path, sample: str) -> str:
     '''
     Purpose:
     --------
-    Parse nextclade N450 CSV file to get the strain
+    Parse nextclade N450 CSV file to get the genotype
 
     Parameters:
     -----------
@@ -472,7 +472,7 @@ def get_dsid(matched_dsid: Path, sample: str) -> str:
     return 'NA'
 
 def grade_qc(completeness: float, mean_dep: float, median_dep: float, divisible: bool,
-             frameshift: bool, nonsense_mutation: bool, stop_mutation: bool, strain_match: bool) -> str:
+             frameshift: bool, nonsense_mutation: bool, stop_mutation: bool, genotype_match: bool) -> str:
     '''
     Purpose:
     --------
@@ -494,8 +494,8 @@ def grade_qc(completeness: float, mean_dep: float, median_dep: float, divisible:
         If there was a nonsense mutation identified
     stop_mutation - bool
         If there was a stop codon mutated
-    strain_match - bool
-        If the reference strain matches the samples
+    genotype_match - bool
+        If the reference genotype matches the samples
     nextclade_csv - Path
         Path to custom WG nextclade CSV to determine metrics from
 
@@ -525,9 +525,9 @@ def grade_qc(completeness: float, mean_dep: float, median_dep: float, divisible:
     # Stop
     if stop_mutation:
         qc_status.append('STOP_CODON_MUTATION')
-    # Reference strain match
-    if not strain_match:
-        qc_status.append('UNMATCHING_STRAIN')
+    # Reference genotype match
+    if not genotype_match:
+        qc_status.append('UNMATCHING_GENOTYPE')
 
     if qc_status:
         return ';'.join(qc_status)
@@ -540,7 +540,7 @@ def main() -> None:
     args = parser.parse_args()
 
     # Do something with the data
-    strain = get_strain(args.nextclade_n450, args.sample)
+    genotype = get_genotype(args.nextclade_n450, args.sample)
     if args.nanoq_json:
         num_input_reads = parse_nanoq_json(args.nanoq_json)
     elif args.fastp_json:
@@ -567,15 +567,15 @@ def main() -> None:
     frameshift_status = (frameshift != '')
     nonsense_status = (nonsense != '')
     stop_mutation_status = (stop_mutation != '')
-    strain_match = (args.strain == strain)
+    genotype_match = (args.genotype == genotype)
     qc_status = grade_qc(completeness, mean_dep, median_dep, divisible,
                          frameshift_status, nonsense_status, stop_mutation_status,
-                         strain_match)
+                         genotype_match)
 
     # Output
     final = {
         'sample': [args.sample],
-        'strain': [strain],
+        'genotype': [genotype],
         'matched_dsid': [matched_dsid],
         'num_input_reads': [num_input_reads],
         'num_aligned_reads': [num_aligned_reads],

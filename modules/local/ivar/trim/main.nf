@@ -1,4 +1,4 @@
-// This is basically the IVAR module from NF-Core with added samtools steps
+// This is basically the iVar module from NF-Core with added samtools steps
 //  This is to slightly simplify this part of the workflow
 //  And if we want to add in the primer_pairs args
 process IVAR_TRIM {
