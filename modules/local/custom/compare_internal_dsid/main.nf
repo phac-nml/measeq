@@ -1,7 +1,7 @@
 /*
-Exact matching of the N450 sequence to input DSID fasta file to determine if we already have the ID
-    User has to provide the DSID fasta organized as:
-    >DSID
+Exact matching of the N450 sequence to input DSId fasta file to determine if we already have the ID
+    User has to provide the DSId fasta organized as:
+    >DSId
     GTCAGTTCCA...
 
     Output is just a TSV that has:

@@ -76,11 +76,13 @@
             "properties": {
                 "min_ambiguity_threshold": {
                     "type": "number",
+                    "description": "Minimum threshold to call a position as an IUPAC",
                     "default": 0.3,
                     "fa_icon": "far fa-minus-square"
                 },
                 "max_ambiguity_threhsold": {
                     "type": "number",
+                    "description": "Maximum threshold to call a position as an IUPAC",
                     "default": 0.75,
                     "fa_icon": "far fa-plus-square"
                 }

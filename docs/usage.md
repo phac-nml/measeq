@@ -13,7 +13,11 @@ This pipeline is intended to be run on measles virus (MeV) paired-end Illumina o
 - [Running the Pipeline](#running-the-pipeline)
   - [Illumina Required](#illumina-required)
   - [Nanopore Required](#nanopore-required)
-  - [All Parameters](#all-parameters)
+  - [Expanded Parameter Options](#expanded-parameter-options)
+    - [Metadata TSV](#metadata-tsv)
+    - [Clair3 Models](#clair3-models)
+    - [DSId Matching](#dsid-matching)
+    - [All Parameters Table](#all-parameters-table)
   - [Other Settings and Parameter Files](#other-settings-and-parameter-files)
   - [Updating the Pipeline](#updating-the-pipeline)
   - [Reproducibility](#reproducibility)
@@ -88,9 +92,74 @@ nextflow run phac-nml/measeq --input ./samplesheet.csv --outdir ./results  --ref
 
 This will launch the pipeline with the `docker` configuration profile using `REFERENCE.fa` and for `nanopore` input data. We've also set the model for clair3 to be `r941_prom_sup_g5014`. See [All Parameters](#all-parameters) for more information about all parameters available.
 
-### All Parameters
+### Expanded Parameter Options
 
-todo
+Additional options to help run the pipeline to suit your needs
+
+#### Metadata TSV
+
+Metadata can be incorporated into the pipeline provided it is specified in TSV format with at minimum a `sample` column that matches to the samplesheet.csv input sample column
+
+Example:
+
+```tsv
+sample	collection_date	etc.
+MeV01	2024-05-10	...
+MeV02	2024-06-12	...
+MeV03	2024-09-05	...
+```
+
+An example file can be [found here](../assets/metadata.tsv)
+
+#### Clair3 Models
+
+The Nanopore pipeline utilizes [Clair3](https://github.com/HKU-BAL/Clair3) to call variants which requires a model that should be picked based off of the flowcell, pore, translocation speed, and basecalling model.
+
+Some models are built into clair3 and some need to be downloaded. The [pre-trained clair3](https://github.com/HKU-BAL/Clair3?tab=readme-ov-file#pre-trained-models) models are able to be automatically downloaded when running the pipeline using [`artic get_models`](https://github.com/artic-network/fieldbioinformatics/blob/master/artic/get_models.py) and can be specified as a parameter with `--model <MODEL>`.
+
+Additional or local models can also be used, you just have to provide a path to them and use the `--local_model <PATH>` parameter instead
+
+#### DSId Matching
+
+While 24 MeV genotypes were initially identified, only 2 have been detected since 2021: B3 and D8. Due to this, the Distinct Sequence Identifier (DSId) system was created to designate a unique 4-digit identifier based on the precise N450 sequence as a sub-genotype nomenclature. With this, the N450 sequence should be submitted to the [MeaNS2 database](https://who-gmrln.org/means2) to obtain one.
+
+As this is a submission, a quick check is available to determine if you have any previously seen DSId's. To do this you have to setup a multifasta file with the DSId's as the header to match to the output N450 sequences and pass it in with `--dsid_fasta <MULTIFASTA>`. As an example:
+
+```
+> 1231
+GTCAGTTCCACATTGGCATCT...
+> 4412
+GTCAGTTCCACATTGGCATCT...
+> 5721
+GTCAGTTCCACATTGGCATCT...
+> etc.
+GTCAGTTCCACATTGGCATCT...
+```
+
+#### All Parameters Table
+
+A table containing all of the parameter descriptions. You can also do `nextflow run phac-nml/measeq --help` to get them on the command line
+
+| Parameter                   | Description                                                                         | Required      | Type    | Default       | Notes                                            |
+| --------------------------- | ----------------------------------------------------------------------------------- | ------------- | ------- | ------------- | ------------------------------------------------ |
+| --input                     | Path to comma-separated file containing sample and read information                 | True          | Path    | null          |                                                  |
+| --outdir                    | Name of output directory to store results                                           | True          | String  | null          |                                                  |
+| --reference                 | Path to reference fasta file to map to                                              | True          | Path    | null          |                                                  |
+| --platform                  | Sequencing platform used, either 'illumina or nanopore'                             | True          | Choice  | null          |                                                  |
+| --model                     | Name of clair3 model to use                                                         | Nanopore data | String  | null          | Can use `--local_model` instead                  |
+| --local_model               | Path to local clair3 model to use                                                   | Nanopore data | Path    | null          | Can use `--model` instead if wanted              |
+| --primer_bed                | Path to bed file containing genomic primer locations                                | False         | Path    | null          | Use for amplicon data                            |
+| --min_ambiguity_threshold   | Minimum threshold to call a position as an IUPAC                                    | False         | Float   | 0.30          | Illumina only                                    |
+| --max_ambiguity_threhsold   | Maximum threshold to call a position as an IUPAC                                    | False         | Float   | 0.75          | Illumina only                                    |
+| --normalise_ont             | Normalise each amplicon barcode to set depth                                        | False         | Int     | 2000          | Nanopore only                                    |
+| --min_variant_qual_c3       | Minimum variant quality to pass clair3 filters                                      | False         | Int     | 8             | Nanopore only                                    |
+| --metadata                  | Path to metadata TSV file containing at minimum 'sample' column                     | False         | Path    | null          | See [Metadata TSV](#metadata-tsv)                |
+| --dsid_fasta                | Path to DSID multi-fasta to match output consensus data to                          | False         | Path    | null          | See [DSId Matching](#dsid-matching)              |
+| --min_depth                 | Minimum depth to call a base                                                        | False         | Int     | 10            |                                                  |
+| --no_frameshifts            | Fail all indel variants not divisible by 3                                          | False         | Boolean | False         | Somewhat crude filter, only use if really needed |
+| --neg_control_pct_threshold | Threshold of genome to be called in a negative control to fail it                   | False         | Int     | 10            |                                                  |
+| --neg_ctrl_substrings       | Substrings to match to sample names to identify negative controls. Separated by a , | False         | String  | neg,ntc,blank |                                                  |
+| --skip_negative_grading     | Skip grading negative controls and just output a PASS for Run QC                    | False         | Boolean | False         |                                                  |
 
 ### Other Settings and Parameter Files
 
@@ -119,10 +188,10 @@ nextflow run phac-nml/measeq -profile docker -params-file params.yaml
 with:
 
 ```yaml title="params.yaml"
-input: './samplesheet.csv'
-outdir: './results/'
-reference: './REFERENCE.fa'
-platform: 'illumina'
+input: "./samplesheet.csv"
+outdir: "./results/"
+reference: "./REFERENCE.fa"
+platform: "illumina"
 ```
 
 You can also generate such `YAML`/`JSON` files via [nf-core/launch](https://nf-co.re/launch).

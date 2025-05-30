@@ -13,6 +13,7 @@ Results are all in the `--outdir <RESULTS>` directory created and are organized 
 The outputs should be good, the structure and final reporting are still actively being worked on
 
 Format:
+
 ```
 OUTDIR
 ├── Amplicon_Report.html (if amplicons)

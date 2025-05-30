@@ -23,13 +23,13 @@
 
 ## Updates
 
-### *2025-05-29*
+### _2025-05-29_
 
 - Switched to running all steps with nextflow for the following reasons:
   - Allow more control over all of the steps
   - Easier to install/run along with having more dependency management options (IE not required to use `conda`)
   - Eventual implementation to IRIDA-Next
-- Focus is **currently on Illumina data** although the nanopore side *should* still work
+- Focus is **currently on Illumina data** although the nanopore side _should_ still work
 
 ## Introduction
 
@@ -145,7 +145,7 @@ _Note_: The first line is just to display what each line expects.
 
 ### More Run Options
 
-For more detailed running options please refer to [the usage docs](docs/usage.md).
+For more detailed running options including adding metadata, adjusting parameters, adding in DSID matches, and more, please refer to [the usage docs](docs/usage.md).
 
 > [!WARNING]
 > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
@@ -171,58 +171,58 @@ The main outputs of the pipeline are the `consensus sequences` (N450 and Full), 
 1. Generate Reference and Primer Intermediates
 2. FastQC
 3. Illumina Consensus Workflow
-    1. FastP
-    2. BWAMem2
-    3. Ivar Trim (Amplicon input only)
-    4. Freebayes
-    5. Process Freebayes VCF
-    6. Make Depth Mask
-    7. Bcftools Consensus (Ambiguous and Consensus variants)
+   1. FastP
+   2. BWAMem2
+   3. Ivar Trim (Amplicon input only)
+   4. Freebayes
+   5. Process Freebayes VCF
+   6. Make Depth Mask
+   7. Bcftools Consensus (Ambiguous and Consensus variants)
 4. Nextclade (N450 and Custom datasets, N450 fasta output)
 5. Samtools depth
-6. Compare DSID (Optional with `--dsid_fasta` parameter)
+6. Compare DSId (Optional with `--dsid_fasta` parameter)
 7. Make sample QC
 8. Amplicon Summary Workflow (Amp only data)
-    1. Bedtools Coverage
-    2. Summarize Amplicon Depth
-    3. Summarize Amplicon Completeness
-    4. MultiQC Amplicon Report
+   1. Bedtools Coverage
+   2. Summarize Amplicon Depth
+   3. Summarize Amplicon Completeness
+   4. MultiQC Amplicon Report
 9. Report Workflow
-    1. Samtools mpileup
-    2. Pysamstats
-    3. Rmarkdown
+   1. Samtools mpileup
+   2. Pysamstats
+   3. Rmarkdown
 
 ### Nanopore Steps
 
 1. Generate Reference and Primer Intermediates
 2. FastQC
 3. Illumina Consensus Workflow
-    1. Artic Get Models
-    2. NanoQ
-    3. Minimap2
-    4. Amplicon
-        1. Artic Align Trim
-        2. Clair3 Pool
-        3. Artic VCF Merge
-    5. Clair3 No Pool (non-amplicon)
-    6. Make Depth Mask
-    7. VCF Filter
-    8. Artic Mask
-    9. Bcftools Norm
-    10. Bcftools Consensus
+   1. Artic Get Models
+   2. NanoQ
+   3. Minimap2
+   4. Amplicon
+      1. Artic Align Trim
+      2. Clair3 Pool
+      3. Artic VCF Merge
+   5. Clair3 No Pool (non-amplicon)
+   6. Make Depth Mask
+   7. VCF Filter
+   8. Artic Mask
+   9. Bcftools Norm
+   10. Bcftools Consensus
 4. Nextclade (N450 and Custom datasets, N450 fasta output)
 5. Samtools depth
-6. Compare DSID (Optional with `--dsid_fasta` parameter)
+6. Compare DSId (Optional with `--dsid_fasta` parameter)
 7. Make sample QC
 8. Amplicon Summary Workflow (Amp only data)
-    1. Bedtools Coverage
-    2. Summarize Amplicon Depth
-    3. Summarize Amplicon Completeness
-    4. MultiQC Amplicon Report
+   1. Bedtools Coverage
+   2. Summarize Amplicon Depth
+   3. Summarize Amplicon Completeness
+   4. MultiQC Amplicon Report
 9. Report Workflow
-    1. Samtools mpileup
-    2. Pysamstats
-    3. Rmarkdown
+   1. Samtools mpileup
+   2. Pysamstats
+   3. Rmarkdown
 
 To come
 

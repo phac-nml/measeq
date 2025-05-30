@@ -9,14 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - All of the pipeline has been rewritten in Nextflow
 - Illumina paired-end sequencing workflow added
-    - Freebayes for variant calling over ivar variants/consensus previously
+  - Freebayes for variant calling over ivar variants/consensus previously
 - Nanopore (initial) workflow added
-    - clair3
-- DSID assignment added when using `--dsid fasta` parameter
-    - Based on full sequence match
+  - clair3
+- DSId assignment added when using `--dsid fasta` parameter
+  - Based on full sequence match
 - Summary outputs added
-    - Amplicon summary report
-    - The current Rmarkdown report needs to be fixed for the new outputs
+  - Amplicon summary report
+  - The current Rmarkdown report needs to be fixed for the new outputs
 
 ### `Deprecated`
 
