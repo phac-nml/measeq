@@ -84,7 +84,7 @@ def main() -> None:
             else:
                 completeness = round(1 - (n_count/amp_length), 2)
             out[name] = str(completeness)
-    
+
     # Output
     with open(f'{str(args.sample)}_amplicon_completeness.tsv', 'w') as f:
         header = 'sample\t{0}'.format('\t'.join(out.keys()))

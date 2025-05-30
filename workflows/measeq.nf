@@ -103,7 +103,7 @@ workflow MEASEQ {
         ch_vcf         = NANOPORE_CONSENSUS.out.vcf
         ch_versions    = ch_versions.mix(NANOPORE_CONSENSUS.out.versions)
 
-    } else if( params.platform == 'illumina' ) { 
+    } else if( params.platform == 'illumina' ) {
         //
         // WORKFLOW: Illumina
         //

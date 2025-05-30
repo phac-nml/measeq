@@ -33,6 +33,14 @@ indent_style = unset
 [**/ro-crate-metadata.json]
 insert_final_newline = unset
 
+# ignore the Rmd files for now
+[*.Rmd]
+charset = unset
+end_of_line = unset
+insert_final_newline = unset
+trim_trailing_whitespace = unset
+indent_style = unset
+
 # ignore tests
 [*.test]
 indent_style = unset

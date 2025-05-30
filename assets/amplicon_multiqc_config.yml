@@ -17,7 +17,7 @@ custom_data:
     parent_id: amplicons_qc
     parent_name: "Amplicon Summary"
     parent_description: >
-      Different amplicon plots to show how deep each amplicon is sequenced, how complete each amplicon is, 
+      Different amplicon plots to show how deep each amplicon is sequenced, how complete each amplicon is,
       and the relative sequencing depth of each sample's amplicon in the run compared to each other
     id: "amplicon_depth"
     file_format: "tsv"
@@ -44,7 +44,7 @@ custom_data:
     file_format: "tsv"
     section_name: "Amplicon Completeness"
     description: >
-      Heatmap showing how complete each amplicon is based on the consensus sequence. 
+      Heatmap showing how complete each amplicon is based on the consensus sequence.
       Amplicon completeness is calculated using the number of Ns in the amplicon compared to the amplicon length.
       A 1.0 means the amplicon is fully sequenced while a 0 means that there were no bases called in it.
       Note that as amplicons overlap, a fully dropped amplicon likely will have some completeness from its two neighbours
@@ -79,8 +79,8 @@ custom_data:
     section_name: "Log10 Amplicon Depth"
     description: >
       Calculated from the primertrimmed sorted bam file using bedtools coverage looking for reads that overlap
-      90% of the given amplicon region. The log10 of this value is then taken to allow a better comparison of 
-      the depth of each amplicon over all of the samples in the run. Taking the log10 of each helps account 
+      90% of the given amplicon region. The log10 of this value is then taken to allow a better comparison of
+      the depth of each amplicon over all of the samples in the run. Taking the log10 of each helps account
       for samples with extreme depth variations. Amplicons with no depth are marked as 0
     id: "amplicon_depth_heatmap"
     plot_type: "heatmap"

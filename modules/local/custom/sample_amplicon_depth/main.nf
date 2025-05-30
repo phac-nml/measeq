@@ -36,7 +36,7 @@ process SAMPLE_AMPLICON_DEPTH {
     stub:
     """
     touch ${meta.id}_amplicon_depth.tsv
-    
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         csvtk: \$(echo \$( csvtk version | sed -e "s/csvtk v//g" ))

@@ -139,7 +139,7 @@ def parse_nanoq_json(injson: Path) -> float:
     with open(injson, 'r') as handle:
         json_obj = json.load(handle)
         return json_obj['reads']
-    
+
 def parse_fastp_json(injson: Path) -> float:
     '''
     Purpose:
@@ -445,7 +445,7 @@ def get_custom_nextclade_vals(nextclade_csv: Path, sample: str) -> Tuple[str, st
         return frameshifts, stop_codons, mutated_stop_codons
     else:
         return '', '', ''
-    
+
 def get_dsid(matched_dsid: Path, sample: str) -> str:
     '''
     Purpose:
@@ -471,7 +471,7 @@ def get_dsid(matched_dsid: Path, sample: str) -> str:
                 return str(d['matched_dsid'])
     return 'NA'
 
-def grade_qc(completeness: float, mean_dep: float, median_dep: float, divisible: bool, 
+def grade_qc(completeness: float, mean_dep: float, median_dep: float, divisible: bool,
              frameshift: bool, nonsense_mutation: bool, stop_mutation: bool, strain_match: bool) -> str:
     '''
     Purpose:

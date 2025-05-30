@@ -28,7 +28,7 @@ process AMPLICON_COMPLETENESS_HEATMAP {
     stub:
     """
     touch amplicon_completeness_heatmap_mqc.tsv
-    
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         csvtk: \$(echo \$( csvtk version | sed -e "s/csvtk v//g" ))

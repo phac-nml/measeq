@@ -93,7 +93,7 @@ workflow NANOPORE_CONSENSUS {
 
         //
         // MODULE: Clair3 with pools
-        //  Each pools run separately for variant calls 
+        //  Each pools run separately for variant calls
         CLAIR3_POOL(
             ch_trimmed_bams_w_pool,
             ch_reference,

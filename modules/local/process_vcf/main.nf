@@ -42,7 +42,7 @@ process PROCESS_VCF {
     bcftools norm \\
         -f $reference \\
         ${meta.id}.consensus.vcf \\
-        > ${meta.id}.consensus.norm.vcf 
+        > ${meta.id}.consensus.norm.vcf
 
     for vt in "ambiguous" "fixed"; do
         cat ${meta.id}.consensus.norm.vcf \\

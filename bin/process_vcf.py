@@ -129,10 +129,10 @@ def main():
 
     parser.add_argument('-u', '--upper-ambiguity-frequency', type=float, default=0.75,
             help=f"Substitution variants with frequency less than -u will be encoded with IUPAC ambiguity codes")
-    
+
     parser.add_argument('-q', '--min-quality', type=int, default=20,
             help=f"Minimum quality to call a variant")
-    
+
     parser.add_argument('-n', '--no-frameshifts', action="store_true",
             help=f"Skip indel mutations that are not divisible by 3")
 

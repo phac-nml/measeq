@@ -31,7 +31,7 @@ process SAMPLE_AMPLICON_COMPLETENESS {
     stub:
     """
     touch ${meta.id}_amplicon_depth.tsv
-    
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         x:x

@@ -12,7 +12,7 @@ process MAKE_SAMPLE_QC_CSV {
 
     input:
     tuple val(meta), path(bam), path(bai), path(consensus), path(depth_bed), path(nextclade_n450), path(nextclade_full),
-          path(vcf), path(tbi), path(read_json), path(dsid)
+            path(vcf), path(tbi), path(read_json), path(dsid)
     val strain
     path primer_bed
 

@@ -34,7 +34,6 @@ workflow ILLUMINA_CONSENSUS {
     ch_reference           // channel: [ [id], fasta ]
     ch_input_fastqs        // channel: [ [id, single_end], fastqs ]
     ch_primer_bed          // channel: [ bed ]
-    
 
     main:
     ch_versions = Channel.empty()
