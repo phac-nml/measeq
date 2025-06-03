@@ -166,6 +166,8 @@ The main outputs of the pipeline are the `consensus sequences` (N450 and Full), 
 
 ## Steps
 
+More detailed steps are available in the [output docs](./docs/output.md)
+
 ### Illumina Steps
 
 1. Generate Reference and Primer Intermediates
@@ -196,7 +198,7 @@ The main outputs of the pipeline are the `consensus sequences` (N450 and Full), 
 
 1. Generate Reference and Primer Intermediates
 2. FastQC
-3. Illumina Consensus Workflow
+3. Nanopore Consensus Workflow
    1. Artic Get Models
    2. NanoQ
    3. Minimap2

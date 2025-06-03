@@ -27,7 +27,7 @@ The pipeline is built using Nextflow and processes data using the following step
   - [FastQC](#fastqc) - Untrimmed read QC plots
   - [Fastp](#fastp) - Trim paired-end illumina reads
   - [BWAMem2](#bwamem2) - Map to the provided measles reference
-  - [Ivar Trim](#ivar-trim) - Amplicon only, trim the BAM file by primer position
+  - [iVar Trim](#ivar-trim) - Amplicon only, trim the BAM file by primer position
   - [Freebayes](#freebayes) - Call variants from the BAM file
   - [Process VCF](#process-vcf) - Process the variants called from the BAM file
   - [Make Depth Mask](#make-depth-mask) - Determine sites below the minimum depth to mask as Ns
@@ -172,7 +172,7 @@ Using the N450 dataset, the input reference is typed so that the N450 region can
 - `bam/ivar/`
   - `<SAMPLE>.primertrimmed.sorted.bam`: Primertrimmed coordinate sorted BAM file containing read alignment information.
   - `<SAMPLE>.primertrimmed.sorted.bam.bai`: Index of primertrimmed coordinate sorted BAM file containing read alignment information.
-  - `<SAMPLE>.ivar.log`: Log information from Ivar
+  - `<SAMPLE>.ivar.log`: Log information from iVar
 
 </details>
 
