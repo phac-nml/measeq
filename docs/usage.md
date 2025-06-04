@@ -150,7 +150,7 @@ A table containing all of the parameter descriptions. You can also do `nextflow 
 | --local_model               | Path to local clair3 model to use                                                   | Nanopore data | Path    | null          | Can use `--model` instead if wanted              |
 | --primer_bed                | Path to bed file containing genomic primer locations                                | False         | Path    | null          | Use for amplicon data                            |
 | --min_ambiguity_threshold   | Minimum threshold to call a position as an IUPAC                                    | False         | Float   | 0.30          | Illumina only                                    |
-| --max_ambiguity_threhsold   | Maximum threshold to call a position as an IUPAC                                    | False         | Float   | 0.75          | Illumina only                                    |
+| --max_ambiguity_threshold   | Maximum threshold to call a position as an IUPAC                                    | False         | Float   | 0.75          | Illumina only                                    |
 | --normalise_ont             | Normalise each amplicon barcode to set depth                                        | False         | Int     | 2000          | Nanopore only                                    |
 | --min_variant_qual_c3       | Minimum variant quality to pass clair3 filters                                      | False         | Int     | 8             | Nanopore only                                    |
 | --metadata                  | Path to metadata TSV file containing at minimum 'sample' column                     | False         | Path    | null          | See [Metadata TSV](#metadata-tsv)                |

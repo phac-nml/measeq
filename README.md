@@ -23,19 +23,20 @@
 
 ## Updates
 
-### _2025-05-29_
+### _2025-06-04_
 
 - Switched to running all steps with nextflow for the following reasons:
   - Allow more control over all of the steps
   - Easier to install/run along with having more dependency management options (IE not required to use `conda`)
   - Eventual implementation to IRIDA-Next
 - Focus is **currently on Illumina data** although the nanopore side _should_ still work
+- The final report is **broken for the moment** but will be fixed up asap
 
 ## Introduction
 
 **MeaSeq** is a measles virus (MeV) specific pipeline established for use in surveillance and outbreak analysis. This pipeline utilizes a reference-based read mapping approach for Whole Genome or Amplicon sequencing data from both the Illumina and Nanopore platforms to output MeV consensus sequences, variant data, sequencing qualtiy information, and custom summary reports.
 
-![MeaSeq Workflow Diagram](todo)
+![MeaSeq Workflow Diagram](./MeaSeq_Workflow_COG.png)
 
 This project aims to implement an open-source, easy to run, MeV Whole Genome Sequence analysis pipeline that works on both Illumina and Nanopore data. The end goal of this project is to deploy a standardized pipeline focused on final reporting metrics and plots for rapid detection and response to MeV outbreaks in Canada and abroad.
 
@@ -234,7 +235,7 @@ For troubleshooting, please open an issue or consult [the usage docs](docs/usage
 
 ## Credits
 
-Written by McMaster University Co-op student - `Ahmed Abdalla`
+MeaSeq was originally written as an illumina-focused bash pipeline by McMaster University Co-op student - `Ahmed Abdalla` and has now been expanded to cover nanopore data along with being fully converted to Nextflow.
 
 For questions please contact either:
 

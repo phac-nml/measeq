@@ -31,7 +31,7 @@ process PROCESS_VCF {
     process_vcf.py \\
         -d ${params.min_depth} \\
         -l ${params.min_ambiguity_threshold} \\
-        -u ${params.max_ambiguity_threhsold} \\
+        -u ${params.max_ambiguity_threshold} \\
         -q 20 \\
         -c ${meta.id}.consensus.vcf \\
         -v ${meta.id}.variants.vcf \\
