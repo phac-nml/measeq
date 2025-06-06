@@ -1,0 +1,477 @@
+---
+title: "MeaSeq: Measles Sequencing Run Report"
+output: 
+  flexdashboard::flex_dashboard:
+    self_contained: false
+    orientation: rows
+    vertical_layout: scroll
+    mathjax: NULL
+    theme:
+      version: 4
+      bootswatch: flatly
+    logo: phac.svg
+knitr:
+  opts_chunk:
+    fig_embed: false
+params:
+  genotype: ""
+  overall_qc: ""
+  name: ""
+  email: ""
+  phone: ""
+  website: ""
+---
+
+<style>
+
+.navbar-logo img {
+  position: relative;
+  margin-left: 5px;
+  height: 30px;
+}
+.navbar-fixed-top {
+  margin-bottom: 20px;
+}
+
+body {
+  padding-top: 60px;
+}
+
+footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background-color: #f1f1f1;
+  text-align: center;
+  padding: 0px;
+  font-size: 12px;
+  color: #333;
+}
+</style>
+
+<!-- --------------------------------------- -->
+<!-- Setup: libraries, parameters, functions -->
+<!-- --------------------------------------- -->
+```{r setup, include=FALSE, message=FALSE, warning=FALSE}
+# Load in libraries
+suppressPackageStartupMessages(library(rmarkdown))
+suppressPackageStartupMessages(library(flexdashboard))
+suppressPackageStartupMessages(library(plotly))
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(DT))
+suppressPackageStartupMessages(library(knitr))
+suppressPackageStartupMessages(library(data.table))
+suppressPackageStartupMessages(library(htmltools))
+suppressPackageStartupMessages(library(shiny))
+suppressPackageStartupMessages(library(shidashi))
+
+# Assign imported parameters
+genotype <- params$genotype
+overall_qc <- params$overall_qc
+name <- params$name
+email <- params$email
+phone <- params$phone
+website <- params$website
+
+# Create Header function
+catHeader <- function(text = "", level = 3) {
+  cat(
+    paste0(
+      "\n\n", 
+      paste(rep("#", level), collapse = ""), 
+      " ",
+      text,
+      "\n\n"
+    )
+  )
+}
+
+# Set report date
+rep_date <- Sys.Date()
+
+# Footer
+footer_str <- paste(
+  "Report generated using MeaSeq on",
+  rep_date,
+  "- © Government of Canada, Public Health Agency of Canada, National Microbiology Laboratory",
+  sep = ' '
+)
+
+# Create function to give int values to qc statement for later colours
+add_pass_value_int <- function(df, column) {
+  # Split the given column, qc_status mostly, on ;
+  split_vals <- strsplit(df[[column]], ';')
+
+  # Define int values to go with statements
+  key_phrases <- c('PASS', 'INCOMPLETE_GENOME')
+  values <- c(1, 2)
+
+  # Create a vector to store the results
+  results <- integer(length(df[[column]]))
+
+  # Add in the values
+  for (i in 1:length(split_vals)) {
+    # Check if any key phrase is contained in the split values
+    matching_phrases <- intersect(split_vals[[i]], key_phrases)
+
+    if (length(matching_phrases) > 0) {
+      # If matching phrases are found, assign the corresponding integer value
+      results[i] <- min(values[match(matching_phrases, key_phrases)])
+    } else {
+      results[i] <- 0  # If none of the key phrases are found, assign 0 for the other warnings
+    }
+  }
+
+  return(results)
+}
+
+# Create a simplified and formatted version of sample to use to link to
+create_sample_link <- function(sample) {
+  sample <- tolower(sample)
+  sample <- gsub("[^a-z0-9]+", "-", sample)
+  sample <- gsub("^-+|-+$", "", sample)
+  
+  return(sample)
+}
+
+# Call a plotly plot so it can load later within for loops
+htmltools::tagList(plot_ly(x = rnorm(10), type = "histogram"))
+
+# Horizontal Line function for plotly
+hline <- function(y = 0, color = "black") {
+  list(
+    type = "line",
+    x0 = 0,
+    x1 = 1,
+    xref = "paper",
+    y0 = y,
+    y1 = y,
+    line = list(color = color, dash = "dash")
+  )
+}
+```
+
+<!-- ------------------ -->
+<!-- Setup: Sample Data -->
+<!-- ------------------ -->
+```{r interactive-table-setup}
+# Read multiqc data
+summary_df <- read_csv(overall_qc, locale = locale(encoding = "UTF-8"))
+# Create a vector of sample names
+samples <- summary_df$sample
+
+# Add in 0's for specific NA value columns
+summary_df <- summary_df %>%
+  mutate_at(vars(`genome_completeness_percent`, `mean_sequencing_depth`, `median_sequencing_depth`), ~ ifelse(is.na(.), 0, .))
+
+# Fill other empty columns with NA
+summary_df[summary_df == ""] <- NA
+
+# Get counts of passing, warning, and failing samples for display
+total_samples_count <- nrow(summary_df)
+failed_samples_count <- sum(summary_df[["genome_completeness_percent"]] < 50)
+passing_samples_count <- total_samples_count - failed_samples_count
+warning_samples_count <- ( sum(summary_df[["qc_status"]] != "PASS", na.rm = FALSE) - failed_samples_count )
+
+# Add in colour code
+summary_df$status_colour_code <- add_pass_value_int(summary_df, 'qc_status')
+
+# Create vector of failed samples for the failed samples page
+failed_samples <- summary_df %>%
+  filter(`genome_completeness_percent` < 50) %>%
+  pull(sample)
+
+# Rename wanted final columns
+#  Select them later for different tables
+summary_df <- summary_df %>%
+  rename(
+    "Sample" = sample,
+    "Genotype" = genotype,
+    "Matched DSId" = matched_dsid,
+    "# Input Reads" = num_input_reads,
+    "# Aligned Reads" = num_aligned_reads,
+    "# Consensus Ns" = num_consensus_n,
+    "Genome Completeness (%)" = genome_completeness_percent,
+    "Mean Depth" = mean_sequencing_depth,
+    "Median Depth" = median_sequencing_depth,
+    "Total Variants" = total_variants,
+    "# SNPs" = num_snps,
+    "# Deletions" = num_deletions,
+    "# Deletion Sites" = num_deletion_sites,
+    "# Insertions" = num_insertions,
+    "# Insertion Sites" = num_insertion_sites,
+    "Genome Length" = genome_length,
+    "Divisible by 6" = divisible_by_6,
+    "Frameshifts" = frameshifts,
+    "Premature Stop Codon" = nonsense_mutation,
+    "Mutated Stop Codon" = mutated_stop_codon,
+    "QC Status" = qc_status,
+    "Run Status" = run_status,
+    "Run Summary" = run_summary
+  )
+```
+
+<!-- ------------ -->
+<!-- Report Start -->
+<!-- ------------ -->
+# Run Summary
+
+## Row
+
+```{r create-valueboxes, include=FALSE, message=FALSE, warning=FALSE}
+# Create valueboxes for display
+value_boxes <- list(
+  reference_vbox = valueBox(genotype, "Reference Genotype", icon = "", color = "#343A40"),
+  total_samples_vbox = valueBox(total_samples_count, "Total Samples", icon = "", color = "#D1D2D1"),
+  passing_samples_vbox = valueBox(passing_samples_count, "Passing Samples", icon = "ion-android-checkmark-circle", color = "#18BC9C"),
+  warning_samples_vbox = valueBox(warning_samples_count, "Samples with Warnings", icon = "ion-alert-circled", color = "#ffc773"),
+  failed_samples_vbox = valueBox(failed_samples_count, "Failed Samples", icon = "ion-android-remove-circle", color = "#ff5147")
+)
+```
+
+```{r print-valueboxes, echo=FALSE, error=TRUE, results="asis"}
+# Display valueboxes
+for (box in value_boxes) {
+  catHeader("", level = 3)
+  print(box)
+}
+```
+
+## Row
+
+### {-}
+
+```{r interactive-table-display}
+# Select the wanted summary metrics
+metrics_df <- select(summary_df,
+  Sample,
+  Genotype,
+  `Matched DSId`,
+  `# Input Reads`,
+  `# Aligned Reads`,
+  `Mean Depth`,
+  `Median Depth`,
+  `Genome Completeness (%)`,
+  `Genome Length`,
+  `QC Status`,
+  status_colour_code
+)
+
+# Add in a link for each sample
+metrics_df$Sample <- sprintf(
+  '<a href="MeaSeq_Report.html#%s" style="color: #000000;">%s</a>',
+  create_sample_link(metrics_df$Sample),
+  metrics_df$Sample
+)
+
+# Create table
+metrics_dt <- metrics_df %>%
+  datatable(
+    rownames = FALSE,
+    escape = FALSE,
+    caption = htmltools::tags$caption(
+      style = 'caption-side: top',
+      htmltools::strong('Table I: '), 'Full Sample Summary'
+    ),
+    options = list(
+      pageLength = 10,
+      scrollX = FALSE,
+      scrollY = "",
+      columnDefs = list(
+        list(className = 'dt-left', targets = "_all"),
+        list(visible=FALSE, targets='status_colour_code')
+      )
+    )
+  ) %>%
+  # Row Highlighting
+  #  1 - pass, 2 - fail, 3 - partial, 4 - warning
+  formatStyle(
+      'status_colour_code',
+      target = 'row',
+      backgroundColor = styleEqual(c(1, 2, 0),
+        c('', '#ff5147', '#ffc773')
+    )
+  ) %>%
+  # Bars to show completeness at a glance
+  formatStyle(
+    'Genome Completeness (%)',
+    background = styleColorBar(range(0,100), 'lightblue', angle = -90),
+    backgroundSize = '88% 88%',
+    backgroundRepeat = 'no-repeat',
+    backgroundPosition = 'left'
+  )
+
+metrics_dt
+```
+
+## Row
+
+### {-}
+
+```{r static-depth-report, fig.width=12, fig.height=3}
+# Adapted from Molly's summary code we used for the paper
+ndepth_raw <- read_csv("sample_positional_normalized_depth.csv")
+ndepth <- ndepth_raw %>% rename(sample = 1)
+
+transormed_data <- ndepth %>%
+  pivot_longer(
+    cols = -sample,
+    names_to = "position",
+    names_transform = list(position = as.integer),
+    values_to = "norm_depth"
+  )
+
+# Summarize positions
+#  Ymin and Ymax for drawing the stdev region
+summary_depth_df <- transormed_data %>%
+  group_by(position) %>%
+  summarise(
+    mean = mean(norm_depth),
+    sd = sd(norm_depth),
+    median = median(norm_depth),
+    ymin = mean - sd,
+    ymax = mean + sd,
+    .groups = "drop"
+  )
+
+# Plot static image, not sure how well an interactive one would be here
+max_pos <- max(summary_depth_df$position)
+p <- ggplot(summary_depth_df, aes(x = position)) +
+  geom_ribbon(aes(ymin = ymin, ymax = ymax), fill = "blue", alpha = 0.1) +
+  geom_line(aes(y = median), color = "blue") +
+  scale_x_continuous(
+    breaks = seq(0, max_pos, by = 2000),
+    minor_breaks = seq(0, max_pos, by = 500)
+  ) +
+  labs(title = "Normalized median read depth",
+       x = "Genome position", y = "Proportional read depth") +
+  theme_classic() +
+  # To better track where whole run positional depth is falling add in guide lines at minor axes
+  theme(
+    panel.grid.minor.x = element_line(color = "#dadce0", linetype = "dotted"),
+    panel.grid.major.x = element_line(color = "#dadce0", linetype = "dotted")
+  )
+
+p
+```
+
+> **Figure 1.** Normalized median read depth and deviation. Normalized proportional read depth for each position in a sample was calculated using the maximum depth observed. All positions were summarized plotting the median read depth plus or minus 1 standard deviation surrounding the median.
+
+## Row {data-height=50}
+
+<footer>
+`r footer_str`
+</footer>
+
+<!-- ---------------------------------------------------------- -->
+<!-- Create Individual samples pages with the below code blocks -->
+<!-- ---------------------------------------------------------- -->
+```{r, render subpages, include=FALSE, echo=FALSE, error=TRUE}
+# Code block to generate sample subpages - https://somtom.github.io/post/using-dynamically-rendered-r-markdown-childs-for-reports/
+subpages = NULL
+# Set knitr options to allow duplicate labels
+options(knitr.duplicate.label = 'allow')
+# Create temporary environment which we use for knitting subpages.RMD
+subpage_env <- new.env()
+
+# Create subpages
+for ( sample_v in samples ) {
+
+  # Filter data for the sample only
+  sample_df <- summary_df %>%
+    filter(Sample == sample_v)
+
+  # Assign data to subpage_env
+  assign("sample_df", sample_df, subpage_env)
+  assign("sample", sample_v, subpage_env)
+
+  # Knit sample subpage using the subpage_env and add result to out vector
+  subpages = c(subpages, knitr::knit_child('subpage_sample.Rmd', envir = subpage_env))
+}
+```
+
+`r paste(knitr::knit_child(text = subpages), collapse = '')`
+
+<!-- ---------------------- -->
+<!-- Back to normal Rmd doc -->
+<!-- ---------------------- -->
+
+# Contact Information
+
+<style>
+/* Flip Box Container */
+.flip-box {
+  background-color: transparent;
+  width: 700px;
+  height: 400px;
+  border: 1px solid #ccc;
+  perspective: 1000px;
+  margin: auto;
+}
+
+/* Flip Box Inner */
+.flip-box-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+/* Flip Box on Hover */
+.flip-box:hover .flip-box-inner {
+  transform: rotateY(180deg);
+}
+
+/* Front & Back Side */
+.flip-box-front, .flip-box-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+}
+
+/* Front Side */
+.flip-box-front {
+  background-color: #2C3E50;
+  color: white !important;
+}
+
+/* Back Side */
+.flip-box-back {
+  background-color: #95A5A6;
+  color: white !important;
+  transform: rotateY(180deg);
+}
+</style>
+
+
+```{r contact-info, warnings=FALSE, echo=FALSE}
+if (any(nzchar(name), nzchar(phone), nzchar(email), nzchar(website))){
+  back_content <- div(
+    if (name != "") h2(name),
+    if (email != "") p(strong("Email:"), email),
+    if (phone != "") p(strong("Phone Number:"), phone),
+    if (website != "") p("Website: ", a(href= paste0(website), website))
+  )
+} else {
+  back_content <- div(
+    h2("Contact Information Not Provided")
+  )
+}
+flip_box( 
+  front = div( 
+    h2("Contact Info"), p("Click to reveal details"), icon("address-card", class = "fa-6x") 
+  ), 
+  back = back_content
+)
+```
+
+<footer>
+`r footer_str`
+</footer>

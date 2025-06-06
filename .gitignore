@@ -2,10 +2,13 @@
 work/
 results*/
 .nextflow*
+.DS_Store
 fastp.html
 Rplots.pdf
 slurm*
 Notes.md
+*.pyc
+null/
 
 # Builds
 build/
@@ -20,3 +23,7 @@ __pycache__
 
 # Vim editor
 *.swp
+.nextflow*
+work/
+
+results/
