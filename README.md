@@ -23,7 +23,7 @@
 
 ## Updates
 
-### _2025-06-04_
+### _2025-06-06_
 
 - Switched to running all steps with nextflow for the following reasons:
   - Allow more control over all of the steps
