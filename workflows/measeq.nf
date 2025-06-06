@@ -97,11 +97,12 @@ workflow MEASEQ {
             ch_primer_bed,
             ch_split_amp_pools_bed
         )
-        ch_read_json   = NANOPORE_CONSENSUS.out.nanoq_json
-        ch_bam_bai     = NANOPORE_CONSENSUS.out.bam_bai
-        ch_consensus   = NANOPORE_CONSENSUS.out.consensus
-        ch_vcf         = NANOPORE_CONSENSUS.out.vcf
-        ch_versions    = ch_versions.mix(NANOPORE_CONSENSUS.out.versions)
+        ch_read_json    = NANOPORE_CONSENSUS.out.nanoq_json
+        ch_bam_bai      = NANOPORE_CONSENSUS.out.bam_bai
+        ch_consensus    = NANOPORE_CONSENSUS.out.consensus
+        ch_vcf          = NANOPORE_CONSENSUS.out.vcf
+        ch_variants_tsv = Channel.empty() // for now, need to set this up still
+        ch_versions     = ch_versions.mix(NANOPORE_CONSENSUS.out.versions)
 
     } else if( params.platform == 'illumina' ) {
         //
@@ -112,11 +113,12 @@ workflow MEASEQ {
             ch_input_fastqs,
             ch_primer_bed
         )
-        ch_read_json   = ILLUMINA_CONSENSUS.out.fastp_json
-        ch_bam_bai     = ILLUMINA_CONSENSUS.out.bam_bai
-        ch_consensus   = ILLUMINA_CONSENSUS.out.consensus
-        ch_vcf         = ILLUMINA_CONSENSUS.out.vcf
-        ch_versions    = ch_versions.mix(ILLUMINA_CONSENSUS.out.versions)
+        ch_read_json    = ILLUMINA_CONSENSUS.out.fastp_json
+        ch_bam_bai      = ILLUMINA_CONSENSUS.out.bam_bai
+        ch_consensus    = ILLUMINA_CONSENSUS.out.consensus
+        ch_vcf          = ILLUMINA_CONSENSUS.out.vcf
+        ch_variants_tsv = ILLUMINA_CONSENSUS.out.variants_tsv
+        ch_versions     = ch_versions.mix(ILLUMINA_CONSENSUS.out.versions)
 
     } else {
         error "Please provide the --platform parameter with either 'nanopore' or 'illumina' to run"
@@ -226,6 +228,7 @@ workflow MEASEQ {
         ch_reference,
         ch_reference_fai,
         ch_bam_bai,
+        ch_variants_tsv,
         ch_genotype,
         SAMTOOLS_DEPTH.out.tsv,
         MAKE_FINAL_QC_CSV.out.csv

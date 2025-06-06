@@ -29,8 +29,7 @@
   - Allow more control over all of the steps
   - Easier to install/run along with having more dependency management options (IE not required to use `conda`)
   - Eventual implementation to IRIDA-Next
-- Focus is **currently on Illumina data** although the nanopore side _should_ still work
-- The final report is **broken for the moment** but will be fixed up asap
+- Focus is **currently on Illumina data** although the nanopore side _should_ still work other than the final report
 
 ## Introduction
 

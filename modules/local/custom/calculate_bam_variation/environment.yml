@@ -1,0 +1,6 @@
+name: bam_variation
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - bioconda::artic=1.6.2

@@ -196,8 +196,8 @@ Using the N450 dataset, the input reference is typed so that the N450 region can
 <summary>Output files</summary>
 
 - `vcf/processed_vcf/`
-  - `<SAMPLE>.fixed.norm.vcf.gz`: Consensus BCFTools normalized variants to be applied to the consensus sequence
-  - `<SAMPLE>.fixed.norm.vcf.gz.tbi`: Index of Passing BCFTools normalized variants to be applied to the consensus sequence
+  - `<SAMPLE>.consensus.norm.vcf.gz`: Consensus BCFTools normalized variants to be applied to the consensus sequence
+  - `<SAMPLE>.consensus.norm.vcf.gz.tbi`: Index of Passing BCFTools normalized variants to be applied to the consensus sequence
   - `<SAMPLE>.ambiguous.norm.vcf.gz`: Intermediate BCFTools normalized variants to be applied as IUPAC bases to the consensus sequence
   - `<SAMPLE>.ambiguous.norm.vcf.gz.tbi`: Index of Intermediate BCFTools normalized variants to be applied as IUPAC bases to the consensus sequence
   - `<SAMPLE>.variants.vcf`: All filter-passing variants
@@ -394,17 +394,35 @@ MultiQC report specifically focusing on how well and how deep each amplicon was 
 
 Using samtools mpileup and awk, summarize how many Ns were seen at each position in the pileup to find any sites that have a lot of Ns
 
+### Sample Variation
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `results_measeq/all_variation_positions/`
+  - `*_variation.csv`: Sample specific genome positions with base variation
+
+</details>
+
+The base variation check is a Python script that parses the BAM file for each sample to report positions with base variation above specified thresholds (read count: 10, non-reference base perecntage: 15%).
+
+![](images/variation.png)
+
 #### Generate Final Report
 
 details markdown="1">
 
+<details markdown="1">
 <summary>Output files</summary>
 
 - `MeaSeq_Report.html`: Final report with all metrics and visualizations
+- `MeaSeq_Report_Files/`: Directory containing the dependecy files for the report
 
 </details>
 
 The MeaSeq Report HTML file is the final summary of all the samples run by the pipeline generated using RMarkdown. Most of the generated results in the pipeline are included in this report. The report displays sample specifc variant metrics and data visualizations.
+
+If running with a large number of samples, the report may take a second to open up on your web-browser (>100 samples usually)
 
 A sample report generated from publicly available samples can be [found here](images/MeaSeq_Report.html).
 
@@ -477,8 +495,8 @@ OUTDIR
     └── processed_vcf
         ├── SAMPLE.ambiguous.norm.vcf.gz
         ├── SAMPLE.ambiguous.norm.vcf.gz.tbi
-        ├── SAMPLE.fixed.norm.vcf.gz
-        ├── SAMPLE.fixed.norm.vcf.gz.tbi
+        ├── SAMPLE.consensus.norm.vcf.gz
+        ├── SAMPLE.consensus.norm.vcf.gz.tbi
         └── SAMPLE.variants.vcf
 ```
 
@@ -486,16 +504,3 @@ OUTDIR
 
 To Add
 
-### Sample Variation
-
-<details markdown="1">
-<summary>Output files</summary>
-
-- `results_measeq/all_variation_positions/`
-  - `*_variation.csv`: Sample specific genome positions with base variation
-
-</details>
-
-The base variation check is a Python script that parses the BAM file for each sample to report positions with base variation above specified thresholds (read count: 10, non-reference base perecntage: 15%).
-
-![](images/variation.png)

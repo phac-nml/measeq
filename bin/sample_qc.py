@@ -505,8 +505,8 @@ def grade_qc(completeness: float, mean_dep: float, median_dep: float, divisible:
     '''
     qc_status = []
     # Completeness
-    if completeness < 0.9:
-        if completeness < 0.5:
+    if completeness < 90:
+        if completeness < 50:
             return 'INCOMPLETE_GENOME'
         else:
             qc_status.append('PARTIAL_GENOME')

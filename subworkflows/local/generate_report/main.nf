@@ -7,9 +7,11 @@
     IMPORT FUNCTIONS / MODULES / SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { PYSAMSTATS         } from '../../../modules/local/pysamstats/main'
-include { POSITIONAL_N_DEPTH } from '../../../modules/local/custom/positional_n_depth/main'
-include { MAKE_CUSTOM_REPORT } from '../../../modules/local/custom/custom_report/main'
+include { PYSAMSTATS              } from '../../../modules/local/pysamstats/main'
+include { POSITIONAL_N_DEPTH      } from '../../../modules/local/custom/positional_n_depth/main'
+include { CALCULATE_BAM_VARIATION } from '../../../modules/local/custom/calculate_bam_variation/main'
+include { NORMALIZE_DEPTH_MATRIX  } from '../../../modules/local/custom/normalize_depth_matrix/main'
+include { MAKE_CUSTOM_REPORT      } from '../../../modules/local/custom/custom_report/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -20,12 +22,13 @@ include { MAKE_CUSTOM_REPORT } from '../../../modules/local/custom/custom_report
 workflow GENERATE_REPORT {
 
     take:
-    ch_reference             // channel: [ [id], fasta ]
-    ch_reference_fai         // channel: [ fai ]
-    ch_bam_bai               // channel: [ [id], bam, bai ]
-    ch_genotype              // channel: [ genotype ]
-    ch_depth_tsv             // channel: [ [id], depth_tsv ]
-    ch_overall_qc            // channel: [ csv ]
+    ch_reference            // channel: [ [id], fasta ]
+    ch_reference_fai        // channel: [ fai ]
+    ch_bam_bai              // channel: [ [id], bam, bai ]
+    ch_variants_tsv         // channel: [ [id], tsv ]
+    ch_genotype             // channel: [ genotype ]
+    ch_depth_tsv            // channel: [ [id], depth_tsv ]
+    ch_overall_qc           // channel: [ csv ]
 
     main:
     ch_versions = Channel.empty()
@@ -52,6 +55,22 @@ workflow GENERATE_REPORT {
     ch_versions = ch_versions.mix(PYSAMSTATS.out.versions.first())
 
     //
+    // MODULE: Calculate the underlying variation in the BAM file
+    //
+    CALCULATE_BAM_VARIATION(
+        ch_bam_bai,
+        ch_reference
+    )
+    ch_versions = ch_versions.mix(CALCULATE_BAM_VARIATION.out.versions.first())
+
+    //
+    // MODULE: Create a normalized depth matrix using python module
+    //
+    NORMALIZE_DEPTH_MATRIX(
+        ch_depth_tsv.collect{ it[1] }
+    )
+
+    //
     // MODULE: Make custom final HTML Report
     //
     MAKE_CUSTOM_REPORT(
@@ -59,6 +78,9 @@ workflow GENERATE_REPORT {
         ch_depth_tsv.collect{ it[1] },
         POSITIONAL_N_DEPTH.out.tsv.collect{ it[1] },
         PYSAMSTATS.out.tsv.collect{ it[1] },
+        CALCULATE_BAM_VARIATION.out.csv.collect{ it[1] },
+        ch_variants_tsv.collect{ it[1] },
+        NORMALIZE_DEPTH_MATRIX.out.full_csv,
         ch_genotype,
         ch_report_template,
         ch_report_subpages.collect()

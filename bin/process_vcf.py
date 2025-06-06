@@ -5,6 +5,7 @@
 
 import argparse
 import pysam
+import csv
 
 def calculate_vafs(record):
     '''Calculate the variant allele fraction for each alt allele using freebayes' read/alt observation tags'''
@@ -121,6 +122,9 @@ def main():
     parser.add_argument('-c', '--consensus-sites-output', required=True,
             help=f"The output file name for variants that will be applied to generate the consensus sequence\n")
 
+    parser.add_argument('-t', '--tsv-sites-output', required=True,
+            help=f"The output file name for consensus variants that is formatted as a TSV file for reporting later\n")
+
     parser.add_argument('-d', '--min-depth', type=int, default=10,
             help=f"Minimum depth to call a variant")
 
@@ -156,8 +160,11 @@ def main():
 
     # Open the output file with the changes to apply to the consensus fasta
     # This includes an additional tag in the VCF file
-    out_header.info.add("ConsensusTag", number=1, type='String', description="The type of base to be included in the consensus sequence (ambiguous or fixed)")
+    out_header.info.add("ConsensusTag", number=1, type='String', description="The type of base to be included in the consensus sequence (ambiguous or consensus)")
     consensus_sites_out = pysam.VariantFile(args.consensus_sites_output, 'w', header=out_header)
+
+    # Setup TSV data list for later reporting
+    tsv_data_list = []
 
     for record in vcf:
 
@@ -207,7 +214,6 @@ def main():
             #  Might need to add a proper calculation here for it based on depth but based on data
             #  nothing really is this low unless its very mixed or low low depth
             if record.qual < args.min_quality:
-                print(out_r.qual)
                 continue
 
             # Write a tag describing what to do with the variant
@@ -218,20 +224,43 @@ def main():
             # we don't have to do an indel VAF check here as it is dealt with in handle_indel
             if vaf > args.upper_ambiguity_frequency or is_indel:
                 # always apply these to the consensus
-                consensus_tag = "fixed"
+                consensus_tag = "consensus"
             else:
                 # record ambiguous SNPs in the consensus sequence with IUPAC codes
                 consensus_tag = "ambiguous"
                 # Genotype needs to be mixed to get an iupac
                 genotype = (0,1)
+
+            # Output for consensus generation
             out_r.info["ConsensusTag"] = consensus_tag
             out_r.samples[0]['GT'] = genotype
             consensus_sites_out.write(out_r)
+
+            # Setting up for TSV output for later reporting
+            #  Format: chrom, pos, ref, alt, qual, depth, vaf, tag
+            tsv_data_list.append([
+                out_r.chrom,
+                out_r.pos,
+                out_r.ref,
+                out_r.alts[0],
+                out_r.qual,
+                depth,
+                vaf,
+                consensus_tag
+            ])
+
             accept_variant = True
 
         if accept_variant:
             record.info["VAF"] = calculate_vafs(record)
             variants_out.write(record)
+
+    # Write to TSV at the end
+    headers = ['chrom', 'pos', 'ref', 'alt', 'qual', 'depth', 'vaf', 'tag']
+    with open(args.tsv_sites_output, 'w') as f:
+        writer = csv.writer(f, delimiter='\t')
+        writer.writerow(headers)
+        writer.writerows(tsv_data_list)
 
 if __name__ == "__main__":
     main()

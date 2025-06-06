@@ -256,7 +256,8 @@ def parse_variation_from_bam(bamfile: str, ref_dict: dict, base_q: int,
             case_insensitive_pos_counter['ins'] = len(ins_list)
 
             # Do something with it to summarize and adjust this later
-            ins_len_counts = Counter((f'{re.findall(r'\d+', x)[0]}bp' for x in ins_list))
+            ins_pattern = re.compile(r"\d+")
+            ins_len_counts = Counter((f'{ins_pattern.findall(x)[0]}bp' for x in ins_list))
             ins_summary_str = ", ".join(f"{length}: {count}" for length, count in ins_len_counts.most_common())
 
         # Add missing bases to the counter, change * to del, and make dict

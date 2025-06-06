@@ -2,7 +2,7 @@
 title: "MeaSeq: Measles Sequencing Run Report"
 output: 
   flexdashboard::flex_dashboard:
-    self-contained: true
+    self_contained: false
     orientation: rows
     vertical_layout: scroll
     mathjax: NULL
@@ -10,6 +10,9 @@ output:
       version: 4
       bootswatch: flatly
     logo: phac.svg
+knitr:
+  opts_chunk:
+    fig_embed: false
 params:
   genotype: ""
   overall_qc: ""
@@ -22,11 +25,11 @@ params:
 <style>
 
 .navbar-logo img {
-    position: relative;
-    margin-left: 5px;
-    height: 30px;
+  position: relative;
+  margin-left: 5px;
+  height: 30px;
 }
-.navbar-fxixed-top {
+.navbar-fixed-top {
   margin-bottom: 20px;
 }
 
@@ -54,13 +57,11 @@ footer {
 suppressPackageStartupMessages(library(rmarkdown))
 suppressPackageStartupMessages(library(flexdashboard))
 suppressPackageStartupMessages(library(plotly))
-suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(DT))
 suppressPackageStartupMessages(library(knitr))
 suppressPackageStartupMessages(library(data.table))
-suppressPackageStartupMessages(library(stringr))
 suppressPackageStartupMessages(library(htmltools))
-suppressPackageStartupMessages(library(readr))
 suppressPackageStartupMessages(library(shiny))
 suppressPackageStartupMessages(library(shidashi))
 
@@ -90,11 +91,48 @@ rep_date <- Sys.Date()
 
 # Footer
 footer_str <- paste(
-              "Report generated using MeaSeq on",
-              rep_date,
-              "- © Government of Canada, Public Health Agency of Canada, National Microbiology Laboratory",
-              sep = ' '
-            )
+  "Report generated using MeaSeq on",
+  rep_date,
+  "- © Government of Canada, Public Health Agency of Canada, National Microbiology Laboratory",
+  sep = ' '
+)
+
+# Create function to give int values to qc statement for later colours
+add_pass_value_int <- function(df, column) {
+  # Split the given column, qc_status mostly, on ;
+  split_vals <- strsplit(df[[column]], ';')
+
+  # Define int values to go with statements
+  key_phrases <- c('PASS', 'INCOMPLETE_GENOME')
+  values <- c(1, 2)
+
+  # Create a vector to store the results
+  results <- integer(length(df[[column]]))
+
+  # Add in the values
+  for (i in 1:length(split_vals)) {
+    # Check if any key phrase is contained in the split values
+    matching_phrases <- intersect(split_vals[[i]], key_phrases)
+
+    if (length(matching_phrases) > 0) {
+      # If matching phrases are found, assign the corresponding integer value
+      results[i] <- min(values[match(matching_phrases, key_phrases)])
+    } else {
+      results[i] <- 0  # If none of the key phrases are found, assign 0 for the other warnings
+    }
+  }
+
+  return(results)
+}
+
+# Create a simplified and formatted version of sample to use to link to
+create_sample_link <- function(sample) {
+  sample <- tolower(sample)
+  sample <- gsub("[^a-z0-9]+", "-", sample)
+  sample <- gsub("^-+|-+$", "", sample)
+  
+  return(sample)
+}
 
 # Call a plotly plot so it can load later within for loops
 htmltools::tagList(plot_ly(x = rnorm(10), type = "histogram"))
@@ -126,99 +164,51 @@ samples <- summary_df$sample
 summary_df <- summary_df %>%
   mutate_at(vars(`genome_completeness_percent`, `mean_sequencing_depth`, `median_sequencing_depth`), ~ ifelse(is.na(.), 0, .))
 
-# Set values for value boxes
+# Fill other empty columns with NA
+summary_df[summary_df == ""] <- NA
+
+# Get counts of passing, warning, and failing samples for display
 total_samples_count <- nrow(summary_df)
 failed_samples_count <- sum(summary_df[["genome_completeness_percent"]] < 50)
 passing_samples_count <- total_samples_count - failed_samples_count
+warning_samples_count <- ( sum(summary_df[["qc_status"]] != "PASS", na.rm = FALSE) - failed_samples_count )
 
-# Create vector of failed samples
+# Add in colour code
+summary_df$status_colour_code <- add_pass_value_int(summary_df, 'qc_status')
+
+# Create vector of failed samples for the failed samples page
 failed_samples <- summary_df %>%
   filter(`genome_completeness_percent` < 50) %>%
   pull(sample)
 
-# Create formatting conditions for Warnings
-summary_df[summary_df == ""] <- NA
-for (i in 1:nrow(summary_df)) {
-  ifelse(
-      summary_df[[i,"genotype"]] != genotype |
-      is.na(summary_df[[i,"genotype"]]) |
-      summary_df[[i,"divisible_by_6"]] != "true" |
-      !is.na(summary_df[[i,"frameshifts"]]) |
-      !is.na(summary_df[[i,"nonsense_mutation"]]) |
-      !is.na(summary_df[[i,"mutated_stop_codon"]]),
-    summary_df$warning[[i]] <- "Warning", summary_df$warning[[i]] <- "PASS")
-}
-warning_samples_count <- (sum(summary_df[["warning"]] != "PASS", na.rm = FALSE)) - (failed_samples_count)
-
-# Select and Rename wanted final columns
-summary_df <- select(summary_df,
-    sample,
-    `genotype`,
-    `num_input_reads`,
-    `num_aligned_reads`,
-    `num_consensus_n`,
-    `genome_completeness_percent`,
-    `mean_sequencing_depth`,
-    `median_sequencing_depth`,
-    `total_variants`,
-    `num_snps`,
-    `num_deletions`,
-    `num_deletion_sites`,
-    `num_insertions`,
-    `num_insertion_sites`,
-    genome_length,
-    divisible_by_6,
-    frameshifts,
-    nonsense_mutation,
-    `mutated_stop_codon`,
-    warning,
-    `qc_status`,
-    `run_status`,
-    `run_summary`
-  )
+# Rename wanted final columns
+#  Select them later for different tables
 summary_df <- summary_df %>%
   rename(
-    "Sample" = `sample`,
-    "Genotype" = `genotype`,
-    "# Input Reads" = `num_input_reads`,
-    "# Aligned Reads" = `num_aligned_reads`,
-    "# Consensus Ns" = `num_consensus_n`,
-    "Genome Completeness (%)" = `genome_completeness_percent`,
-    "Mean Depth" = `mean_sequencing_depth`,
-    "Median Depth" = `median_sequencing_depth`,
-    "Total Variants" = `total_variants`,
-    "# SNPs" = `num_snps`,
-    "# Deletions" = `num_deletions`,
-    "# Deletion Sites" = `num_deletion_sites`,
-    "# Insertions" = `num_insertions`,
-    "# Insertion Sites" = `num_insertion_sites`,
+    "Sample" = sample,
+    "Genotype" = genotype,
+    "Matched DSId" = matched_dsid,
+    "# Input Reads" = num_input_reads,
+    "# Aligned Reads" = num_aligned_reads,
+    "# Consensus Ns" = num_consensus_n,
+    "Genome Completeness (%)" = genome_completeness_percent,
+    "Mean Depth" = mean_sequencing_depth,
+    "Median Depth" = median_sequencing_depth,
+    "Total Variants" = total_variants,
+    "# SNPs" = num_snps,
+    "# Deletions" = num_deletions,
+    "# Deletion Sites" = num_deletion_sites,
+    "# Insertions" = num_insertions,
+    "# Insertion Sites" = num_insertion_sites,
     "Genome Length" = genome_length,
     "Divisible by 6" = divisible_by_6,
     "Frameshifts" = frameshifts,
     "Premature Stop Codon" = nonsense_mutation,
     "Mutated Stop Codon" = mutated_stop_codon,
-    "QC Status" = `qc_status`,
-    "Run Status" = `run_status`,
-    "Run Summary" = `run_summary`
+    "QC Status" = qc_status,
+    "Run Status" = run_status,
+    "Run Summary" = run_summary
   )
-
-# Set empty Genotypes to NA for highlighting later
-summary_df$Genotype[is.na(summary_df$Genotype)] <- "NA"
-
-# Remove failed samples to be their own dataframe
-if (length(failed_samples) > 0) {
-  failed_df <- summary_df[summary_df$Sample %in% failed_samples, ]
-  summary_df <- summary_df[!summary_df$Sample %in% failed_samples, ]
-  failed_df <- select(failed_df,
-    Sample,
-    Genotype,
-    `# Input Reads`,
-    `# Aligned Reads`,
-    `Mean Depth`,
-    `Median Depth`,
-    `Genome Completeness (%)`
-  )
-}
 ```
 
 <!-- ------------ -->
@@ -234,8 +224,8 @@ value_boxes <- list(
   reference_vbox = valueBox(genotype, "Reference Genotype", icon = "", color = "#343A40"),
   total_samples_vbox = valueBox(total_samples_count, "Total Samples", icon = "", color = "#D1D2D1"),
   passing_samples_vbox = valueBox(passing_samples_count, "Passing Samples", icon = "ion-android-checkmark-circle", color = "#18BC9C"),
-  warning_samples_vbox = valueBox(warning_samples_count, "Samples with Warnings", icon = "ion-alert-circled", color = "#F39C12"),
-  failed_samples_vbox = valueBox(failed_samples_count, "Failed Samples", icon = "ion-android-remove-circle", color = "#E74C3C")
+  warning_samples_vbox = valueBox(warning_samples_count, "Samples with Warnings", icon = "ion-alert-circled", color = "#ffc773"),
+  failed_samples_vbox = valueBox(failed_samples_count, "Failed Samples", icon = "ion-android-remove-circle", color = "#ff5147")
 )
 ```
 
@@ -249,71 +239,60 @@ for (box in value_boxes) {
 
 ## Row
 
-### **Table I**: Summary statistics for non-failing samples generated by the nf-core/viralrecon pipeline.
+### {-}
 
 ```{r interactive-table-display}
-metrics_dt <- summary_df %>%
+# Select the wanted summary metrics
+metrics_df <- select(summary_df,
+  Sample,
+  Genotype,
+  `Matched DSId`,
+  `# Input Reads`,
+  `# Aligned Reads`,
+  `Mean Depth`,
+  `Median Depth`,
+  `Genome Completeness (%)`,
+  `Genome Length`,
+  `QC Status`,
+  status_colour_code
+)
+
+# Add in a link for each sample
+metrics_df$Sample <- sprintf(
+  '<a href="MeaSeq_Report.html#%s" style="color: #000000;">%s</a>',
+  create_sample_link(metrics_df$Sample),
+  metrics_df$Sample
+)
+
+# Create table
+metrics_dt <- metrics_df %>%
   datatable(
     rownames = FALSE,
+    escape = FALSE,
+    caption = htmltools::tags$caption(
+      style = 'caption-side: top',
+      htmltools::strong('Table I: '), 'Full Sample Summary'
+    ),
     options = list(
       pageLength = 10,
       scrollX = FALSE,
       scrollY = "",
       columnDefs = list(
         list(className = 'dt-left', targets = "_all"),
-        list(visible=FALSE, targets='warning')
+        list(visible=FALSE, targets='status_colour_code')
       )
     )
   ) %>%
   # Row Highlighting
+  #  1 - pass, 2 - fail, 3 - partial, 4 - warning
   formatStyle(
-      'warning',
+      'status_colour_code',
       target = 'row',
-      backgroundColor = styleEqual(c("Pass", "Warning"),
-      c('', '#F7BF65')
+      backgroundColor = styleEqual(c(1, 2, 0),
+        c('', '#ff5147', '#ffc773')
     )
   ) %>%
-  # Cell Highlighting
-  # Highlight cells where there are gene mutations
-  formatStyle(
-    columns = c("Mutated Stop Codon", "Premature Stop Codon", "Frameshifts"),
-    target = "cell",
-    fontWeight = styleEqual(
-      unique(unlist(summary_df[c("Mutated Stop Codon", "Premature Stop Codon", "Frameshifts")])),
-      ifelse(unique(unlist(summary_df[c("Mutated Stop Codon", "Premature Stop Codon", "Frameshifts")])) != "" , "bold", "")
-    ),
-    `text-decoration` = styleEqual(
-      unique(unlist(summary_df[c("Mutated Stop Codon", "Premature Stop Codon", "Frameshifts")])),
-      ifelse(unique(unlist(summary_df[c("Mutated Stop Codon", "Premature Stop Codon", "Frameshifts")])) != "" , "underline", "")
-    )
-  ) %>%
-  # Highlight cells where the length is not divisible by 6
-  formatStyle(
-    'Divisible by 6',
-    target = "cell",
-    fontWeight = styleEqual(
-      unique(summary_df$'Divisible by 6'),
-      ifelse(unique(tolower(summary_df$'Divisible by 6')) != "true", "bold", "")
-    ),
-    `text-decoration` = styleEqual(
-      unique(summary_df$'Divisible by 6'),
-      ifelse(unique(tolower(summary_df$'Divisible by 6')) != "true", "underline", "")
-    )
-  ) %>%
-  # Highlight cells where the nextclade Genotype doesn't match the reference Genotype
-  formatStyle(
-    'Genotype',
-    target = "cell",
-    fontWeight = styleEqual(
-      unique(summary_df$Genotype),
-      ifelse(unique(summary_df$'Genotype') != genotype, "bold", "")
-    ),
-    `text-decoration` = styleEqual(
-      unique(summary_df$Genotype),
-      ifelse(unique(summary_df$'Genotype') != genotype, "underline", "")
-    )
-  ) %>%
-  # Bars to show at a glance
+  # Bars to show completeness at a glance
   formatStyle(
     'Genome Completeness (%)',
     background = styleColorBar(range(0,100), 'lightblue', angle = -90),
@@ -325,17 +304,64 @@ metrics_dt <- summary_df %>%
 metrics_dt
 ```
 
+## Row
+
+### {-}
+
+```{r static-depth-report, fig.width=12, fig.height=3}
+# Adapted from Molly's summary code we used for the paper
+ndepth_raw <- read_csv("sample_positional_normalized_depth.csv")
+ndepth <- ndepth_raw %>% rename(sample = 1)
+
+transormed_data <- ndepth %>%
+  pivot_longer(
+    cols = -sample,
+    names_to = "position",
+    names_transform = list(position = as.integer),
+    values_to = "norm_depth"
+  )
+
+# Summarize positions
+#  Ymin and Ymax for drawing the stdev region
+summary_depth_df <- transormed_data %>%
+  group_by(position) %>%
+  summarise(
+    mean = mean(norm_depth),
+    sd = sd(norm_depth),
+    median = median(norm_depth),
+    ymin = mean - sd,
+    ymax = mean + sd,
+    .groups = "drop"
+  )
+
+# Plot static image, not sure how well an interactive one would be here
+max_pos <- max(summary_depth_df$position)
+p <- ggplot(summary_depth_df, aes(x = position)) +
+  geom_ribbon(aes(ymin = ymin, ymax = ymax), fill = "blue", alpha = 0.1) +
+  geom_line(aes(y = median), color = "blue") +
+  scale_x_continuous(
+    breaks = seq(0, max_pos, by = 2000),
+    minor_breaks = seq(0, max_pos, by = 500)
+  ) +
+  labs(title = "Normalized median read depth",
+       x = "Genome position", y = "Proportional read depth") +
+  theme_classic() +
+  # To better track where whole run positional depth is falling add in guide lines at minor axes
+  theme(
+    panel.grid.minor.x = element_line(color = "#dadce0", linetype = "dotted"),
+    panel.grid.major.x = element_line(color = "#dadce0", linetype = "dotted")
+  )
+
+p
+```
+
+> **Figure 1.** Normalized median read depth and deviation. Normalized proportional read depth for each position in a sample was calculated using the maximum depth observed. All positions were summarized plotting the median read depth plus or minus 1 standard deviation surrounding the median.
+
 ## Row {data-height=50}
 
 <footer>
 `r footer_str`
 </footer>
-
-<!-- --------------------- -->
-<!-- Failed Sample Summary -->
-<!-- --------------------- -->
-```{r, failed-sample-page, child="subpage_failed.Rmd", params=params, eval=exists("failed_df")}
-```
 
 <!-- ---------------------------------------------------------- -->
 <!-- Create Individual samples pages with the below code blocks -->
@@ -352,13 +378,8 @@ subpage_env <- new.env()
 for ( sample_v in samples ) {
 
   # Filter data for the sample only
-  if (sample_v %in% failed_samples) {
-    sample_df <- failed_df %>%
-      filter(Sample == sample_v)
-  } else {
-    sample_df <- summary_df %>%
-      filter(Sample == sample_v)
-  }
+  sample_df <- summary_df %>%
+    filter(Sample == sample_v)
 
   # Assign data to subpage_env
   assign("sample_df", sample_df, subpage_env)

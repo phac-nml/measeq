@@ -15,11 +15,6 @@ process AMPLICON_DEPTH_HEATMAP {
     """
     #!/usr/bin/env python3
     '''
-    Simple script to merge together and transpose all of the amplicon coverage files for reporting later
-    '''
-
-    #!/usr/bin/env python3
-    '''
     Simple script to merge together, transpose, and log10 all of the amplicon coverage files
     '''
     import glob
@@ -49,5 +44,11 @@ process AMPLICON_DEPTH_HEATMAP {
     # Log10
     df1= pd.DataFrame(np.ma.log10(df.values).filled(0), index=df.index, columns=df.columns)
     df1.to_csv('amplicon_depth_heatmap_mqc.tsv', index=True, sep="\t")
+    """
+
+    stub:
+    """
+    touch amplicon_depth_full.tsv
+    touch amplicon_depth_heatmap_mqc.tsv
     """
 }
