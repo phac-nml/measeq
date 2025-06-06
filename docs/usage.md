@@ -1,187 +1,303 @@
 # MeaSeq pipeline: Usage
 
 ## Introduction
-This pipeline is intended to be run on measles virus paired-end and single-end illumina sequencing data. It customly configures the [viralrecon pipeline](https://nf-co.re/viralrecon/2.6.0) to process measles virus data and follows it with various custom subanalyses that output final variant metrics and highlight mutatations. The pipeline is intended for rapid deployment in outbreak situation in Canada and abroad.
+
+This pipeline is intended to be run on measles virus (MeV) paired-end Illumina or single-end Nanopore sequencing data. It is written in nextflow to process MeV specific data with various outputs. This pipeline is intended for rapid deployment in outbreak situations in Canada and abroad.
 
 ## Index
-## Index
+
+- [Samplesheet Input](#samplesheet-input)
+  - [Illumina samplesheet.csv](#illumina-samplesheetcsv)
+  - [Nanopore samplesheet.csv](#nanopore-samplesheetcsv)
+  - [Samplesheet Column Descriptions](#samplesheet-column-descriptions)
 - [Running the Pipeline](#running-the-pipeline)
-    - [Pipeline Modes](#pipeline-modes)
-    - [Mode: `full`](#mode-full)
-        - [Profiles](#profiles)
-        - [Additional Nextflow Config File](#additional-nextflow-config-file)
-        - [Mode: `full` with preset strain reference](#mode-full-with-preset-strain-reference)
-            - [Required Input Parameters](#required-input-parameters)
-        - [Mode: `full` with user supplied reference and annotation file](#mode-full-with-user-supplied-reference-and-annotation-file)
-            - [Required Input Parameters](#required-input-parameters-1)
-    - [Mode: `report`](#mode-report)
-        - [Required Input Parameters](#required-input-parameters-2)
-    - [Optional Parameters](#optional-parameters-for-both-modes)
-    - [Fastq File Formatting](#fastq-file-formatting)
-    - [Contact Information](#contact-information)
-- [Updating the Pipeline](#updating-the-pipeline)
+  - [Illumina Required](#illumina-required)
+  - [Nanopore Required](#nanopore-required)
+  - [Expanded Parameter Options](#expanded-parameter-options)
+    - [Metadata TSV](#metadata-tsv)
+    - [Clair3 Models](#clair3-models)
+    - [DSId Matching](#dsid-matching)
+    - [All Parameters Table](#all-parameters-table)
+  - [Other Settings and Parameter Files](#other-settings-and-parameter-files)
+  - [Updating the Pipeline](#updating-the-pipeline)
+  - [Reproducibility](#reproducibility)
+- [Core Nextflow Arguments](#core-nextflow-arguments)
+  - [-profile](#-profile)
+  - [-resume](#-resume)
+  - [-c](#-c)
+- [Custom Configuration](#custom-configuration)
+  - [Resource Requests](#resource-requests)
+  - [Custom Containers](#custom-configuration)
+  - [Custom Tool Arguments](#custom-tool-arguments)
+- [Running in the Background](#running-in-the-background)
+- [Nextflow Memory Requirements](#nextflow-memory-requirements)
 
-## Running the Pipeline
+## Samplesheet Input
 
-### Pipeline Modes
+You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row as shown in the examples below.
 
-There are two modes when running the pipeline
-- `full` (default)
-    - This mode runs the full pipeline, including viralrecon. This is the default option when running the pipeline and doesn't need to be specified as an argument.
-- `report`
-    - This mode runs the pipeline using an existing viralrecon results directory. It needs to be specified when running the pipeline.
+### Illumina samplesheet.csv
 
----
+```csv
+sample,fastq_1,fastq_2
+MeVSample01,/PATH/TO/inputread1_S1_L002_R1_001.fastq.gz,/PATH/TO/inputread1_S1_L002_R2_001.fastq.gz
+PosCtrl01,/PATH/TO/inputread2_S1_L003_R1_001.fastq.gz,/PATH/TO/inputread2_S1_L003_R2_001.fastq.gz
+Sample3,/PATH/TO/inputread3_S1_L004_R1_001.fastq.gz,/PATH/TO/inputread3_S1_L004_R2_001.fastq.gz
+```
 
-### Mode: `full`
+### Nanopore samplesheet.csv
 
-#### Profiles
+```csv
+sample,fastq_1,fastq_2
+MeVSample01,/PATH/TO/inputread1.fastq.gz,
+PosCtrl01,/PATH/TO/inputread2.fastq.gz,
+Sample3,/PATH/TO/inputread3.fastq.gz,
+```
 
-Profiles are used to specify dependency installation, resources, and how to handle pipeline jobs. They can be passed with `--profile <PROFILE>` or `-p <PROFILE>` and are required when running pipeline in [full mode](#mode-full-with-predefined-strain) but not required when running in [report mode](#mode-report). Please only use one profile for each run.
+Input Parameter:
 
-> **Note**: Dependency management done with the `conda` or `mamba` profiles will take longer to resolve when running viralrecon
+```bash
+--input '</PATH/TO/samplesheet.csv>'
+```
 
-Available:
+### Samplesheet Column Descriptions
 
-- `conda`: Utilize conda to install dependencies and environment management
-- `mamba`: Utilize mamba to install dependencies and environment management
-- `singularity`: Utilize singularity for dependencies and environment management
-- `docker`: Utilize docker to for dependencies and environment management
+| Column    | Description                                                                                                                                                                            |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sample`  | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
+| `fastq_1` | Full path to FastQ file for Illumina short reads 1. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
+| `fastq_2` | Full path to FastQ file for Illumina short reads 2. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
 
-> There are many [nextflow environment variables](https://www.nextflow.io/docs/latest/reference/env-vars.html) that you can access to help streamline the analysis on your system. You can set them with:
-> ```bash
-> export <ENVIRONMENT_VARIABLE>="Val"
-> ```
-> Of note, when running with conda, it is recommended to set the `NXF_CONDA_CACHEDIR` variable to a shared location to allow easier environment reuse
----
+An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
 
-#### Additional Nextflow Config File
+## Running the pipeline
 
-While the pipeline uses a [custom viralrecon configuration](../measeq/src/measeq/scripts/measles_parameters.config) file adjusting some tool parameters and versions, you are able to pass further configurations to the viralrecon run by using `--config <CONFIG_FILE>`.
+### Illumina Required
+
+The typical base command for running the illumina pipeline path is as follows:
+
+```bash
+nextflow run phac-nml/measeq --input ./samplesheet.csv --outdir ./results  --reference ./REFERENCE.fa --platform illumina -profile docker
+```
+
+This will launch the pipeline with the `docker` configuration profile using `REFERENCE.fa` and for `illumina` input data. See [All Parameters](#all-parameters) for more information about all parameters available.
+
+### Nanopore Required
+
+The typical base command for running the nanopore pipeline path is as follows:
+
+```bash
+nextflow run phac-nml/measeq --input ./samplesheet.csv --outdir ./results  --reference ./REFERENCE.fa --platform nanopore --model 'r941_prom_sup_g5014' -profile docker
+```
+
+This will launch the pipeline with the `docker` configuration profile using `REFERENCE.fa` and for `nanopore` input data. We've also set the model for clair3 to be `r941_prom_sup_g5014`. See [All Parameters](#all-parameters) for more information about all parameters available.
+
+### Expanded Parameter Options
+
+Additional options to help run the pipeline to suit your needs
+
+#### Metadata TSV
+
+Metadata can be incorporated into the pipeline provided it is specified in TSV format with at minimum a `sample` column that matches to the samplesheet.csv input sample column
 
 Example:
+
+```tsv
+sample	collection_date	etc.
+MeV01	2024-05-10	...
+MeV02	2024-06-12	...
+MeV03	2024-09-05	...
+```
+
+An example file can be [found here](../assets/metadata.tsv)
+
+#### Clair3 Models
+
+The Nanopore pipeline utilizes [Clair3](https://github.com/HKU-BAL/Clair3) to call variants which requires a model that should be picked based off of the flowcell, pore, translocation speed, and basecalling model.
+
+Some models are built into clair3 and some need to be downloaded. The [pre-trained clair3](https://github.com/HKU-BAL/Clair3?tab=readme-ov-file#pre-trained-models) models are able to be automatically downloaded when running the pipeline using [`artic get_models`](https://github.com/artic-network/fieldbioinformatics/blob/master/artic/get_models.py) and can be specified as a parameter with `--model <MODEL>`.
+
+Additional or local models can also be used, you just have to provide a path to them and use the `--local_model <PATH>` parameter instead
+
+#### DSId Matching
+
+While 24 MeV genotypes were initially identified, only 2 have been detected since 2021: B3 and D8. Due to this, the Distinct Sequence Identifier (DSId) system was created to designate a unique 4-digit identifier based on the precise N450 sequence as a sub-genotype nomenclature. With this, the N450 sequence should be submitted to the [MeaNS2 database](https://who-gmrln.org/means2) to obtain one.
+
+As this is a submission, a quick check is available to determine if you have any previously seen DSId's. To do this you have to setup a multifasta file with the DSId's as the header to match to the output N450 sequences and pass it in with `--dsid_fasta <MULTIFASTA>`. As an example:
+
+```
+> 1231
+GTCAGTTCCACATTGGCATCT...
+> 4412
+GTCAGTTCCACATTGGCATCT...
+> 5721
+GTCAGTTCCACATTGGCATCT...
+> etc.
+GTCAGTTCCACATTGGCATCT...
+```
+
+#### All Parameters Table
+
+A table containing all of the parameter descriptions. You can also do `nextflow run phac-nml/measeq --help` to get them on the command line
+
+| Parameter                   | Description                                                                         | Required      | Type    | Default       | Notes                                            |
+| --------------------------- | ----------------------------------------------------------------------------------- | ------------- | ------- | ------------- | ------------------------------------------------ |
+| --input                     | Path to comma-separated file containing sample and read information                 | True          | Path    | null          |                                                  |
+| --outdir                    | Name of output directory to store results                                           | True          | String  | null          |                                                  |
+| --reference                 | Path to reference fasta file to map to                                              | True          | Path    | null          |                                                  |
+| --platform                  | Sequencing platform used, either 'illumina or nanopore'                             | True          | Choice  | null          |                                                  |
+| --model                     | Name of clair3 model to use                                                         | Nanopore data | String  | null          | Can use `--local_model` instead                  |
+| --local_model               | Path to local clair3 model to use                                                   | Nanopore data | Path    | null          | Can use `--model` instead if wanted              |
+| --primer_bed                | Path to bed file containing genomic primer locations                                | False         | Path    | null          | Use for amplicon data                            |
+| --min_ambiguity_threshold   | Minimum threshold to call a position as an IUPAC                                    | False         | Float   | 0.30          | Illumina only                                    |
+| --max_ambiguity_threshold   | Maximum threshold to call a position as an IUPAC                                    | False         | Float   | 0.75          | Illumina only                                    |
+| --normalise_ont             | Normalise each amplicon barcode to set depth                                        | False         | Int     | 2000          | Nanopore only                                    |
+| --min_variant_qual_c3       | Minimum variant quality to pass clair3 filters                                      | False         | Int     | 8             | Nanopore only                                    |
+| --metadata                  | Path to metadata TSV file containing at minimum 'sample' column                     | False         | Path    | null          | See [Metadata TSV](#metadata-tsv)                |
+| --dsid_fasta                | Path to DSID multi-fasta to match output consensus data to                          | False         | Path    | null          | See [DSId Matching](#dsid-matching)              |
+| --min_depth                 | Minimum depth to call a base                                                        | False         | Int     | 10            |                                                  |
+| --no_frameshifts            | Fail all indel variants not divisible by 3                                          | False         | Boolean | False         | Somewhat crude filter, only use if really needed |
+| --neg_control_pct_threshold | Threshold of genome to be called in a negative control to fail it                   | False         | Int     | 10            |                                                  |
+| --neg_ctrl_substrings       | Substrings to match to sample names to identify negative controls. Separated by a , | False         | String  | neg,ntc,blank |                                                  |
+| --skip_negative_grading     | Skip grading negative controls and just output a PASS for Run QC                    | False         | Boolean | False         |                                                  |
+
+### Other Settings and Parameter Files
+
+Note that the pipeline will create the following files in your current working directory no matter what:
+
 ```bash
-measeq -p <PROFILE> --config <CONFIG_FILE> s <B3/D4/D8/H1> -f <PATH/TO/FASTQ>
+work                # Directory containing the nextflow working files
+<OUTDIR>            # Finished results in specified location (defined with --outdir)
+.nextflow_log       # Log file from Nextflow
+# Other nextflow hidden files, eg. history of pipeline runs and old logs.
 ```
 
-Where in the config you extend with something like:
-```
-env {
-    OPENBLAS_NUM_THREADS = 1
-}
-executor {
-    name = 'slurm'
-    queueSize = 50
-}
-process {
-    // Partition to run on
-    queue = "MyLargePartition"
-}
-```
+If you wish to repeatedly use the same parameters for multiple runs, rather than specifying each flag in the command, you can specify these in a params file.
 
----
+Pipeline settings can be provided in a `yaml` or `json` file via `-params-file <file>`.
 
-#### Mode: `full` with preset strain reference
+> [!WARNING]
+> Do not use `-c <file>` to specify parameters as this will result in errors. Custom config files specified with `-c` must only be used for [tuning process resource specifications](https://nf-co.re/docs/usage/configuration#tuning-workflow-resources), other infrastructural tweaks (such as output directories), or module arguments (args).
 
-##### Required Input Parameters
-| Parameter | Description | Accepted Inputs |
-| - | - | - |
-| `-p` / `--profile` | specify the dependency manager to be used | `conda`/`mamba`/`singularity`/`docker` |
-| `-s` / `--strain` | Specify which measles strain to use as reference | `B3`/`D4`/`D8`/`H1` |
-| `-f` / `--fastq` | Path to directory containing fastq or fastq.gz files | Path to Directory |
+The above pipeline run specified with a params file in yaml format:
 
-- To specify the directory where your fastq files are located, use the `-f` or `--fastq` argument followed by the directory path. Make sure only your fastq files are saved within that directory. Be sure to include what strain you want your reference to be using `-s` or `--strain`.
-
-Example:
 ```bash
-measeq -p <PROFILE> -s <B3/D4/D8/H1> -f <PATH/TO/FASTQ> -o <OUT/DIRECTORY>
+nextflow run phac-nml/measeq -profile docker -params-file params.yaml
 ```
 
----
+with:
 
-#### Mode: `full` with user supplied reference and annotation file
+```yaml title="params.yaml"
+input: "./samplesheet.csv"
+outdir: "./results/"
+reference: "./REFERENCE.fa"
+platform: "illumina"
+```
 
-##### Required Input Parameters
-| Parameter | Description | Accepted Inputs |
-| - | - | - |
-| `-p` / `--profile` | specify the dependency manager to be used | `conda`/`mamba`/`singularity`/`docker` |
-| `-r` / `--reference` | Path to FASTA sequence to be used as a reference | Path to File |
-| `-g` / -`-gff` | Path to annotation file | Path to File |
-| `-f` / `--fastq` | Path to directory containing fastq or fastq.gz files | Path to Directory |
+You can also generate such `YAML`/`JSON` files via [nf-core/launch](https://nf-co.re/launch).
 
-- When running the pipeline with a user supplied reference FASTA and annotation file, the only other argument required is `-f` or `--fastq` followed by the directory path to where the fastq files are located.
+### Updating the pipeline
 
-Example:
+When you run the above command, Nextflow automatically pulls the pipeline code from GitHub and stores it as a cached version. When running the pipeline after this, it will always use the cached version if available - even if the pipeline has been updated since. To make sure that you're running the latest version of the pipeline, make sure that you regularly update the cached version of the pipeline:
+
 ```bash
-measeq -p <PROFILE> -r <REF> -g <GFF> -f <PATH/TO/FASTQ>
+nextflow pull phac-nml/measeq
 ```
 
----
+### Reproducibility
 
-### Mode: `report`
+It is a good idea to specify the pipeline version when running the pipeline on your data. This ensures that a specific version of the pipeline code and software are used when you run your pipeline. If you keep using the same tag, you'll be running the same version of the pipeline, even if there have been changes to the code since.
 
-##### Required Input Parameters
-| Parameter | Description | Accepted Inputs |
-| - | - | - |
-| `-r` / -`-reference` | Path to FASTA sequence to be used as a reference | Path to File |
-| `-vr` / `--viralrecon` | Path to the results directory of viralrecon | Path to Directory |
+First, go to the [phac-nml/measeq releases page](https://github.com/phac-nml/measeq/releases) and find the latest pipeline version - numeric only (eg. `1.3.1`). Then specify this when running the pipeline with `-r` (one hyphen) - eg. `-r 1.3.1`. Of course, you can switch to another version by changing the number after the `-r` flag.
 
-- The `report` mode uses an existing viralrecon results directory to execute the remaining MeaSeq pipeline steps. It requires the use of the `-vr` or `--viralrecon` parameter followed by the path to the directory. This mode also requires the user to use the `-r` or `--reference` parameter with the same reference FASTA used for the original viralrecon run. 
+This version number will be logged in reports when you run the pipeline, so that you'll know what you used when you look back in the future. For example, at the bottom of the MultiQC reports.
 
-Example:
+To further assist in reproducibility, you can use share and reuse [parameter files](#running-the-pipeline) to repeat pipeline runs with the same settings without having to write out a command with every single parameter.
+
+> [!TIP]
+> If you wish to share such profile (such as upload as supplementary material for academic publications), make sure to NOT include cluster specific paths to files, nor institutional specific profiles.
+
+## Core Nextflow Arguments
+
+> [!NOTE]
+> These options are part of Nextflow and use a _single_ hyphen (pipeline parameters use a double-hyphen)
+
+### `-profile`
+
+Use this parameter to choose a configuration profile. Profiles can give configuration presets for different compute environments.
+
+Several generic profiles are bundled with the pipeline which instruct the pipeline to use software packaged using different methods (Docker, Singularity, Podman, Shifter, Charliecloud, Apptainer, Conda) - see below.
+
+> [!IMPORTANT]
+> We highly recommend the use of Docker or Singularity containers for full pipeline reproducibility, however when this is not possible, Conda is also supported.
+
+Note that multiple profiles can be loaded, for example: `-profile test,docker` - the order of arguments is important!
+They are loaded in sequence, so later profiles can overwrite earlier profiles.
+
+If `-profile` is not specified, the pipeline will run locally and expect all software to be installed and available on the `PATH`. This is _not_ recommended, since it can lead to different results on different machines dependent on the computer environment.
+
+- `test`
+  - A profile with a complete configuration for automated testing
+  - Includes links to test data so needs no other parameters
+- `docker`
+  - A generic configuration profile to be used with [Docker](https://docker.com/)
+- `singularity`
+  - A generic configuration profile to be used with [Singularity](https://sylabs.io/docs/)
+- `podman`
+  - A generic configuration profile to be used with [Podman](https://podman.io/)
+- `shifter`
+  - A generic configuration profile to be used with [Shifter](https://nersc.gitlab.io/development/shifter/how-to-use/)
+- `charliecloud`
+  - A generic configuration profile to be used with [Charliecloud](https://hpc.github.io/charliecloud/)
+- `apptainer`
+  - A generic configuration profile to be used with [Apptainer](https://apptainer.org/)
+- `wave`
+  - A generic configuration profile to enable [Wave](https://seqera.io/wave/) containers. Use together with one of the above (requires Nextflow ` 24.03.0-edge` or later).
+- `conda`
+  - A generic configuration profile to be used with [Conda](https://conda.io/docs/). Please only use Conda as a last resort i.e. when it's not possible to run the pipeline with Docker, Singularity, Podman, Shifter, Charliecloud, or Apptainer.
+
+### `-resume`
+
+Specify this when restarting a pipeline. Nextflow will use cached results from any pipeline steps where the inputs are the same, continuing from where it got to previously. For input to be considered the same, not only the names must be identical but the files' contents as well. For more info about this parameter, see [this blog post](https://www.nextflow.io/blog/2019/demystifying-nextflow-resume.html).
+
+You can also supply a run name to resume a specific run: `-resume [run-name]`. Use the `nextflow log` command to show previous run names.
+
+### `-c`
+
+Specify the path to a specific config file (this is a core Nextflow command). See the [nf-core website documentation](https://nf-co.re/usage/configuration) for more information.
+
+## Custom Configuration
+
+### Resource Requests
+
+Whilst the default requirements set within the pipeline will hopefully work for most people and with most input data, you may find that you want to customise the compute resources that the pipeline requests. Each step in the pipeline has a default set of requirements for number of CPUs, memory and time. For most of the pipeline steps, if the job exits with any of the error codes specified [here](https://github.com/nf-core/rnaseq/blob/4c27ef5610c87db00c3c5a3eed10b1d161abf575/conf/base.config#L18) it will automatically be resubmitted with higher resources request (2 x original, then 3 x original). If it still fails after the third attempt then the pipeline execution is stopped.
+
+To change the resource requests, please see the [max resources](https://nf-co.re/docs/usage/configuration#max-resources) and [tuning workflow resources](https://nf-co.re/docs/usage/configuration#tuning-workflow-resources) section of the nf-core website.
+
+### Custom Containers
+
+In some cases, you may wish to change the container or conda environment used by a pipeline steps for a particular tool. By default, nf-core pipelines use containers and software from the [biocontainers](https://biocontainers.pro/) or [bioconda](https://bioconda.github.io/) projects. However, in some cases the pipeline specified version maybe out of date.
+
+To use a different container from the default container or conda environment specified in a pipeline, please see the [updating tool versions](https://nf-co.re/docs/usage/configuration#updating-tool-versions) section of the nf-core website.
+
+### Custom Tool Arguments
+
+A pipeline might not always support every possible argument or option of a particular tool used in pipeline. Fortunately, nf-core pipelines provide some freedom to users to insert additional parameters that the pipeline does not include by default.
+
+## Running in the Background
+
+Nextflow handles job submissions and supervises the running jobs. The Nextflow process must run until the pipeline is finished.
+
+The Nextflow `-bg` flag launches Nextflow in the background, detached from your terminal so that the workflow does not stop if you log out of your session. The logs are saved to a file.
+
+Alternatively, you can use `screen` / `tmux` or similar tool to create a detached session which you can log back into at a later time.
+Some HPC setups also allow you to run nextflow within a cluster job submitted your job scheduler (from where it submits more jobs).
+
+## Nextflow Memory Requirements
+
+In some cases, the Nextflow Java virtual machines can start to request a large amount of memory.
+We recommend adding the following line to your environment to limit this (typically in `~/.bashrc` or `~./bash_profile`):
+
 ```bash
-measeq report -r <REF> -vr <PATH/TO/VR/DIR>
+NXF_OPTS='-Xms1g -Xmx4g'
 ```
-
----
-
-### Optional parameters for both modes
-| Parameter | Description | Accepted Inputs |
-| - | - | - |
-| `-o` / `--output` | Output directory name/path to write results to. Default: './measeq_run_STRAIN_DATE+TIME' | String name or Path to Directory |
-| `-c` / `--cpus` | The number of CPUs to be used for downstream parallel processing. Default: 4 | Integer number of CPUs |
-| `-h` / `--help` | Displays the help statement and exits. Can be used with the mode parameter for a more specific help statement | None |
-| `-v` / `--version` | Displays the version and exits | None |
-| `--debug` | Debug mode prints more information to command line | None |
-
----
-
-### Fastq file formatting
-To run this pipeline in `full` mode, make sure your paired reads are saved in the same folder and have the same naming format with only a change of `R1` to `R2` or vice-versa. For example, you can use the following naming format:
-```
-MEV-001_L001_R1.fastq.gz
-MEV-001_L001_R2.fastq.gz
-```
-If you are using a different naming format, just ensure they match up except for `R1` & `R2`.
-
-> **Important:** Please ensure only fastq or fastq.gz files are saved within your fastq directory. 
-
----
-
-### Contact Information
-
-By default, the pipeline will display "Contact Information not provided" in the Run Report. If you would like to add any information about the lab/organization running the pipeline, you can use any combination of the following the parameters.
-
-| Parameter | Description | Accepted Inputs | Required? |
-| - | - | - | - |
-| `--name` | Name of the lab or organizaton running MeaSeq | String name | No |
-| `--email` | Email of the lab or organizaton running MeaSeq | Email address | No |
-| `--phone` | Phone Number of the lab or organizaton running MeaSeq | Phone Number | No |
-| `--website` | Website of the lab or organizaton running MeaSeq | Website | No |
-
-Example:
-```bash
-measeq \
-    -p <PROFILE> \
-    -f <PATH/TO/FASTQ> \
-    -s <B3/D4/D8/H1> \
-    --name <NAME> \
-    --email <NAME@ORG.COM> \
-    --phone <+123 456 789> \
-    --website <WWW.ORG.COM>
-```
-
----
-
-## Updating the pipeline
-From time to time, the pipeline's code will be updated. To ensure that you are running the latest version of MeaSeq, it is important you rerun the installation step every time there is a new version of MeaSeq.

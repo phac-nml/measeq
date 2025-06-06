@@ -1,95 +1,243 @@
-# MeaSeq: Measles Illumina Sequence Analysis Automation
- 
+# MeaSeq: Measles Sequence Analysis Automation
+
+- [Updates](#updates)
+  - [2025-05-29](#2025-05-29)
 - [Introduction](#introduction)
 - [Installation](#installation)
-    - [Installation Steps](#installation-steps)
-    - [Optional Installation Parameters](#optional-installation-parameters)
-- [Running](#running)
-  - [Quickstart Guide](#quickstart-guide)
-  - [Test Dataset](#test-dataset)
+- [Resource Requirements](#resources-requirements)
+- [Usage](#usage)
+  - [Illumina](#illumina)
+  - [Nanopore](#nanopore)
+  - [Amplicon and Primer Files](#amplicon-and-primer-files)
+  - [More Run Options](#more-run-options)
+  - [Testing](#testing)
 - [Outputs](#outputs)
+- [Steps](#steps)
+  - [Illumina Steps](#illumina-steps)
+  - [Nanopore Steps](#nanopore-steps)
 - [Troubleshooting](#troubleshooting)
 - [Credits](#credits)
 - [Citations](#citations)
 - [Contributing](#legal)
 - [Legal](#legal)
 
+## Updates
+
+### _2025-06-06_
+
+- Switched to running all steps with nextflow for the following reasons:
+  - Allow more control over all of the steps
+  - Easier to install/run along with having more dependency management options (IE not required to use `conda`)
+  - Eventual implementation to IRIDA-Next
+- Focus is **currently on Illumina data** although the nanopore side _should_ still work other than the final report
+
 ## Introduction
-Measeq is a measles virus specific pipeline established for surveillance and outbreak analysis. The pipeline utilizes a custom configuration of [ViralRecon](https://nf-co.re/viralrecon/2.6.0) output to measure sequencing depth and quality, perform variant annotation, examine genome lengths, and assess gene validity in a measles-specific context. The pipeline culminates in a locally stored HTML report visualizing all the aformentioned components.
 
-![MeaSeq Workflow Diagram](measeq_workflow.png)
+**MeaSeq** is a measles virus (MeV) specific pipeline established for use in surveillance and outbreak analysis. This pipeline utilizes a reference-based read mapping approach for Whole Genome or Amplicon sequencing data from both the Illumina and Nanopore platforms to output MeV consensus sequences, variant data, sequencing qualtiy information, and custom summary reports.
 
-This project aims to implement an open-source measles virus Illumina whole genome sequences analysis pipeline. The goal is to generate and nationally deploy a standardized pipeline that is focused on final reporting metrics and plots for rapid detection and response to measles virus outbreaks in Canada and abroad.
+![MeaSeq Workflow Diagram](./MeaSeq_Workflow_COG.png)
+
+This project aims to implement an open-source, easy to run, MeV Whole Genome Sequence analysis pipeline that works on both Illumina and Nanopore data. The end goal of this project is to deploy a standardized pipeline focused on final reporting metrics and plots for rapid detection and response to MeV outbreaks in Canada and abroad.
 
 ## Installation
-The pipeline requires all tools and dependencies in the [environment.yml](./measeq/environment.yml) file along with the dependencies for the steps in the ViralRecon pipeline to run from start to completion. For the steps added in the MeaSeq pipeline, the current dependency management tool available which the pipeline is based around is `conda`/`mamba` which can be [installed following the instructions here](https://www.anaconda.com/docs/getting-started/miniconda/install#macos-linux-installation).
 
-For the ViralRecon pipeline and its steps, all of `conda|mamba|docker|singularity` can be passed in as the `--profile`
+> [!NOTE]
+> If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline) with `-profile test` before running the workflow on actual data.
 
-### Installation Steps
-Follow the instructions below to create a new installation of Measeq in your desired location using `conda` or `mamba`:
+Installation requires both [nextflow](https://www.nextflow.io/) at a minimum version of `24.04.2` and a dependency management system to run.
 
-1. Install conda/mamba for your system following their instructions([conda link](https://www.anaconda.com/docs/getting-started/miniconda/install#macos-linux-installation))
+Steps:
 
-2. Clone the repo to where you want to install it from:
-    ```bash
-    git clone https://github.com/phac-nml/measeq.git 
-    ```
+1. Download and install nextflow
 
-3. Run the installation script
-    ```bash
-    cd measeq
-    ./install.sh
-    ```
+   1. Download and install with [conda](https://docs.conda.io/en/latest/miniconda.html)
+      - Conda command: `conda create -n nextflow -c conda-forge -c bioconda nextflow`
+   2. Install with the instructions at https://www.nextflow.io/
 
-### Optional Installation Parameters
-| Parameter | Description | Accepted Inputs |
-| - | - | - |
-| `-p` or `--prefix` | Prefix to where the conda environment will be created. | Path to directory |
-| `-n` or `--name` | Name of the conda environment to be created | String name | 
-| `--use-mamba` | Use mamba instead of conda for the installation | None |
+2. Determine which dependency management system works best for you
 
-- The installation options follow typical conda naming. 
+   - _Note_: Currently the plotting process is using a custom docker container but it should work for both docker and singularity
 
-    - As such, `--prefix` and `--name` can't be used at the same time.
+3. Run the pipeline with one of the following profiles to handle dependencies (or use your [own profile](https://nf-co.re/docs/usage/getting_started/configuration) if you have one for your institution!:
+   - `conda`
+   - `mamba`
+   - `singularity`
+   - `docker`
 
-- If `--name` is used or if no parameter is used, then the conda environemnt will be installed to your default conda environments directory.
+## Resources Requirements
 
-- If neither `--prefix` nor `--name` options are used, then the installation will occur under the default name: `measeq`.
+By default, the `bwamem2` step has a minimum resource usage allocation set to `12 cpus` and `72GB memory` using the nf-core `process_high` label.
 
-## Running
-You can execute the pipeline with various options depending on which steps of the pipeline you would like to execute and how you want to provide the reference FASTA. Detailed running options are available in [the usage docs](docs/usage.md).
+This can be adjusted (along with the other labels) by creating and passing a [custom configuration file](https://nf-co.re/docs/usage/getting_started/configuration) with `-c <config>`. More info can be found in the [usage doc](./docs/usage.md)
 
-### Quickstart guide
-To just get started and run the pipeline, the following basic command is all that is required to do so. This example command works when MeaSeq is installed to your default conda environments directory
-```bash
-conda activate measeq
-measeq -p <PROFILE> -f <PATH/TO/FASTQ> -s <B3/D4/D8/H1> -o <OUT/DIRECTORY>
+The pipeline has also been test using as low as `2 cpus` and `16GB memory`
+
+## Usage
+
+### Illumina
+
+First, prepare a samplesheet with your input data that looks as follows for Illumina paired-end data:
+
+**samplesheet.csv**:
+
+```csv
+sample,fastq_1,fastq_2
+MeVSample01,/PATH/TO/inputread1_S1_L002_R1_001.fastq.gz,/PATH/TO/inputread1_S1_L002_R2_001.fastq.gz
+PosCtrl01,/PATH/TO/inputread2_S1_L003_R1_001.fastq.gz,/PATH/TO/inputread2_S1_L003_R2_001.fastq.gz
+Sample3,/PATH/TO/inputread3_S1_L004_R1_001.fastq.gz,/PATH/TO/inputread3_S1_L004_R2_001.fastq.gz
 ```
 
-### Test Dataset
-To test the `MeaSeq` pipeline, and your installation, a small set of D8 genotype samples have been included from [SRA BioProject PRJNA480551](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA480551) in the [`test_data/fastqs`](test_dataset/fastqs/) directory.
+Each row represents a sample and its associated paired-end Illumina read data.
 
-To run these samples after installation, the following command can be used, filling in the parameters as dictated by your system requirements:
+You can then run the pipeline using:
+
 ```bash
-measeq -p <PROFILE> -f <PATH/TO/REPO/testing/fastqs> -s D8
+nextflow run phac-nml/measeq \
+    --input <SAMPLESHEET> \
+    --outdir <OUTDIR> \
+    --reference <REFERENCE FASTA> \
+    --platform <illumina||nanopore> \
+    -profile <docker/singularity/.../institute>
+```
+
+### Nanopore
+
+And as follows for nanopore data:
+
+**samplesheet.csv**
+
+```csv
+sample,fastq_1,fastq_2
+MeVSample01,/PATH/TO/inputread1.fastq.gz,
+PosCtrl01,/PATH/TO/inputread2.fastq.gz,
+Sample3,/PATH/TO/inputread3.fastq.gz,
+```
+
+Each row represents a sample and its single-end nanopore data.
+
+You can then run the pipeline using:
+
+```bash
+nextflow run phac-nml/measeq \
+    --input <SAMPLESHEET> \
+    --outdir <OUTDIR> \
+    --reference <REFERENCE FASTA> \
+    --platform <illumina||nanopore> \
+    --model <MODEL> \
+    -profile <docker/singularity/institute/etc>
+```
+
+### Amplicon and Primer Files
+
+Both Illumina and Nanopore support running amplicon data using a primer scheme file. To run amplicon data all you need is a primer bed file where the primers have been mapped to the location in the reference genome used. The parameter being `--primer_bed <PRIMER_BED>`. An example primer bed file looks as such:
+
+**primer.bed**
+
+```
+<CHROM>         <START> <END>   <PRIMER_NAME>   <POOL>  <DIRECTION>
+MH356245.1      1       25      MSV_1_LEFT      1       +
+MH356245.1      400     425     MSV_2_LEFT      2       +
+MH356245.1      500     525     MSV_1_RIGHT     1       -
+MH356245.1      900     925     MSV_2_RIGHT     2       -
+```
+
+_Note_: The first line is just to display what each line expects.
+
+### More Run Options
+
+For more detailed running options including adding metadata, adjusting parameters, adding in DSID matches, and more, please refer to [the usage docs](docs/usage.md).
+
+> [!WARNING]
+> Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
+
+### Testing
+
+To test the `MeaSeq` pipeline, and that everything works on your system, a small set of D8 genotype samples have been included from [SRA BioProject PRJNA480551](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA480551) in the [`test_data/fastqs`](test_dataset/fastqs/) directory.
+
+To run the pipeline on these samples run the following command:
+
+```bash
+nextflow run phac-nml/measeq -profile test,<docker/singularity/institute/etc>
 ```
 
 ## Outputs
----
-> If you don't specify an output directory with the `-o` argument, the pipeline will by default create a new directory (`measeq_run_<strain>_<date>`) within your current working directory and output the results there.
 
-The main output of the pipeline, `MeaSeq_Report.html`, gives a summary of the run including sample quality metrics, plots, and any additional information. Detailed pipeline outputs are described [within the output docs](docs/output.md)
+The main outputs of the pipeline are the `consensus sequences` (N450 and Full), the `overall.qc.csv` summary table, and the `MeaSeq_Report.html`. The final MeaSeq report gives a summary of the run including sample quality metrics, plots, and any additional information. Detailed pipeline outputs are described [within the output docs](docs/output.md)
+
+## Steps
+
+More detailed steps are available in the [output docs](./docs/output.md)
+
+### Illumina Steps
+
+1. Generate Reference and Primer Intermediates
+2. FastQC
+3. Illumina Consensus Workflow
+   1. FastP
+   2. BWAMem2
+   3. iVar Trim (Amplicon input only)
+   4. Freebayes
+   5. Process Freebayes VCF
+   6. Make Depth Mask
+   7. Bcftools Consensus (Ambiguous and Consensus variants)
+4. Nextclade (N450 and Custom datasets, N450 fasta output)
+5. Samtools depth
+6. Compare DSId (Optional with `--dsid_fasta` parameter)
+7. Make sample QC
+8. Amplicon Summary Workflow (Amp only data)
+   1. Bedtools Coverage
+   2. Summarize Amplicon Depth
+   3. Summarize Amplicon Completeness
+   4. MultiQC Amplicon Report
+9. Report Workflow
+   1. Samtools mpileup
+   2. Pysamstats
+   3. Rmarkdown
+
+### Nanopore Steps
+
+1. Generate Reference and Primer Intermediates
+2. FastQC
+3. Nanopore Consensus Workflow
+   1. Artic Get Models
+   2. NanoQ
+   3. Minimap2
+   4. Amplicon
+      1. Artic Align Trim
+      2. Clair3 Pool
+      3. Artic VCF Merge
+   5. Clair3 No Pool (non-amplicon)
+   6. Make Depth Mask
+   7. VCF Filter
+   8. Artic Mask
+   9. Bcftools Norm
+   10. Bcftools Consensus
+4. Nextclade (N450 and Custom datasets, N450 fasta output)
+5. Samtools depth
+6. Compare DSId (Optional with `--dsid_fasta` parameter)
+7. Make sample QC
+8. Amplicon Summary Workflow (Amp only data)
+   1. Bedtools Coverage
+   2. Summarize Amplicon Depth
+   3. Summarize Amplicon Completeness
+   4. MultiQC Amplicon Report
+9. Report Workflow
+   1. Samtools mpileup
+   2. Pysamstats
+   3. Rmarkdown
+
+To come
 
 ## Troubleshooting
 
-For troubleshooting, please open an issue.
+For troubleshooting, please open an issue or consult [the usage docs](docs/usage.md) to see if they have the information you require.
 
 ## Credits
 
-Written by McMaster University Co-op student - `Ahmed Abdalla`
+MeaSeq was originally written as an illumina-focused bash pipeline by McMaster University Co-op student - `Ahmed Abdalla` and has now been expanded to cover nanopore data along with being fully converted to Nextflow.
 
 For questions please contact either:
+
 - Darian Hole (`darian.hole@phac-aspc.gc.ca`)
 - Molly Pratt (`molly.pratt@phac-aspc.gc.ca`)
 
@@ -109,9 +257,11 @@ This pipeline uses code and infrastructure developed and maintained by the [nf-c
 Detailed citations for utilized tools are found in [CITATIONS.md](./CITATIONS.md)
 
 ## Contributing
+
 Contributions are welcome through creating PRs or Issues
 
 ## Legal
+
 Copyright 2025 Government of Canada
 
 Licensed under the MIT License (the "License"); you may not use this work except in compliance with the License. You may obtain a copy of the License at:
