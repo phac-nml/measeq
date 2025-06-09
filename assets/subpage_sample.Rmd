@@ -160,7 +160,10 @@ var_c_names <- c("pos", "ref", "alt", "qual", "depth", "vaf", "tag")
 
 # Create table
 if (file.exists(var_f)) {
-  variants <- read.table(var_f, header = TRUE, sep = "\t")
+  # Col classes incase there is few variants and they are Ts
+  #  Which then becomes 'true' which is not ideal
+  col_classes <- c(NA, "integer", "character", "character", rep(NA, 4))
+  variants <- read.table(var_f, header = TRUE, sep = "\t", colClasses = col_classes)
   variants <- select(variants, var_c_names)
   variants <- variants %>%
     rename(

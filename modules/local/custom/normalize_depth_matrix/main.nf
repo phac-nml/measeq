@@ -28,11 +28,21 @@ process NORMALIZE_DEPTH_MATRIX {
     inpath = Path('./')
     outl = []
     first = True
+
+    # The names are very much always the same so can use the '_depth' to get the name
     for bed in inpath.glob('*.tsv'):
-        name = str(bed).split('_')[0]
+        name = str(bed).split('_depth')[0]
 
         df = pd.read_csv(bed, sep='\t', names=['chrom', 'position', 'depth'])
+        # Don't summarize empty files
+        if df.empty:
+            continue
         max_depth = col_max(df, 'depth')
+
+        # Don't break on max depth of 0, each position is still 0
+        #  the normalization is position/max and each position is 0
+        if max_depth == 0:
+            max_depth = 1
 
         df[name] = ((df['depth'] / max_depth) * 100).round(2)
 
