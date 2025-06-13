@@ -77,7 +77,7 @@ def validate_df_columns(df: pd.DataFrame, needed_columns: list) -> None:
 
 def assess_control(row: pd.Series, threshold: float) -> str:
     """Assess control values to pass or fail them"""
-    if row['genome_completeness'] >= threshold:
+    if row['genome_completeness_percent'] >= threshold:
         return f'Warning - Above {threshold}% genome completeness contamination threshold'
     return 'PASS'
 
@@ -131,8 +131,8 @@ def main() -> None:
         df.loc[df['neg_control_info'].str.contains('Warning', na=False), 'qc_status'] = 'CONTROL_WARN'
 
         # Have to adjust this later
-        if any(neg_df['genome_completeness'] >= args.threshold):
-            failing_samples = neg_df[neg_df['genome_completeness'] >= args.threshold]['sample'].to_list()
+        if any(neg_df['genome_completeness_percent'] >= args.threshold):
+            failing_samples = neg_df[neg_df['genome_completeness_percent'] >= args.threshold]['sample'].to_list()
             run_control_status = 'WARN'
             run_control_info = f'Samples: {";".join(failing_samples)} are above {args.threshold} contamination threshold'
     else:

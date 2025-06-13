@@ -38,13 +38,14 @@ process NORMALIZE_DEPTH_MATRIX {
         if df.empty:
             continue
         max_depth = col_max(df, 'depth')
+        mean_depth = df['depth'].mean()
 
         # Don't break on max depth of 0, each position is still 0
         #  the normalization is position/max and each position is 0
         if max_depth == 0:
             max_depth = 1
 
-        df[name] = ((df['depth'] / max_depth) * 100).round(2)
+        df[name] = ((df['depth'] / mean_depth)).round(2)
 
         if first:
             outl.append(df[['position', name]])
