@@ -251,6 +251,7 @@ metrics_df <- select(summary_df,
   `# Aligned Reads`,
   `Mean Depth`,
   `Median Depth`,
+  `Total Variants`,
   `Genome Completeness (%)`,
   `Genome Length`,
   `QC Status`,
@@ -284,7 +285,7 @@ metrics_dt <- metrics_df %>%
     )
   ) %>%
   # Row Highlighting
-  #  1 - pass, 2 - fail, 3 - partial, 4 - warning
+  #  1 - pass, 2 - fail, 3 - warning
   formatStyle(
       'status_colour_code',
       target = 'row',
@@ -304,16 +305,75 @@ metrics_dt <- metrics_df %>%
 metrics_dt
 ```
 
-## Row
+## Row {data-height=400}
 
 ### {-}
 
 ```{r static-depth-report, fig.width=12, fig.height=3}
+# Getting all the depth TSV files
+files <- list.files("positional_depth", pattern = "\\.tsv$", full.names = TRUE)
+
+# Use lapply to create list of dataframes adapted from the TSVs
+df_list <- lapply(files, function(file) {
+  sample <- tools::file_path_sans_ext(basename(file))
+  df <- read_tsv(file, col_names = c("chrom", "position", "depth"), col_types = "cii")
+  df$sample <- sample
+  return(df)
+})
+
+# Combine all dfs
+long_df <- bind_rows(df_list)
+
+# Make sure position is numeric
+long_df <- long_df %>% mutate(position = as.numeric(position))
+
+# Summarize positions
+#  Ymin and Ymax for drawing the stdev region
+#  Ymin should not be below 0
+summary_depth_df <- long_df %>%
+  group_by(position) %>%
+  summarise(
+    mean = mean(depth, na.rm = TRUE),
+    sd = sd(depth, na.rm = TRUE),
+    median = median(depth, na.rm = TRUE),
+    ymin = mean - sd,
+    ymax = mean + sd,
+    .groups = "drop"
+  )
+summary_depth_df$ymin[summary_depth_df$ymin < 0] <- 0
+
+# Plot static image for now
+max_pos <- max(summary_depth_df$position, na.rm = TRUE)
+p <- ggplot(summary_depth_df, aes(x = position)) +
+  geom_ribbon(aes(ymin = ymin, ymax = ymax), fill = "blue", alpha = 0.1) +
+  geom_line(aes(y = median), color = "blue") +
+  scale_x_continuous(
+    breaks = seq(0, max_pos, by = 2000),
+    minor_breaks = seq(0, max_pos, by = 500)
+  ) +
+  labs(title = "Median genomic read depth with deviation",
+       x = "Genome position", y = "Median read depth") +
+  theme_classic() +
+  theme(
+    panel.grid.minor.x = element_line(color = "#dadce0", linetype = "dotted"),
+    panel.grid.major.x = element_line(color = "#dadce0", linetype = "dotted")
+  )
+
+p
+```
+
+> **Figure 1.** Median summarized genomic read depth with standard deviation. The median depth and standard deviation were calculated for each genomic position and plotted such that the median depth is highlighted plus and minus 1 standard deviation.
+
+## Row {data-height=400}
+
+### {-}
+
+```{r static-depth-report-norm, fig.width=12, fig.height=3}
 # Adapted from Molly's summary code we used for the paper
 ndepth_raw <- read_csv("sample_positional_normalized_depth.csv")
 ndepth <- ndepth_raw %>% rename(sample = 1)
 
-transormed_data <- ndepth %>%
+transformed_data <- ndepth %>%
   pivot_longer(
     cols = -sample,
     names_to = "position",
@@ -323,7 +383,9 @@ transormed_data <- ndepth %>%
 
 # Summarize positions
 #  Ymin and Ymax for drawing the stdev region
-summary_depth_df <- transormed_data %>%
+#  Ymin should never be below 0
+#  Ymax capped to 2x max median to not explode chart
+summary_depth_df <- transformed_data %>%
   group_by(position) %>%
   summarise(
     mean = mean(norm_depth),
@@ -333,6 +395,9 @@ summary_depth_df <- transormed_data %>%
     ymax = mean + sd,
     .groups = "drop"
   )
+max_y_pos <- (2 * max(summary_depth_df$median))
+summary_depth_df$ymin[summary_depth_df$ymin < 0] <- 0
+summary_depth_df$ymax[summary_depth_df$ymax > max_y_pos] <- max_y_pos
 
 # Plot static image, not sure how well an interactive one would be here
 max_pos <- max(summary_depth_df$position)
@@ -343,8 +408,9 @@ p <- ggplot(summary_depth_df, aes(x = position)) +
     breaks = seq(0, max_pos, by = 2000),
     minor_breaks = seq(0, max_pos, by = 500)
   ) +
-  labs(title = "Normalized median read depth",
-       x = "Genome position", y = "Proportional read depth") +
+  labs(title = "Normalized variation of genomic read depth with deviation",
+       x = "Genome position", y = "Proportional variation around mean depth") +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "black") +
   theme_classic() +
   # To better track where whole run positional depth is falling add in guide lines at minor axes
   theme(
@@ -355,7 +421,7 @@ p <- ggplot(summary_depth_df, aes(x = position)) +
 p
 ```
 
-> **Figure 1.** Normalized median read depth and deviation. Normalized proportional read depth for each position in a sample was calculated using the maximum depth observed. All positions were summarized plotting the median read depth plus or minus 1 standard deviation surrounding the median.
+> **Figure 2.** Normalized variation of genomic read depth with standard deviation. Normalized variation of genomic read depth for each position in a sample was calculated using the positional depth divied by the mean. All positions were summarized by plotting the median read depth plus or minus 1 standard deviation surrounding the median with a minimum value of 0 and a maximum value of 2x the max median.
 
 ## Row {data-height=50}
 
