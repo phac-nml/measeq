@@ -147,7 +147,7 @@ p <- p %>%
 p
 ```
 
-> **Figure 2.** Subconsensus Variant Read Counts. The sample pileup was analyzed to find positions in the genome where the non-reference allele percentage was >=15%. All positions with >=10 reads, a positional read base quality of >=10 and a map quality >=30 were included in the analysis.
+> **Figure 3.** Subconsensus Variant Read Counts. The sample pileup was analyzed to find positions in the genome where the non-reference allele percentage was >=15%. All positions with >=10 reads, a positional read base quality of >=10 and a map quality >=30 were included in the analysis.
 
 ## Row
 
@@ -266,7 +266,7 @@ depthp <- plot_ly(x = ~coverage$position, y = ~coverage$depth, type = "scatter",
 )
 depthp
 ```
-> **Figure 3.** Positional genomic depth. The Y-axis is log-scaled so positions with no genomic depth have been set to 1 to allow a continuous visualization. Zones have been marked using a colour scheme where: 0-10 is red corresponding to masked sites, 10-30 is yellow corresponding to sites where there is a basecall but limited depth, and 30+ is green for positions with acceptable or better depth.
+> **Figure 4.** Positional genomic depth. The Y-axis is log-scaled so positions with no genomic depth have been set to 1 to allow a continuous visualization. Zones have been marked using a colour scheme where: 0-10 is red corresponding to masked sites, 10-30 is yellow corresponding to sites where there is a basecall but limited depth, and 30+ is green for positions with acceptable or better depth.
 
 Row
 ------------------------------
@@ -321,44 +321,7 @@ qualityp <- plot_ly(quality ,x = ~quality$'pos', y = ~quality$'rms_baseq', type 
   )
 qualityp
 ```
-> **Figure 4.** Average root-mean-square read base quality score per genomic position
-
-Row
-------------------------------
-
-### {-}
-```{r, n_content_plot, echo=FALSE, error=TRUE}
-#### N Content Plots ####
-n_content <- read.table(paste0("positional_n_depth/", sample, ".per_base_n.tsv"), sep = "\t", header = TRUE)
-coverage <- read.table(paste0("positional_depth/", sample, "_depth.tsv"), sep = "\t", header = FALSE)
-colnames(coverage) <- c("chrom", "position", "depth")
-
-n_cov <- merge(n_content, coverage, by = "position")
-n_cov$n_cov <- ((n_cov$N_density)/n_cov$depth)*100
-n_cov$n_cov <- ifelse(is.nan(n_cov$n_cov), 0, n_cov$n_cov)
-Q1 <- quantile(n_cov$n_cov, 0.25)
-Q3 <- quantile(n_cov$n_cov, 0.75)
-IQR <- Q3 - Q1
-IQR <- unname(IQR)
-outliers <- n_cov$n_cov[n_cov$n_cov < Q1 - 1.5 * IQR | n_cov$n_cov > Q3 + 1.5 * IQR ]
-dr <- n_cov[(n_cov$n_cov %in% outliers), ]
-# if (IQR == 0 | is.na(IQR) |is.nan(IQR)) {
-#   cat("The figure for this sample couldn't be processed. The per-base N density across the sample is within the interquartile range for this sample with no outliers.\n\n")
-# } else {
-  nplot <- plot_ly(n_cov, x = n_cov$position, y = n_cov$n_cov, type = "scatter", mode = "lines", line = list(color = "#000000")) %>%
-    layout(
-      xaxis = list(
-        title = "Genomic Position (nt)",
-        tickformat = ".0f"
-      ),
-      yaxis = list(
-        title = "Percentage (%) of N's"
-      )
-    )
-  nplot
-# }
-```
-> **Figure 5.** The percentage of base calls at each position for which an N was called along the genome. The displayed positions are those identified as outliers by using quartile ranges.
+> **Figure 5.** Average root-mean-square read base quality score per genomic position
 
 ## Row {data-height=50}
 
