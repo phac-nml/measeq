@@ -52,13 +52,13 @@ nextflow_workflow {
 
             // Files exist
             // Reference Intermediates
-            assert path("${launchDir}/results/reference/genome.bed").exists()
-            assert path("${launchDir}/results/reference/amplicon.bed").exists()
-            assert path("${launchDir}/results/reference/refstats.txt").exists()
+            assert path("${launchDir}/results/reference/MH356245.1.genome.bed").exists()
+            assert path("${launchDir}/results/reference/MH356245.1.amplicon.bed").exists()
+            assert path("${launchDir}/results/reference/MH356245.1.refstats.txt").exists()
             assert path("${launchDir}/results/reference/MH356245.1.reference.fasta.fai").exists()
             // Amplicon Regions
-            assert path("${launchDir}/results/reference/amplicon_regions/1.bed").exists()
-            assert path("${launchDir}/results/reference/amplicon_regions/2.bed").exists()
+            assert path("${launchDir}/results/reference/amplicon_regions/1.MH356245.1.bed").exists()
+            assert path("${launchDir}/results/reference/amplicon_regions/2.MH356245.1.bed").exists()
         }
     }
 }

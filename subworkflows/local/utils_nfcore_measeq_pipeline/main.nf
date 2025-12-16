@@ -180,7 +180,7 @@ workflow PIPELINE_INITIALISATION {
                 def ref_id = fastaHeaderId(fasta)
                 def primer_bed
                 if ( !params.amplicon ) {
-                    primer_bed = "not_needed"
+                    primer_bed = ""
                 } else if ( params."${genotype}_ref" && params.amplicon ){
                     if ( params."${genotype}_bed" ) {
                         primer_bed = file(params."${genotype}_bed", type: 'file', checkIfExists: true)
@@ -336,4 +336,3 @@ def methodsDescriptionText(mqc_methods_yaml) {
 
     return description_html.toString()
 }
-

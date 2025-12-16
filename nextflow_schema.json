@@ -133,12 +133,14 @@
                 "model": {
                     "type": "string",
                     "description": "Clair3 model to use for variant calling. Will attempt to download the model",
+                    "pattern": "^[A-Za-z0-9_\\-\\.]*$",
                     "fa_icon": "fab fa-modx"
                 },
                 "local_model": {
                     "type": "string",
                     "description": "Path to local clair3 model directory for variant calling",
                     "format": "directory-path",
+                    "pattern": "^\\S+$",
                     "fa_icon": "fab fa-modx"
                 },
                 "normalise_ont": {
@@ -171,6 +173,8 @@
                     "type": "string",
                     "description": "Path to reference sequence to map measles fastqs to",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt"
                 },
                 "metadata": {
@@ -185,6 +189,8 @@
                     "type": "string",
                     "description": "Path to DSID multi-fasta to match output consensus data to",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt"
                 },
                 "min_depth": {
@@ -206,7 +212,7 @@
                 },
                 "neg_ctrl_substrings": {
                     "type": "string",
-                    "pattern": "^\\S+$",
+                    "pattern": "^[A-Za-z0-9_,\\-\\.]*$",
                     "default": "neg,ntc,blank,en",
                     "description": "Substrings to match to sample names to identify negative controls. Separated by a ,"
                 },
@@ -286,6 +292,38 @@
                 }
             }
         },
+        "contact_options": {
+            "title": "Contact information options",
+            "type": "object",
+            "description": "Options relating to contact information printing on final report",
+            "default": "",
+            "properties": {
+                "contact_name": {
+                    "type": "string",
+                    "description": "Name of the person or organization running the pipeline",
+                    "fa_icon": "fas fa-vector-square",
+                    "pattern": "^[A-Za-z0-9\\ _\\-\\.]*$"
+                },
+                "contact_website": {
+                    "type": "string",
+                    "description": "Website of the person or organization running the pipeline",
+                    "fa_icon": "fas fa-vector-square",
+                    "pattern": "^[A-Za-z0-9_\\-\\:\\/\\.\\%]*$"
+                },
+                "contact_phone": {
+                    "type": "string",
+                    "description": "Phone number of the person or organization running the pipeline",
+                    "fa_icon": "fas fa-vector-square",
+                    "pattern": "^[0-9_-]*$"
+                },
+                "contact_email": {
+                    "type": "string",
+                    "description": "Email of the person or organization running the pipeline",
+                    "fa_icon": "fas fa-envelope",
+                    "pattern": "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$"
+                }
+            }
+        },
         "reference_options": {
             "title": "Reference options",
             "type": "object",
@@ -295,6 +333,8 @@
                     "type": "string",
                     "description": "Path to D8 reference fasta",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt",
                     "hidden": true
                 },
@@ -309,6 +349,8 @@
                     "type": "string",
                     "description": "Path to A reference fasta",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt",
                     "hidden": true
                 },
@@ -323,6 +365,8 @@
                     "type": "string",
                     "description": "Path to B1 reference fasta",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt",
                     "hidden": true
                 },
@@ -337,6 +381,8 @@
                     "type": "string",
                     "description": "Path to B2 reference fasta",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt",
                     "hidden": true
                 },
@@ -348,9 +394,11 @@
                     "hidden": true
                 },
                 "B3_ref": {
-                    "type": "string", 
+                    "type": "string",
                     "description": "Path to B3 reference fasta",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt",
                     "hidden": true
                 },
@@ -365,6 +413,8 @@
                     "type": "string",
                     "description": "Path to C1 reference fasta",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt",
                     "hidden": true
                 },
@@ -379,6 +429,8 @@
                     "type": "string",
                     "description": "Path to C2 reference fasta",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt",
                     "hidden": true
                 },
@@ -393,6 +445,8 @@
                     "type": "string",
                     "description": "Path to D1 reference fasta",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt",
                     "hidden": true
                 },
@@ -407,6 +461,8 @@
                     "type": "string",
                     "description": "Path to D2 reference fasta",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt",
                     "hidden": true
                 },
@@ -421,6 +477,8 @@
                     "type": "string",
                     "description": "Path to D3 reference fasta",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt",
                     "hidden": true
                 },
@@ -435,6 +493,8 @@
                     "type": "string",
                     "description": "Path to D4 reference fasta",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt",
                     "hidden": true
                 },
@@ -449,6 +509,8 @@
                     "type": "string",
                     "description": "Path to D5 reference fasta",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt",
                     "hidden": true
                 },
@@ -463,6 +525,8 @@
                     "type": "string",
                     "description": "Path to D6 reference fasta",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt",
                     "hidden": true
                 },
@@ -477,6 +541,8 @@
                     "type": "string",
                     "description": "Path to D7 reference fasta",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt",
                     "hidden": true
                 },
@@ -491,6 +557,8 @@
                     "type": "string",
                     "description": "Path to D8 reference fasta",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt",
                     "hidden": true
                 },
@@ -505,6 +573,8 @@
                     "type": "string",
                     "description": "Path to D9 reference fasta",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt",
                     "hidden": true
                 },
@@ -519,6 +589,8 @@
                     "type": "string",
                     "description": "Path to D10 reference fasta",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt",
                     "hidden": true
                 },
@@ -533,6 +605,8 @@
                     "type": "string",
                     "description": "Path to D11 reference fasta",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt",
                     "hidden": true
                 },
@@ -547,6 +621,8 @@
                     "type": "string",
                     "description": "Path to E reference fasta",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt",
                     "hidden": true
                 },
@@ -561,6 +637,8 @@
                     "type": "string",
                     "description": "Path to F reference fasta",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt",
                     "hidden": true
                 },
@@ -575,6 +653,8 @@
                     "type": "string",
                     "description": "Path to G1 reference fasta",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt",
                     "hidden": true
                 },
@@ -589,6 +669,8 @@
                     "type": "string",
                     "description": "Path to G2 reference fasta",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt",
                     "hidden": true
                 },
@@ -603,6 +685,8 @@
                     "type": "string",
                     "description": "Path to G3 reference fasta",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt",
                     "hidden": true
                 },
@@ -617,6 +701,8 @@
                     "type": "string",
                     "description": "Path to H1 reference fasta",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt",
                     "hidden": true
                 },
@@ -631,6 +717,8 @@
                     "type": "string",
                     "description": "Path to H2 reference fasta",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt",
                     "hidden": true
                 },
@@ -640,34 +728,6 @@
                     "format": "file-path",
                     "fa_icon": "far fa-file-alt",
                     "hidden": true
-                }
-            }
-        },
-        "contact_options": {
-            "title": "Contact information options",
-            "type": "object",
-            "description": "Options relating to contact information printing on final report",
-            "default": "",
-            "properties": {
-                "contact_name": {
-                    "type": "string",
-                    "description": "Name of the person or organization running the pipeline",
-                    "fa_icon": "fas fa-vector-square"
-                },
-                "contact_website": {
-                    "type": "string",
-                    "description": "Website of the person or organization running the pipeline",
-                    "fa_icon": "fas fa-vector-square"
-                },
-                "contact_phone": {
-                    "type": "string",
-                    "description": "Phone number of the person or organization running the pipeline",
-                    "fa_icon": "fas fa-vector-square"
-                },
-                "contact_email": {
-                    "type": "string",
-                    "description": "Email of the person or organization running the pipeline",
-                    "fa_icon": "fas fa-vector-square"
                 }
             }
         }
@@ -698,10 +758,10 @@
             "$ref": "#/definitions/generic_options"
         },
         {
-            "$ref": "#/definitions/reference_options"
+            "$ref": "#/definitions/contact_options"
         },
         {
-            "$ref": "#/definitions/contact_options"
+            "$ref": "#/definitions/reference_options"
         }
     ]
 }

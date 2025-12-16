@@ -65,7 +65,6 @@ workflow ILLUMINA_CONSENSUS {
     // MODULE: Run BWAMEM to map to reference
     //  Using modules.config to filter reads with view
     //
-
     // Prepare Input
     // Link FASTP outputs with INDEX & Join reads to their matching reference by ref_id
     ch_reads_by_ref = FASTP.out.reads
@@ -103,7 +102,6 @@ workflow ILLUMINA_CONSENSUS {
     //
     // MODULE: Sort and index output bam file from BWA
     //
-
     // Prepare Inputs
     ch_samtools_sort_input = BWAMEM2_MEM.out.bam
         .map { meta, bam -> tuple(meta.ref_id, meta, bam) }
@@ -133,7 +131,6 @@ workflow ILLUMINA_CONSENSUS {
         //
         // MODULE: Run IVAR Trim
         //
-
         // Prepare Inputs
         ch_ivar_trim_input = ch_bam_bai
             .map { meta, bam, bai -> tuple(meta.ref_id, meta, bam, bai) }
@@ -153,7 +150,6 @@ workflow ILLUMINA_CONSENSUS {
     //
     // SUBWORKFLOW: Mark duplicates if arg is given
     //
-
     // Prepare Input
     ch_bam_bai_by_ref = ch_bam_bai
         .map { meta, bam, bai -> tuple(meta.ref_id, meta, bam, bai) }
@@ -199,7 +195,6 @@ workflow ILLUMINA_CONSENSUS {
     //
     // MODULE: Run Freebayes to call variants
     //
-
     // Prepare Input for both FREEBAYES & CUSTOM_MAKE_DEPTH_MASK modules
     ch_bam_bai_by_ref = ch_bam_bai
         .map { meta, bam, bai -> tuple(meta.ref_id, meta, bam, bai) }
@@ -220,7 +215,6 @@ workflow ILLUMINA_CONSENSUS {
     //
     // MODULE: Process freebayes variant calls with custom python script and bcftools norm
     //
-
     // Prepare Input
     ch_process_vcf_input = FREEBAYES.out.vcf
             .map { meta, vcf -> tuple(meta.ref_id, meta, vcf) }
@@ -249,12 +243,11 @@ workflow ILLUMINA_CONSENSUS {
     //
     // MODULE: Create intermediate fasta file with IUPACs for ambiguous positions from freebayes
     //
-
     // Prepare Input
     ch_ambiguous_vcf_restructured = PROCESS_VCF.out.ambiguous_vcf
             .map {meta, vcf_gz, tbi -> tuple(meta.ref_id, meta, vcf_gz, tbi) }
             .combine(ch_reference.map { meta_ref, fasta -> tuple(meta_ref.id, meta_ref, fasta) }, by: 0)
-            .map { _ref_id, meta, vcf_gz, tbi, meta_ref, fasta ->
+            .map { _ref_id, meta, vcf_gz, tbi, _meta_ref, fasta ->
                 tuple(meta, vcf_gz, tbi, fasta, [])
             }
 
@@ -277,7 +270,6 @@ workflow ILLUMINA_CONSENSUS {
     //
     // MODULE: Adjust final consensus sequence headers to make downstream processes easier
     //
-
     // Prepare Input
     ch_adjust_input = BCFTOOLS_CONSENSUS_FINAL.out.fasta
         .map { meta, con_fasta -> tuple(meta.ref_id, meta, con_fasta) }

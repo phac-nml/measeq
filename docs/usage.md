@@ -109,17 +109,21 @@ You can override this prediction and use your own reference FASTA file by specif
 
 To change the preset files for each measles genotype, you may use a params file [as detailed below](#creating-a--params-file-for-setting-references-and-primers-for-predicted-genotypes) or pass the modified paths through the command line.
 The parameters are specified using the pattern:
+
 ```
 <Genotype>_ref
 <Genotype>_bed
 ```
+
 where `<Genotype>` is the genotype identifier (e.g. B3, D8, A, etc.). For example, for genotype B3 you would use:
+
 ```
 B3_ref
 B3_bed
 ```
 
 In addition, you can modify the defaults that are used when a genotype is not predicted or there is no genotype specific FASTA file by modifying the following parameters:
+
 ```
 default_ref
 default_bed
@@ -171,11 +175,11 @@ An example file can be [found here](../assets/metadata.tsv)
 
 #### Contact Information
 
-When running the pipeline, you have the option of supplying your information or your organization/lab's information to be printed in the final HTML report to ease sharing of the report. You can supply the contact information either by passing in that information on the command line or by passing in a YAML file with the contact information. Currently, the pipeline supports providing your name, phone number, email, and website information.
+When running the pipeline, you have the option of supplying your information or your organization/lab's information to be printed in the final HTML report. You can supply the contact information either by passing in that information on the command line or by passing in a `params-file` YAML file with the contact information similar to the references. Currently, the pipeline supports providing your name, phone number, email, and website information.
 
 To pass in your contact information through the command line, you can use the following command:
 
-``` bash
+```bash
 nextflow run phac-nml/measeq -profile <PROFILE> --input <SAMPLESHEET.CSV> --platform <ILLUMINA OR NANOPORE> --contact_name <NAME> --contact_phone "123 456 7890" --contact_email <EMAIL> --contact_website <"WEBSITE.COM">
 ```
 
@@ -183,21 +187,6 @@ nextflow run phac-nml/measeq -profile <PROFILE> --input <SAMPLESHEET.CSV> --plat
 > You may decide to use any combination of these contact parameters as it fits you.
 
 > The website parameter supports specifying the website with or without the leading `www.` or `https://`
-
-To set your contact information for multiple runs, you may use a `contact.yaml` file similar to the one [detailed earlier with the reference file](#creating-a--params-file-for-setting-references-and-primers-for-predicted-genotypes). You can create the file as following:
-
-```yaml title="contact.yaml"
-contact_name: "NAME OF THE PERSON/ORGANIZATION/LAB"
-contact_phone: "123 456 7890"
-contact_email: "EMAIL@ORGANIZATION.COM"
-contact_website: "ORGANIZATION.COM"
-```
-
-and run with the following command:
-
-```bash
-nextflow run phac-nml/measeq -profile <PROFILE> --input <SAMPLESHEET.CSV> --platform <ILLUMINA OR NANOPORE> -params-file contact.yaml
-```
 
 #### All Parameters Table
 
@@ -234,7 +223,6 @@ A table containing all of the parameter descriptions. You can also do `nextflow 
 | --contact_phone              | The phone number to be printed on the final HTML report                                      | False         | String  | null             |                                                   |
 | --contact_email              | The email address to be printed on the final HTML report                                     | False         | String  | null             |                                                   |
 | --contact_website            | The website to be printed on the final HTML report                                           | False         | String  | null             |                                                   |
-
 
 ### Other Settings and Parameter Files
 

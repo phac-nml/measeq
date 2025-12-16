@@ -3,11 +3,23 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v0.5.1] - 2025-12-09
+## [v1.0.0] - 2025-12-18
 
-Re-added the contact section in the final report output.
+Initial full pipeline release that includes equivalent Illumina and Nanopore workflows with full genome consensus sequence generation, N450 reporting, DSId hashing and assigning, and a final QC report.
 
-Added support for the pipeline to allow all measles genotypes as long as the user specifies the appropriate FASTA file for the genotype
+This full release adds in support for all 24 genotypes when running with the genotype predictions provided the user sets up all the appropriate files. Currently: A, B3, and D8 are suppored in this repo although its recommended that users determine their own reference and primer files as they may not match the defaults.
+
+### `Added`
+
+- Support for all 24 genotypes and their primer files [PR #26](https://github.com/phac-nml/measeq/pull/26/files)
+
+  - Recommended to set these with a `-params-file` if setting up multiple to make it easier to rerun the pipeline
+
+- Reenabled support for contact information in [PR #26](https://github.com/phac-nml/measeq/pull/26/files) to be added to the final report using any combination of:
+  - `--contact_name`: Name(s) to put on the contact page
+  - `--contact_phone`: Phone number
+  - `--contact_email`: Email
+  - `--contact_website`: Website URL
 
 ## [v0.5.0] - 2025-12-08
 
@@ -213,7 +225,7 @@ Small addition of Picard MarkDuplicates workflow along with some new tests
 
 - MeaSeq pipeline created and initial code added
 
-[v0.5.1]: https://github.com/phac-nml/measeq/releases/tag/0.5.1
+[v1.0.0]: https://github.com/phac-nml/measeq/releases/tag/1.0.0
 [v0.5.0]: https://github.com/phac-nml/measeq/releases/tag/0.5.0
 [v0.4.3]: https://github.com/phac-nml/measeq/releases/tag/0.4.3
 [v0.4.2]: https://github.com/phac-nml/measeq/releases/tag/0.4.2

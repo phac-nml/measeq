@@ -15,7 +15,7 @@ include { SPLIT_AMPLICON_REGION      } from '../../../modules/local/input_utils/
 include { GENERATE_AMPLICON_BED      } from '../../../modules/local/input_utils/main'
 include { NEXTCLADE_RUN as NEXTCLADE_RUN_REFERENCE } from '../../../modules/nf-core/nextclade/run/main'
 include { ADJUST_FASTA_HEADER        } from '../../../modules/local/artic/subcommands/main'
-include { EXTRACT_GENOTYPE        } from '../../../modules/local/custom/extract_genotype/main'
+include { EXTRACT_GENOTYPE           } from '../../../modules/local/custom/extract_genotype/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -26,8 +26,8 @@ include { EXTRACT_GENOTYPE        } from '../../../modules/local/custom/extract_
 workflow SETUP_REFERENCE_DATA {
 
     take:
-    ch_reference        // channel: tuple meta[ref_id], fasta
-    ch_primer_bed       // channel: tuple meta[ref_id], primer_bed : null
+    ch_reference        // channel: [ meta[ref_id], fasta ]
+    ch_primer_bed       // channel: [ meta[ref_id], primer_bed ?: null ]
     nextclade_dataset   // channel: [ dataset ]
 
     main:
@@ -62,10 +62,13 @@ workflow SETUP_REFERENCE_DATA {
         SPLIT_AMPLICON_REGION(
             ch_amplicon_bed
         )
+        // Bed files are POOL.REF_ID.bed, we need to get the POOL
+        //  Thus using a replace for everything after the first .
         ch_split_amp_pools_bed = SPLIT_AMPLICON_REGION.out.bed
             .flatMap { meta, bed_files ->
                 bed_files.collect { bedF ->
-                    tuple(meta + [ pool: bedF.baseName ], file(bedF))
+                    def pool_name = bedF.name.split((/\./))[0]
+                    tuple(meta + [ pool: pool_name ], file(bedF))
                 }
             }
 

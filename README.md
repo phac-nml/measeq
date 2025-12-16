@@ -1,7 +1,7 @@
 # MeaSeq: Measles Sequence Analysis Automation
 
 - [Current Updates](#current-updates)
-  - [2025-12-09](#2025-12-09)
+  - [2025-12-18](#2025-12-18)
 - [Introduction](#introduction)
 - [Installation](#installation)
 - [Resource Requirements](#resources-requirements)
@@ -27,17 +27,18 @@
 
 ## Current Updates
 
-### _2025-12-08_ Summary
+### _2025-12-18_ Summary
 
-- Sample references are now set based on the predicted genotype with a default fallback for non currently supported genotypes
+Full release version 1.0.0! Pipeline supports equivalent Illumina and Nanopore workflows allowing whole genome or amplicon sequencing analysis. The MeaSeq workflow generates whole genome consensus sequences, N450 sequences and reporting information, DSId hashing and assigning, and a final QC report. It can be run with a single reference or with the genotyping predictions.
 
-  - Currently supported: A, B3, D8
+#### Genotype Predictions
 
-    - Full support to come in `0.5.1`
-
-  - Users can still set their own reference with `--reference`
+- Sample references are now set based on the predicted genotype with a default fallback for non-supplied genotypes or unknown/mixed samples.
+  - Currently supported in the repo by default: A, B3, D8
+  - Users can supply their own references for other genotypes or update the current genotype ones based on their needs
+  - Users can set their own whole run reference (no predictions or genotype specific analysis) with `--reference`
   - [References Config](conf/reference.config)
-  - [References and Predictions section](#reference-assignment)
+  - More total information available in the [References and Predictions section](#reference-assignment)
 
 ### Future Direction
 

@@ -87,18 +87,28 @@ nextflow_pipeline {
         }
     }
 
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                        Illumina Tests
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
     //--- Test 5 ----------------------------------------------------------------------------
     test("Illumina Amplicon Data with Sample Name Completion") {
         tag "success"
         tag "illumina"
+        tag "contact"
 
         when {
             params {
-                input       = "${projectDir}/assets/ci-samplesheet.csv"
-                outdir      = "results"
-                reference   = "${projectDir}/assets/reference/D8/MH356245.1.reference.fasta"
-                platform    = "illumina"
-                primer_bed  = "${projectDir}/test_data/primer.bed"
+                input           = "${projectDir}/assets/ci-samplesheet.csv"
+                outdir          = "results"
+                reference       = "${projectDir}/assets/reference/D8/MH356245.1.reference.fasta"
+                platform        = "illumina"
+                primer_bed      = "${projectDir}/test_data/primer.bed"
+                contact_name    = "Dr. Evil"
+                contact_website = "https://url-test.ca/measles"
+                contact_phone   = "222-222-2222"
+                contact_email   = "Dr.Evil@phac-aspc.gc.ca"
             }
         }
         then {
@@ -124,16 +134,16 @@ nextflow_pipeline {
             assert lines.contains("sample2,D8,MH356245.1,Novel-bcb39a9,56368,53533,252,98.41,456.66,456.0,273,")
 
             // Intermediate generated reference files
-            assert path("$launchDir/results/reference/amplicon.bed").exists()
+            assert path("$launchDir/results/reference/MH356245.1.amplicon.bed").exists()
 
-            lines = path("$launchDir/results/reference/amplicon.bed").readLines()
+            lines = path("$launchDir/results/reference/MH356245.1.amplicon.bed").readLines()
             assert lines.contains("MH356245.1\t25\t8200\tMSV_1\t1\t+")
             assert lines.contains("MH356245.1\t8025\t15865\tMSV_2\t2\t+")
             assert lines.size() == 2
 
-            assert path("$launchDir/results/reference/genome.bed").exists()
+            assert path("$launchDir/results/reference/MH356245.1.genome.bed").exists()
 
-            lines = path("$launchDir/results/reference/genome.bed").text
+            lines = path("$launchDir/results/reference/MH356245.1.genome.bed").text
             assert lines.contains("MH356245.1\t0\t15894")
 
             // Sample Outputs
@@ -303,17 +313,17 @@ nextflow_pipeline {
             assert lines.contains("sample2,D8,MH356245.1,Novel-bcb39a9,56368,53502,252,98.41,455.12,453.0,273,")
 
             // Intermediate generated reference files
-            assert path("$launchDir/results/reference/amplicon.bed").exists()
+            assert path("$launchDir/results/reference/MH356245.1.amplicon.bed").exists()
 
-            lines = path("$launchDir/results/reference/amplicon.bed").readLines()
+            lines = path("$launchDir/results/reference/MH356245.1.amplicon.bed").readLines()
             assert lines.contains("MH356245.1\t25\t1028\tMSV_1\t5\t+")
             assert lines.contains("MH356245.1\t165\t1113\tMSV_2\t1\t+")
             assert lines.contains("MH356245.1\t1007\t1975\tMSV_3\t2\t+")
             assert lines.size() == 23
 
-            assert path("$launchDir/results/reference/genome.bed").exists()
+            assert path("$launchDir/results/reference/MH356245.1.genome.bed").exists()
 
-            lines = path("$launchDir/results/reference/genome.bed").text
+            lines = path("$launchDir/results/reference/MH356245.1.genome.bed").text
             assert lines.contains("MH356245.1\t0\t15894")
 
             // Sample Outputs
@@ -487,8 +497,8 @@ nextflow_pipeline {
             assert lines.contains("sample2,D8,MH356245.1,Novel-bcb39a9,56368,55680,216,98.64,491.04,491.0,273,")
 
             // Intermediate generated reference files
-            assert path("$launchDir/results/reference/genome.bed").exists()
-            lines = path("$launchDir/results/reference/genome.bed").text
+            assert path("$launchDir/results/reference/MH356245.1.genome.bed").exists()
+            lines = path("$launchDir/results/reference/MH356245.1.genome.bed").text
             assert lines.contains("MH356245.1\t0\t15894")
 
             // Sample Outputs
@@ -655,8 +665,8 @@ nextflow_pipeline {
             assert lines.contains("sample2,D8,MH356245.1,Novel-bcb39a9,56368,55680,216,98.64,491.04,491.0,273,")
 
             // Intermediate generated reference files
-            assert path("$launchDir/results/reference/genome.bed").exists()
-            lines = path("$launchDir/results/reference/genome.bed").text
+            assert path("$launchDir/results/reference/MH356245.1.genome.bed").exists()
+            lines = path("$launchDir/results/reference/MH356245.1.genome.bed").text
             assert lines.contains("MH356245.1\t0\t15894")
 
             // Sample Outputs
@@ -792,6 +802,11 @@ nextflow_pipeline {
         }
     }
 
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                        Nanopore Tests
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
     //--- Test 9 ----------------------------------------------------------------------------
     test("Nanopore NON-Amplicon Data Completion") {
         tag "success"
@@ -827,8 +842,8 @@ nextflow_pipeline {
             assert lines.contains("sample1,D8,MH356245.1,Novel-65d31ec,9368,9364,5,99.97,379.37,239.0,272,")
 
             // Intermediate generated reference files
-            assert path("$launchDir/results/reference/genome.bed").exists()
-            lines = path("$launchDir/results/reference/genome.bed").text
+            assert path("$launchDir/results/reference/MH356245.1.genome.bed").exists()
+            lines = path("$launchDir/results/reference/MH356245.1.genome.bed").text
             assert lines.contains("MH356245.1\t0\t15894")
 
             // Sample Outputs
@@ -937,8 +952,8 @@ nextflow_pipeline {
             assert lines.contains("sample1,D8,MH356245.1,Novel-65d31ec,9368,9364,5,99.97,379.37,239.0,272,")
 
             // Intermediate generated reference files
-            assert path("$launchDir/results/reference/genome.bed").exists()
-            lines = path("$launchDir/results/reference/genome.bed").text
+            assert path("$launchDir/results/reference/MH356245.1.genome.bed").exists()
+            lines = path("$launchDir/results/reference/MH356245.1.genome.bed").text
             assert lines.contains("MH356245.1\t0\t15894")
 
             // Sample Outputs
@@ -1056,17 +1071,17 @@ nextflow_pipeline {
             assert lines.contains("sample1,D8,MH356245.1,Novel-65d31ec,8571,6469,1424,91.04,273.83,211.0,259,")
 
             // Intermediate generated reference files
-            assert path("$launchDir/results/reference/amplicon.bed").exists()
+            assert path("$launchDir/results/reference/MH356245.1.amplicon.bed").exists()
 
-            lines = path("$launchDir/results/reference/amplicon.bed").readLines()
+            lines = path("$launchDir/results/reference/MH356245.1.amplicon.bed").readLines()
             assert lines.contains("MH356245.1\t25\t1028\tMSV_1\t5\t+")
             assert lines.contains("MH356245.1\t165\t1113\tMSV_2\t1\t+")
             assert lines.contains("MH356245.1\t1007\t1975\tMSV_3\t2\t+")
             assert lines.size() == 23
 
-            assert path("$launchDir/results/reference/genome.bed").exists()
+            assert path("$launchDir/results/reference/MH356245.1.genome.bed").exists()
 
-            lines = path("$launchDir/results/reference/genome.bed").text
+            lines = path("$launchDir/results/reference/MH356245.1.genome.bed").text
             assert lines.contains("MH356245.1\t0\t15894")
 
             // Sample Outputs
@@ -1181,17 +1196,17 @@ nextflow_pipeline {
             assert lines.contains("sample1,D8,MH356245.1,Novel-65d31ec,8571,6469,1424,91.04,273.83,211.0,259,")
 
             // Intermediate generated reference files
-            assert path("$launchDir/results/reference/amplicon.bed").exists()
+            assert path("$launchDir/results/reference/MH356245.1.amplicon.bed").exists()
 
-            lines = path("$launchDir/results/reference/amplicon.bed").readLines()
+            lines = path("$launchDir/results/reference/MH356245.1.amplicon.bed").readLines()
             assert lines.contains("MH356245.1\t25\t1028\tMSV_1\t5\t+")
             assert lines.contains("MH356245.1\t165\t1113\tMSV_2\t1\t+")
             assert lines.contains("MH356245.1\t1007\t1975\tMSV_3\t2\t+")
             assert lines.size() == 23
 
-            assert path("$launchDir/results/reference/genome.bed").exists()
+            assert path("$launchDir/results/reference/MH356245.1.genome.bed").exists()
 
-            lines = path("$launchDir/results/reference/genome.bed").text
+            lines = path("$launchDir/results/reference/MH356245.1.genome.bed").text
             assert lines.contains("MH356245.1\t0\t15894")
 
             // Sample Outputs

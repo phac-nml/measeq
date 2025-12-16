@@ -28,18 +28,16 @@ workflow GENERATE_AMPLICON_STATS {
     ch_amplicon_bed         // channel: [ meta_ref, bed ]
 
     main:
-    ch_versions = Channel.empty()
-    ch_multiqc_files = Channel.empty()
-    ch_multiqc_config = Channel.fromPath("$projectDir/assets/amplicon_multiqc_config.yml", checkIfExists: true)
-
+    ch_versions         = Channel.empty()
+    ch_multiqc_files    = Channel.empty()
+    ch_multiqc_config   = Channel.fromPath("$projectDir/assets/amplicon_multiqc_config.yml", checkIfExists: true)
 
     //
     // MODULE: Run bedtools coverage
     //
-
     // Prepare Inputs
     ch_bedtools_input = ch_bam_bai
-        .map{ meta, bam, bai -> tuple(meta.ref_id, meta, bam) }
+        .map{ meta, bam, _bai -> tuple(meta.ref_id, meta, bam) }
         .combine(ch_amplicon_bed.map { meta_ref, bed -> tuple(meta_ref.id, meta_ref, bed) }, by: 0)
         .map { _ref_id, meta, bam, _meta_ref, bed ->
             tuple(meta, bed, bam)
@@ -72,7 +70,6 @@ workflow GENERATE_AMPLICON_STATS {
     //
     // MODULE: Calculate the per-amplicon completeness with custom python script
     //
-
     // Prepare Inputs
     ch_completeness_input = ch_consensus
         .map { meta, con_fasta -> tuple(meta.ref_id, meta, con_fasta) }
