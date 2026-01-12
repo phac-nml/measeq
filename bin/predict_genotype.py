@@ -233,7 +233,7 @@ def main():
 
    # Output to file (APPEND rows across runs; write header only once)
    csv_out = args.output
-   with open(csv_out, "w") as csvfile:
+   with open(csv_out, "w", newline="") as csvfile:
        fieldnames = list(predictions[0].keys())
        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
        writer.writeheader()
@@ -241,17 +241,13 @@ def main():
 
    # Print mapped genotype to stdout
    predicted = predictions[0]["predicted_genotype"]
-   if predicted == "B3":
-       result = "B3"
-   elif predicted == "D8":
-       result = "D8"
-   elif predicted == "A":
-       result = "A"
-   else:
-       result = "default"
 
-   # Print result without newline
-   print(result, end="")
+   # Print result without newline if not NA or Mixed
+   if predicted not in ['NA', 'Mixed']:
+        print(predicted, end="")
+   # or print default if NA or Mixed
+   else:
+        print("default", end="")
 
    # Remove intermediates
    shutil.rmtree(tmpdir)

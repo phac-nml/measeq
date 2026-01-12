@@ -23,6 +23,17 @@ params:
   website: ""
 ---
 
+```{css, echo=FALSE}
+a, a:visited {
+  color: #4A6A8A;
+}
+
+a:hover, a:focus {
+  color: #2C3E50;
+  text-decoration: underline;
+}
+```
+
 <style>
 
 .navbar-logo img {
@@ -240,53 +251,6 @@ failed_samples <- summary_df %>%
 # Determine if we have DSIds to summarize
 run_dsid <- any(!is.na(summary_df$matched_dsid) & nzchar(summary_df$matched_dsid))
 
-# Gene Info based on final length
-#  Currently only full genomes (~15894bp) and genomes with the 5' and 3' UTR cut (~15678bp) as references so
-#  use that to determine location of gene boxes for some plots instead of needing to load in a GFF (at the moment)
-gene_label <- c("N", "N450", "P/V/C", "M", "F", "H", "L")
-gene_color <- c("#0A9F9D", "#044342", "#C52E19", "#6C8645", "#F98400", "#5BBCD6", "#F2AD00")
-if ( max(summary_df$genome_length) < 15800 ) {
-  gene_start <- c(1, 1128, 1700, 3331, 5351, 7164, 9127)
-  gene_end <- c(1578, 1578, 3233, 4338, 7003, 9017, 15678)
-  gene_label_loc <- c(789, 1353, 2466, 3834, 6177, 8090, 12402)
-} else {
-  gene_start <- c(108, 1235, 1807, 3438, 5458, 7271, 9234)
-  gene_end <- c(1685, 1685, 3330, 4445, 7110, 9124, 15785)
-  gene_label_loc <- c(896, 1460, 2568, 3941, 6284, 8197, 12509)
-}
-# Gene Rectangles for Plotly
-gene_shapes_normal <- lapply(seq_along(gene_start), function(i) {
-  list(
-    type = "rect",
-    x0 = gene_start[i], x1 = gene_end[i],
-    y0 = -3.5, y1 = -0.5,
-    fillcolor = gene_color[i],
-    line = list(color = "black"),
-    opacity = 0.8,
-    layer = "below"
-  )
-})
-gene_shapes_log <- lapply(seq_along(gene_start), function(i) {
-  list(
-    type = "rect",
-    x0 = gene_start[i], x1 = gene_end[i],
-    y0 = 0.7, y1 = 0.9,
-    fillcolor = gene_color[i],
-    line = list(color = "black"),
-    opacity = 0.8,
-    layer = "below"
-  )
-})
-
-# Gene DF for ggplot
-gene_df <- data.frame(
-  label = gene_label,
-  start = gene_start,
-  end = gene_end,
-  label_pos = gene_label_loc,
-  color = gene_color
-)
-
 # Rename wanted final columns
 #  Select them later for different tables
 summary_df <- summary_df %>%
@@ -320,6 +284,148 @@ summary_df <- summary_df %>%
     "Run Status" = run_status,
     "Run Summary" = run_summary
   )
+```
+
+```{r static-depth-report-setup}
+# Getting all the depth TSV files
+files <- list.files("positional_depth", pattern = "\\.tsv$", full.names = TRUE)
+
+# Parse genomes and their corresponding samples
+parsed_ids <- function(path) {
+  base <- tools::file_path_sans_ext(basename(path))
+  base <- str_remove(base, "_depth$")
+  m <- str_match(base, "^([^_]+)_(.+)$")
+  tibble(genome = m[, 2], sample =m[, 3])
+}
+# Use lapply to create list of dataframes adapted from the TSVs
+df_list <- lapply(files, function(file) {
+  ids <- parsed_ids(file)
+  df <- read_tsv(file, col_names = c("chrom", "position", "depth"), col_types = "cii")
+  df$sample <- ids$sample
+  df$genome <- ids$genome
+  return(df)
+})
+
+# Combine all dfs
+long_df <- bind_rows(df_list)
+
+# Make sure position is numeric
+long_df <- long_df %>% mutate(position = as.numeric(position))
+
+# Summarize positions
+#  Ymin and Ymax for drawing the stdev region
+#  Ymin should not be below 0
+summary_depth_df <- long_df %>%
+  group_by(genome, position) %>%
+  summarise(
+    mean = mean(depth, na.rm = TRUE),
+    sd = sd(depth, na.rm = TRUE),
+    median = median(depth, na.rm = TRUE),
+    ymin = pmax(mean - sd, 0),
+    ymax = mean + sd,
+    .groups = "drop"
+  )
+
+# Gene Info based on final length
+#  Currently only full genomes (~15894bp) and genomes with the 5' and 3' UTR cut (~15678bp) as references so
+#  use that to determine location of gene boxes for some plots instead of needing to load in a GFF (at the moment)
+gene_label <- c("N", "N450", "P/V/C", "M", "F", "H", "L")
+gene_color <- c("#0A9F9D", "#044342", "#C52E19", "#6C8645", "#F98400", "#5BBCD6", "#F2AD00")
+
+# Genomes around 15678bp
+gene_start_short <- c(1, 1128, 1700, 3331, 5351, 7164, 9127)
+gene_end_short <- c(1578, 1578, 3233, 4338, 7003, 9017, 15678)
+gene_label_loc_short <- c(789, 1353, 2466, 3834, 6177, 8090, 12402)
+
+# Genomes around 15894bp
+gene_start_long <- c(108, 1235, 1807, 3438, 5458, 7271, 9234)
+gene_end_long <- c(1685, 1685, 3330, 4445, 7110, 9124, 15785)
+gene_label_loc_long <- c(896, 1460, 2568, 3941, 6284, 8197, 12509)
+
+# Gene DF for ggplot
+gene_df_short <- tibble(
+  label = gene_label,
+  start = gene_start_short,
+  end = gene_end_short,
+  label_pos = gene_label_loc_short,
+  color = gene_color
+)
+gene_df_long <- tibble(
+  label = gene_label,
+  start = gene_start_long,
+  end = gene_end_long,
+  label_pos = gene_label_loc_long,
+  color = gene_color
+)
+# Plot static image
+global_max_y <- max(summary_depth_df$median, na.rm = TRUE)
+box_height <- 0.10 * global_max_y
+global_min_y <- -box_height
+make_depth_plot <- function(genome_id, summary_depth_df, panel_label) {
+  df_g <- summary_depth_df %>% filter(genome == genome_id)
+  genome_length <- max(df_g$position, na.rm = TRUE)
+
+  # Set gene DF based on genome length
+  gene_df <- if ( genome_length < 15800) {
+    gene_df_short
+  } else {
+    gene_df_long
+  }
+
+  # Scale genes boxes
+  box_ymin <- global_min_y
+  box_ymax <- 0
+  text_y <- (box_ymin + box_ymax) / 2
+
+  # Add scales to Gene DF
+  gene_df <- gene_df %>% mutate(
+    box_ymin = box_ymin,
+    box_ymax = box_ymax,
+    text_y = text_y
+  )
+
+  # Plot figure
+  p <- ggplot(df_g, aes(x = position)) +
+    geom_ribbon(aes(ymin = ymin, ymax = ymax), fill = "blue", alpha = 0.25) +
+    geom_line(aes(y = median), color = "blue") +
+    scale_x_continuous(
+      limits = c(0, genome_length),
+      breaks = seq(0, genome_length, by = 2000),
+      minor_breaks = seq(0, genome_length, by = 500)
+    ) +
+    scale_y_continuous(
+      limits = c(box_ymin, NA)
+    ) +
+    labs(title = paste0("Panel ", panel_label, ": ", genome_id, " median genomic read depth with deviation"),
+        x = "Genome position", y = "Median read depth") +
+    theme_classic() +
+    theme(
+      panel.grid.minor.x = element_line(color = "#dadce0", linetype = "dotted"),
+      panel.grid.major.x = element_line(color = "#dadce0", linetype = "dotted"),
+      plot.margin = margin(5.5, 5.5, 5.5, 5.5)
+    ) +
+    geom_rect(
+      data = gene_df,
+      aes(xmin = start, xmax = end, ymin = box_ymin, ymax = box_ymax, fill = color),
+      color = "black",
+      inherit.aes = FALSE,
+      show.legend = FALSE
+    ) +
+    geom_text(
+      data = gene_df,
+      aes(x = label_pos, y = text_y, label = label),
+      size = 2.5,
+      inherit.aes = FALSE
+    )
+  return(p)
+}
+
+# Identify multiple genomes and add panel letter
+genomes <- sort(unique(summary_depth_df$genome))
+panel_letters <- LETTERS[seq_along(genomes)]
+
+# Save plots
+plots <- Map(function(genome_id, panel_letters) make_depth_plot(genome_id, summary_depth_df, panel_letters), genomes, panel_letters)
 ```
 
 <!-- ------------ -->
@@ -418,81 +524,21 @@ metrics_dt <- metrics_df %>%
 metrics_dt
 ```
 
-## Row {data-height=400}
+```{r static-depth-report-figs, fig.width=12, fig.height=3, out.width="100%", results='asis'}
+if (length(genomes) > 1) {
+  cat("<footer>")
+  cat(footer_str)
+  cat("</footer>")
+  cat("Median Depth Plots\n")
+  cat("=================================\n")
+} else {
+  catHeader("Row {data-height=400}", level = 2)
+  catHeader("{-}", level = 3)
+}
 
-### {-}
-
-```{r static-depth-report, fig.width=12, fig.height=3}
-# Getting all the depth TSV files
-files <- list.files("positional_depth", pattern = "\\.tsv$", full.names = TRUE)
-
-# Use lapply to create list of dataframes adapted from the TSVs
-df_list <- lapply(files, function(file) {
-  sample <- tools::file_path_sans_ext(basename(file))
-  df <- read_tsv(file, col_names = c("chrom", "position", "depth"), col_types = "cii")
-  df$sample <- sample
-  return(df)
-})
-
-# Combine all dfs
-long_df <- bind_rows(df_list)
-
-# Make sure position is numeric
-long_df <- long_df %>% mutate(position = as.numeric(position))
-
-# Summarize positions
-#  Ymin and Ymax for drawing the stdev region
-#  Ymin should not be below 0
-summary_depth_df <- long_df %>%
-  group_by(position) %>%
-  summarise(
-    mean = mean(depth, na.rm = TRUE),
-    sd = sd(depth, na.rm = TRUE),
-    median = median(depth, na.rm = TRUE),
-    ymin = mean - sd,
-    ymax = mean + sd,
-    .groups = "drop"
-  )
-summary_depth_df$ymin[summary_depth_df$ymin < 0] <- 0
-
-# Plot static image
-max_pos <- max(summary_depth_df$position, na.rm = TRUE)
-p <- ggplot(summary_depth_df, aes(x = position)) +
-  geom_ribbon(aes(ymin = ymin, ymax = ymax), fill = "blue", alpha = 0.25) +
-  geom_line(aes(y = median), color = "blue") +
-  scale_x_continuous(
-    breaks = seq(0, max_pos, by = 2000),
-    minor_breaks = seq(0, max_pos, by = 500)
-  ) +
-  labs(title = "Median genomic read depth with deviation",
-       x = "Genome position", y = "Median read depth") +
-  theme_classic() +
-  theme(
-    panel.grid.minor.x = element_line(color = "#dadce0", linetype = "dotted"),
-    panel.grid.major.x = element_line(color = "#dadce0", linetype = "dotted")
-  )
-
-# Add Genes - Scale based on max
-box_size_adj <- round(max(2.5, 0.0425 * max(summary_depth_df$ymax)), 0)
-box_ymin <- -5 - box_size_adj
-text_y <- -5 - box_size_adj * 2.15
-
-p <- p +
-  geom_rect(
-    data = gene_df,
-    aes(xmin = start, xmax = end, ymin = box_ymin, ymax = -5),
-    fill = gene_df$color,
-    color = "black",
-    inherit.aes = FALSE
-  ) +
-  geom_text(
-    data = gene_df,
-    aes(x = label_pos, y = text_y, label = label),
-    size = 3,
-    inherit.aes = FALSE
-  )
-
-p
+for (g in genomes) {
+  print(plots[[g]])
+}
 ```
 
 > **Figure 1.** Median summarized genomic read depth with standard deviation. The median depth and standard deviation were calculated for each genomic position and plotted such that the median depth is highlighted plus and minus 1 standard deviation.

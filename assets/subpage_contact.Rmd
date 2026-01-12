@@ -1,4 +1,4 @@
-<!-- Dynamically create dsid tab if we have that information -->
+<!-- Dynamically create contact tab if we have that information -->
 
 Contact Information
 =================================
@@ -60,7 +60,7 @@ Contact Information
 if (any(nzchar(name), nzchar(phone), nzchar(email), nzchar(website))){
   back_content <- div(
     if (name != "") h2(name),
-    if (email != "") p(strong("Email:"), email),
+    if (email != "") p("Email: ", a(href = email, gsub("^mailto:", "", email))),
     if (phone != "") p(strong("Phone Number:"), phone),
     if (website != "") p("Website: ", a(href= paste0(website), website))
   )

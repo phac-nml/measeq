@@ -314,7 +314,7 @@
                     "type": "string",
                     "description": "Phone number of the person or organization running the pipeline",
                     "fa_icon": "fas fa-vector-square",
-                    "pattern": "^[0-9_-]*$"
+                    "pattern": "^[0-9+() _-]*$"
                 },
                 "contact_email": {
                     "type": "string",

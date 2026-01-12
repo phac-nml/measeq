@@ -91,6 +91,41 @@ sddt
 
 ### {-}
 ```{r, variant_plot, echo=FALSE, error=TRUE}
+# Initialize gene rectangles for plots
+gene_label <- c("N", "N450", "P/V/C", "M", "F", "H", "L")
+gene_color <- c("#0A9F9D", "#044342", "#C52E19", "#6C8645", "#F98400", "#5BBCD6", "#F2AD00")
+if (sample_df$'Genome Length' < 15800 ) {
+  gene_start <- c(1, 1128, 1700, 3331, 5351, 7164, 9127)
+  gene_end <- c(1578, 1578, 3233, 4338, 7003, 9017, 15678)
+  gene_label_loc <- c(789, 1353, 2466, 3834, 6177, 8090, 12402)
+} else {
+  gene_start <- c(108, 1235, 1807, 3438, 5458, 7271, 9234)
+  gene_end <- c(1685, 1685, 3330, 4445, 7110, 9124, 15785)
+  gene_label_loc <- c(896, 1460, 2568, 3941, 6284, 8197, 12509)
+}
+gene_shapes_normal <- lapply(seq_along(gene_start), function(i) {
+  list(
+    type = "rect",
+    x0 = gene_start[i], x1 = gene_end[i],
+    y0 = -3.5, y1 = -0.5,
+    fillcolor = gene_color[i],
+    line = list(color = "black"),
+    opacity = 0.8,
+    layer = "below"
+  )
+})
+gene_shapes_log <- lapply(seq_along(gene_start), function(i) {
+  list(
+    type = "rect",
+    x0 = gene_start[i], x1 = gene_end[i],
+    y0 = 0.7, y1 = 0.9,
+    fillcolor = gene_color[i],
+    line = list(color = "black"),
+    opacity = 0.8,
+    layer = "below"
+  )
+})
+
 #### Variants Plot ####
 # Create table from bam info CSV showing variants and subvariants
 var_f <- paste0("variation/", sample, "_variation.csv")
@@ -230,7 +265,7 @@ ddt
 ```{r, depth_plot, echo=FALSE, error=TRUE}
 #### Depth Plots ####
 # Get data
-depth_f <- paste0("positional_depth/", sample, "_depth.tsv")
+depth_f <- paste0("positional_depth/", sample_df$Reference, "_", sample, "_depth.tsv")
 if (file.exists(depth_f) && file.info(depth_f)$size > 0) {
   coverage <- read.table(depth_f, sep = "\t", header = FALSE)
   colnames(coverage) <- c("chrom", "position", "depth")

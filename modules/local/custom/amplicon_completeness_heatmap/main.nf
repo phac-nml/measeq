@@ -7,17 +7,17 @@ process AMPLICON_COMPLETENESS_HEATMAP {
         'biocontainers/csvtk:0.30.0--h9ee0642_0' }"
 
     input:
-    path tsvs
+    tuple val(meta), path(tsvs)
 
     output:
-    path "amplicon_completeness_heatmap_mqc.tsv", emit: heatmap_tsv
+    tuple val(meta), path("${meta}_amplicon_completeness_heatmap_mqc.tsv"), emit: heatmap_tsv
     path "versions.yml", emit: versions
 
     script:
     // Could likely be a pipeline operator but for now using csvtk
     """
     csvtk concat -tT $tsvs > concat.tsv
-    csvtk sort -tTk 1:N concat.tsv > amplicon_completeness_heatmap_mqc.tsv
+    csvtk sort -tTk 1:N concat.tsv > ${meta}_amplicon_completeness_heatmap_mqc.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -27,7 +27,7 @@ process AMPLICON_COMPLETENESS_HEATMAP {
 
     stub:
     """
-    touch amplicon_completeness_heatmap_mqc.tsv
+    touch ${meta}_amplicon_completeness_heatmap_mqc.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

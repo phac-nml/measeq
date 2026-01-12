@@ -112,6 +112,10 @@ custom_data:
 sp:
   amplicon_depth:
     fn: "*_amplicon_depth.tsv"
+  amplicon_completeness_heatmap:
+    fn: "*_amplicon_completeness_heatmap_mqc.tsv"
+  amplicon_depth_heatmap:
+    fn: "*amplicon_depth_heatmap_mqc.tsv"
 
 export_plots: true
 
