@@ -1,15 +1,16 @@
 process AMPLICON_DEPTH_HEATMAP {
     label 'process_single'
+    tag "$ref_id"
 
     conda "${moduleDir}/environment.yml"
     container "quay.io/biocontainers/pandas:1.5.2"
 
     input:
-    tuple val(meta), path(amplicon_beds)
+    tuple val(ref_id), path(amplicon_beds)
 
     output:
-    tuple val(meta), path ("${meta}_amplicon_depth_heatmap_mqc.tsv"), emit: heatmap_tsv
-    path("${meta}_amplicon_depth_full.tsv"), emit: full_tsv
+    tuple val(ref_id), path ("${ref_id}_amplicon_depth_heatmap_mqc.tsv"), emit: heatmap_tsv
+    path("${ref_id}_amplicon_depth_full.tsv"), emit: full_tsv
 
     script:
     """
@@ -39,16 +40,16 @@ process AMPLICON_DEPTH_HEATMAP {
     df = df.transpose()
     df.index.name = 'sample'
     df.sort_index(inplace=True)
-    df.to_csv('${meta}_amplicon_depth_full.tsv', index=True, sep="\t")
+    df.to_csv('${ref_id}_amplicon_depth_full.tsv', index=True, sep="\t")
 
     # Log10
     df1 = pd.DataFrame(np.ma.log10(df.values).filled(0), index=df.index, columns=df.columns)
-    df1.to_csv('${meta}_amplicon_depth_heatmap_mqc.tsv', index=True, sep="\t")
+    df1.to_csv('${ref_id}_amplicon_depth_heatmap_mqc.tsv', index=True, sep="\t")
     """
 
     stub:
     """
-    touch ${meta}_amplicon_depth_full.tsv
-    touch ${meta}_amplicon_depth_heatmap_mqc.tsv
+    touch ${ref_id}_amplicon_depth_full.tsv
+    touch ${ref_id}_amplicon_depth_heatmap_mqc.tsv
     """
 }

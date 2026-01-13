@@ -91,8 +91,8 @@ A script is used to predict a sample's genotype using a supplemented measles WHO
 <summary>Output files</summary>
 
 - `reference/`
-  - `genome.bed`: Coordinates bed file for the reference genome
-  - `REFERENCE.fasta.fai`: Reference index file
+  - `<REFERENCE>.genome.bed`: Coordinates bed file for the reference genome
+  - `<REFERENCE>.fasta.fai`: Reference index file
 
 </details>
 
@@ -104,9 +104,9 @@ Samtools and some manipulations are used to generate the intermediate reference 
 <summary>Output files</summary>
 
 - `reference`
-  - `amplicon.bed`: Summary amplicon bed file containing amplicon regions from end of Forward primer to start of Reverse
+  - `<REFERENCE>.amplicon.bed`: Summary amplicon bed file containing amplicon regions from end of Forward primer to start of Reverse
 - `reference/amplicon_regions`
-  - `<POOL>.bed`: Split amplicon.bed file by pool
+  - `<POOL>.<REFERENCE>.bed`: Split amplicon.bed file by pool
 
 </details>
 
@@ -131,7 +131,7 @@ This step pulls the defined Nextclade N450 measles dataset for genotyping both t
 <summary>Output files</summary>
 
 - `consensus/`
-  - `REFERENCE.N450.fasta`: Reference N450 sequence
+  - `<REFERENCE>.N450.fasta`: Reference N450 sequence
 
 </details>
 
@@ -408,7 +408,7 @@ Nextclade is run using the previously described N450 dataset to determine the ge
 <summary>Output files</summary>
 
 - `reporting/positional_depth/`
-  - `<SAMPLE>_depth.tsv`: Depth per reference position
+  - `<REFERENCE>.<SAMPLE>_depth.tsv`: Depth per reference position
 
 </details>
 
@@ -474,8 +474,8 @@ In the pipeline, we are summarizing positions where 90% of the read is in the am
 <summary>Output files</summary>
 
 - `reporting/amplicon/`
-  - `amplicon_depth_full.tsv`: Full read depth counts for each amplicon
-  - `amplicon_depth_heatmap_mqc.tsv`: Log10 read depth counts for each amplicon for final MultiQC report
+  - `<REFERENCE>.amplicon_depth_full.tsv`: Full read depth counts for each amplicon
+  - `<REFERENCE>.amplicon_depth_heatmap_mqc.tsv`: Log10 read depth counts for each amplicon for final MultiQC report
   - `SAMPLE_amplicon_depth.tsv`: Individual sample amplicon depth counts
 
 </details>
@@ -488,7 +488,7 @@ The full stats file for each sample is broken down to look at how deep each ampl
 <summary>Output files</summary>
 
 - `reporting/amplicon/`
-  - `amplicon_completeness_heatmap_mqc.tsv`: Summary matrix of all of the amplicons per sample in the run
+  - `<REFERENCE>.amplicon_completeness_heatmap_mqc.tsv`: Summary matrix of all of the amplicons per sample in the run
   - `<SAMPLE>_amplicon_completeness.tsv`: Individual table for how complete each amplicon in the sample is from 0-1
 
 </details>
@@ -500,7 +500,8 @@ The amplicon completeness is calculated from the final consensus sequence based 
 <details markdown="1">
 <summary>Output files</summary>
 
-- `Amplicon-Summary-MultiQC-Report_multiqc_report.html`: file containing plots showing how well each amplicon was sequenced
+- `reporting/`
+  - `<REFERENCE>.Amplicon-Summary-MultiQC-Report.html`: file containing plots showing how well each amplicon was sequenced
 
 </details>
 
@@ -583,7 +584,6 @@ Format:
 
 ```
 OUTDIR
-├── Amplicon_Report.html (if amplicons)
 ├── predictions.csv
 ├── bam
 |  ├── bwamem
@@ -621,16 +621,17 @@ OUTDIR
 |   ├── params.json
 |   └── pipeline_dag.html
 ├── reference
-|   ├── amplicon.bed
+|   ├── <REFERENCE>.amplicon.bed
 |   ├── amplicon_regions
-|   |   ├── 1.bed
-|   |   ├── 2.bed
+|   |   ├── 1.<REFERENCE>.bed
+|   |   ├── 2.<REFERENCE>.bed
 |   |   └── etc
 |   ├── bwamem
 |   |   └── <INDEX FILES>
-|   ├── genome.bed
-|   └── refstats.txt
+|   ├── <REFERENCE>.genome.bed
+|   └── <REFERENCE>.refstats.txt
 ├── reporting
+    ├── <REFERENCE>.Amplicon-Summary-MultiQC-Report.html (if amplicons)
 |   ├── amplicon (if amplicon)
 |   |   └── <INTERMEDIATE AMPLICON FILES>
 |   ├── positional_depth
@@ -657,7 +658,6 @@ OUTDIR
 
 ```
 OUTDIR
-├── Amplicon_Report.html (if amplicons)
 ├── predictions.csv
 ├── bam
 |  ├── artic (if amplicons)
@@ -692,16 +692,17 @@ OUTDIR
 |   ├── params.json
 |   └── pipeline_dag.html
 ├── reference
-|   ├── amplicon.bed
+|   ├── <REFERENCE>.amplicon.bed
 |   ├── amplicon_regions
-|   |   ├── 1.bed
-|   |   ├── 2.bed
+|   |   ├── 1.<REFERENCE>.bed
+|   |   ├── 2.<REFERENCE>.bed
 |   |   └── etc
 |   ├── clair3_models
 |   |   └── <DOWNLOADED MODELS>
-|   ├── genome.bed
-|   └── refstats.txt
+|   ├── <REFERENCE>.genome.bed
+|   └── <REFERENCE>.refstats.txt
 ├── reporting
+    ├── <REFERENCE>.Amplicon-Summary-MultiQC-Report.html (if amplicons)
 |   ├── amplicon (if amplicon)
 |   |   └── <INTERMEDIATE AMPLICON FILES>
 |   ├── positional_depth

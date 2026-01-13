@@ -27,17 +27,14 @@ include { GENERATE_REPORT         } from '../subworkflows/local/generate_report'
 workflow MEASEQ {
 
     take:
-    ch_samples      // channel: samplesheet read in from --input // tuple meta[id, single-end, ref_id], fastqs[f1,f2]
-    ch_reference    // channel: reference created from --reference or predicted // tuple meta[ref_id], fasta
-    ch_primer_bed   // channel: primer bed file created from --primer_bed or predicted // tuple meta[ref_id], primer_bed : null
+    samplesheet   // channel: samplesheet read in from --input // [ meta(id, single-end), fastqs(f1,f2) ]
 
     main:
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
     ch_metadata = params.metadata ? file(params.metadata, type: 'file', checkIfExists: true) : []
-    Channel
+    ch_custom_nextclade_dataset = Channel
         .value(file("$projectDir/assets/custom_measles_nextclade_dataset", type: 'dir', checkIfExists: true))
-        .set { ch_custom_nextclade_dataset }
     ch_id_fasta = params.dsid_fasta ? file(params.dsid_fasta, type: 'file', checkIfExists: true) : []
 
 
@@ -57,10 +54,11 @@ workflow MEASEQ {
     // WORKFLOW: Reference Setup
     //
     SETUP_REFERENCE_DATA(
-        ch_reference,
-        ch_primer_bed,
+        samplesheet,
         NEXTCLADE_DATASETGET.out.dataset
     )
+    ch_samples              = SETUP_REFERENCE_DATA.out.samples
+    ch_primer_bed           = SETUP_REFERENCE_DATA.out.primer_bed
     ch_reference            = SETUP_REFERENCE_DATA.out.reference
     ch_fai                  = SETUP_REFERENCE_DATA.out.fai
     ch_refstats             = SETUP_REFERENCE_DATA.out.refstats
