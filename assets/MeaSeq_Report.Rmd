@@ -347,16 +347,17 @@ gene_df_short <- tibble(
   label = gene_label,
   start = gene_start_short,
   end = gene_end_short,
-  label_pos = gene_label_loc_short,
+  label_loc = gene_label_loc_short,
   color = gene_color
 )
 gene_df_long <- tibble(
   label = gene_label,
   start = gene_start_long,
   end = gene_end_long,
-  label_pos = gene_label_loc_long,
+  label_loc = gene_label_loc_long,
   color = gene_color
 )
+
 # Plot static image
 global_max_y <- max(summary_depth_df$median, na.rm = TRUE)
 box_height <- 0.10 * global_max_y
@@ -413,7 +414,7 @@ make_depth_plot <- function(genome_id, summary_depth_df, panel_label) {
     ) +
     geom_text(
       data = gene_df,
-      aes(x = label_pos, y = text_y, label = label),
+      aes(x = label_loc, y = text_y, label = label),
       size = 2.5,
       inherit.aes = FALSE
     )

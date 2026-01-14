@@ -28,7 +28,7 @@ include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_meas
 workflow PHACNML_MEASEQ {
 
     take:
-    samplesheet // channel: samplesheet read in from --input // [ meta(id, single-end), fastqs(f1,f2) ] 
+    samplesheet // channel: samplesheet read in from --input // [ meta(id, single-end), fastqs(f1,f2) ]
 
     main:
 
