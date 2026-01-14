@@ -21,6 +21,7 @@ process CALCULATE_BAM_VARIATION {
     calc_bam_variation.py \\
         --bam $bam \\
         --reference $reference \\
+        --min_read_count ${params.min_depth} \\
         --sample ${meta.id}
 
     cat <<-END_VERSIONS > versions.yml
