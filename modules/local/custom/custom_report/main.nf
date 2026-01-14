@@ -18,6 +18,10 @@ process MAKE_CUSTOM_REPORT {
     val pipeline_version
     val revision
     val nf_version
+    val name
+    val email
+    val phone
+    val website
 
     output:
     path "*.html", emit: html
@@ -51,7 +55,11 @@ process MAKE_CUSTOM_REPORT {
             overall_qc = '$overall_qc_csv',
             version = '$pipeline_version',
             revision = '$revision',
-            nf_version = '$nf_version'
+            nf_version = '$nf_version',
+            name = '$name',
+            email = '$email',
+            phone = '$phone',
+            website = '$website'
         ))"
     """
 

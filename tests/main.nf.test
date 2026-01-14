@@ -87,18 +87,28 @@ nextflow_pipeline {
         }
     }
 
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                        Illumina Tests
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
     //--- Test 5 ----------------------------------------------------------------------------
     test("Illumina Amplicon Data with Sample Name Completion") {
         tag "success"
         tag "illumina"
+        tag "contact"
 
         when {
             params {
-                input       = "${projectDir}/assets/ci-samplesheet.csv"
-                outdir      = "results"
-                reference   = "${projectDir}/assets/reference/D8/MH356245.1.reference.fasta"
-                platform    = "illumina"
-                primer_bed  = "${projectDir}/test_data/primer.bed"
+                input           = "${projectDir}/assets/ci-samplesheet.csv"
+                outdir          = "results"
+                reference       = "${projectDir}/assets/reference/D8/MH356245.1.reference.fasta"
+                platform        = "illumina"
+                primer_bed      = "${projectDir}/test_data/primer.bed"
+                contact_name    = "Dr. Evil"
+                contact_website = "https://url-test.ca/measles"
+                contact_phone   = "222-222-2222"
+                contact_email   = "Dr.Evil@phac-aspc.gc.ca"
             }
         }
         then {
@@ -124,16 +134,16 @@ nextflow_pipeline {
             assert lines.contains("sample2,D8,MH356245.1,Novel-bcb39a9,56368,53533,252,98.41,456.66,456.0,273,")
 
             // Intermediate generated reference files
-            assert path("$launchDir/results/reference/amplicon.bed").exists()
+            assert path("$launchDir/results/reference/MH356245.1.amplicon.bed").exists()
 
-            lines = path("$launchDir/results/reference/amplicon.bed").readLines()
+            lines = path("$launchDir/results/reference/MH356245.1.amplicon.bed").readLines()
             assert lines.contains("MH356245.1\t25\t8200\tMSV_1\t1\t+")
             assert lines.contains("MH356245.1\t8025\t15865\tMSV_2\t2\t+")
             assert lines.size() == 2
 
-            assert path("$launchDir/results/reference/genome.bed").exists()
+            assert path("$launchDir/results/reference/MH356245.1.genome.bed").exists()
 
-            lines = path("$launchDir/results/reference/genome.bed").text
+            lines = path("$launchDir/results/reference/MH356245.1.genome.bed").text
             assert lines.contains("MH356245.1\t0\t15894")
 
             // Sample Outputs
@@ -174,7 +184,7 @@ nextflow_pipeline {
             assert lines.size() == 15895
 
             // Final Reports
-            assert path("$launchDir/results/Amplicon-Summary-MultiQC-Report_multiqc_report.html").exists()
+            assert path("$launchDir/results/reporting/MH356245.1-Amplicon-Summary-MultiQC-Report.html").exists()
             assert path("$launchDir/results/MeaSeq_Report.html").exists()
             assert path("$launchDir/results/overall.xlsx").exists()
             assert path("$launchDir/results/dsids.tsv").exists()
@@ -187,7 +197,7 @@ nextflow_pipeline {
 
             assert iridanext_global.findAll { it.path == "MeaSeq_Report.html" }.size() == 1
             assert iridanext_global.findAll { it.path == "pipeline_info/measeq_software_mqc_versions.yml" }.size() == 1
-            assert iridanext_global.findAll { it.path == "Amplicon-Summary-MultiQC-Report_multiqc_report.html" }.size() == 1
+            assert iridanext_global.findAll { it.path == "reporting/MH356245.1-Amplicon-Summary-MultiQC-Report.html" }.size() == 1
             assert iridanext_global.findAll { it.path == "overall.xlsx" }.size() == 1
             assert iridanext_global.findAll { it.path == "novel_dsids.tsv" }.size() == 1
 
@@ -303,17 +313,17 @@ nextflow_pipeline {
             assert lines.contains("sample2,D8,MH356245.1,Novel-bcb39a9,56368,53502,252,98.41,455.12,453.0,273,")
 
             // Intermediate generated reference files
-            assert path("$launchDir/results/reference/amplicon.bed").exists()
+            assert path("$launchDir/results/reference/MH356245.1.amplicon.bed").exists()
 
-            lines = path("$launchDir/results/reference/amplicon.bed").readLines()
+            lines = path("$launchDir/results/reference/MH356245.1.amplicon.bed").readLines()
             assert lines.contains("MH356245.1\t25\t1028\tMSV_1\t5\t+")
             assert lines.contains("MH356245.1\t165\t1113\tMSV_2\t1\t+")
             assert lines.contains("MH356245.1\t1007\t1975\tMSV_3\t2\t+")
             assert lines.size() == 23
 
-            assert path("$launchDir/results/reference/genome.bed").exists()
+            assert path("$launchDir/results/reference/MH356245.1.genome.bed").exists()
 
-            lines = path("$launchDir/results/reference/genome.bed").text
+            lines = path("$launchDir/results/reference/MH356245.1.genome.bed").text
             assert lines.contains("MH356245.1\t0\t15894")
 
             // Sample Outputs
@@ -354,7 +364,7 @@ nextflow_pipeline {
             assert lines.size() == 15895
 
             // Final Reports
-            assert path("$launchDir/results/Amplicon-Summary-MultiQC-Report_multiqc_report.html").exists()
+            assert path("$launchDir/results/reporting/MH356245.1-Amplicon-Summary-MultiQC-Report.html").exists()
             assert path("$launchDir/results/MeaSeq_Report.html").exists()
             assert path("$launchDir/results/overall.xlsx").exists()
             assert path("$launchDir/results/dsids.tsv").exists()
@@ -370,7 +380,7 @@ nextflow_pipeline {
 
             assert iridanext_global.findAll { it.path == "MeaSeq_Report.html" }.size() == 1
             assert iridanext_global.findAll { it.path == "pipeline_info/measeq_software_mqc_versions.yml" }.size() == 1
-            assert iridanext_global.findAll { it.path == "Amplicon-Summary-MultiQC-Report_multiqc_report.html" }.size() == 1
+            assert iridanext_global.findAll { it.path == "reporting/MH356245.1-Amplicon-Summary-MultiQC-Report.html" }.size() == 1
             assert iridanext_global.findAll { it.path == "overall.xlsx" }.size() == 1
             assert iridanext_global.findAll { it.path == "novel_dsids.tsv" }.size() == 1
             assert iridanext_global.findAll { it.path == "predictions.csv" }.size() == 1
@@ -487,8 +497,8 @@ nextflow_pipeline {
             assert lines.contains("sample2,D8,MH356245.1,Novel-bcb39a9,56368,55680,216,98.64,491.04,491.0,273,")
 
             // Intermediate generated reference files
-            assert path("$launchDir/results/reference/genome.bed").exists()
-            lines = path("$launchDir/results/reference/genome.bed").text
+            assert path("$launchDir/results/reference/MH356245.1.genome.bed").exists()
+            lines = path("$launchDir/results/reference/MH356245.1.genome.bed").text
             assert lines.contains("MH356245.1\t0\t15894")
 
             // Sample Outputs
@@ -655,8 +665,8 @@ nextflow_pipeline {
             assert lines.contains("sample2,D8,MH356245.1,Novel-bcb39a9,56368,55680,216,98.64,491.04,491.0,273,")
 
             // Intermediate generated reference files
-            assert path("$launchDir/results/reference/genome.bed").exists()
-            lines = path("$launchDir/results/reference/genome.bed").text
+            assert path("$launchDir/results/reference/MH356245.1.genome.bed").exists()
+            lines = path("$launchDir/results/reference/MH356245.1.genome.bed").text
             assert lines.contains("MH356245.1\t0\t15894")
 
             // Sample Outputs
@@ -792,6 +802,11 @@ nextflow_pipeline {
         }
     }
 
+    /*
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                                        Nanopore Tests
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
     //--- Test 9 ----------------------------------------------------------------------------
     test("Nanopore NON-Amplicon Data Completion") {
         tag "success"
@@ -827,8 +842,8 @@ nextflow_pipeline {
             assert lines.contains("sample1,D8,MH356245.1,Novel-65d31ec,9368,9364,5,99.97,379.37,239.0,272,")
 
             // Intermediate generated reference files
-            assert path("$launchDir/results/reference/genome.bed").exists()
-            lines = path("$launchDir/results/reference/genome.bed").text
+            assert path("$launchDir/results/reference/MH356245.1.genome.bed").exists()
+            lines = path("$launchDir/results/reference/MH356245.1.genome.bed").text
             assert lines.contains("MH356245.1\t0\t15894")
 
             // Sample Outputs
@@ -910,10 +925,12 @@ nextflow_pipeline {
 
         when {
             params {
-                input       = "${projectDir}/test_data/nanopore_samplesheet.csv"
+                input       = "${projectDir}/test_data/nanopore_predict_samplesheet.csv"
                 outdir      = "results"
                 platform    = "nanopore"
                 model       = "r1041_e82_400bps_sup_v410"
+                min_depth   = 30
+                min_variant_qual_c3 = 18
             }
         }
         then {
@@ -934,12 +951,16 @@ nextflow_pipeline {
             // Using the first 10 columns only to get to variants count
             lines = path("$launchDir/results/overall.qc.csv").text
             assert lines.contains("sample,genotype,reference,matched_dsid,num_input_reads,num_aligned_reads,num_consensus_n,genome_completeness_percent,mean_sequencing_depth,median_sequencing_depth,total_variants,")
-            assert lines.contains("sample1,D8,MH356245.1,Novel-65d31ec,9368,9364,5,99.97,379.37,239.0,272,")
+            assert lines.contains("sample1,D8,MH356245.1,Incomplete,9368,9364,27,99.83,379.37,239.0,250,")
+            assert lines.contains("sample2,B3,MK513622.1,Novel-0fffef2,6802,6802,11525,26.49,394.65,0.0,27,")
 
             // Intermediate generated reference files
-            assert path("$launchDir/results/reference/genome.bed").exists()
-            lines = path("$launchDir/results/reference/genome.bed").text
+            assert path("$launchDir/results/reference/MH356245.1.genome.bed").exists()
+            lines = path("$launchDir/results/reference/MH356245.1.genome.bed").text
             assert lines.contains("MH356245.1\t0\t15894")
+            assert path("$launchDir/results/reference/MK513622.1.genome.bed").exists()
+            lines = path("$launchDir/results/reference/MK513622.1.genome.bed").text
+            assert lines.contains("MK513622.1\t0\t15678")
 
             // Sample Outputs
             //  Fasta regions match
@@ -948,21 +969,37 @@ nextflow_pipeline {
             assert lines.contains(">MH356245.1-N450 ")
             assert lines.size() == 2
 
-            assert path("$launchDir/results/consensus/sample1.consensus.fasta").md5 == "dd12bca9f591597012b2a646b545bc55"
+            assert path("$launchDir/results/consensus/sample1.consensus.fasta").md5 == "d3e4d9f4ee417d1941f2d1004a79f725"
             lines = path("$launchDir/results/consensus/sample1.consensus.fasta").readLines()
             assert lines.contains(">sample1 MH356245.1")
             assert lines.contains("NCCAAACAAAGTTGGGTAAGGATAGATCAATCAATGATCATATTCTAGTACACTTAGGAT")
             assert lines.size() == 266
 
-            assert path("$launchDir/results/consensus/sample1.N450.fasta").md5 == "034fe45b9902229f414548b052dda631"
+            assert path("$launchDir/results/consensus/sample1.N450.fasta").md5 == "48fa07880095400265b721ceb530b1d5"
             lines = path("$launchDir/results/consensus/sample1.N450.fasta").readLines()
             assert lines.contains(">sample1-N450 MH356245.1")
+            assert lines.size() == 2
+
+            assert path("$launchDir/results/consensus/MK513622.1.N450.fasta").md5 == "92499cd59ad5c74e552762728ef5bafe"
+            lines = path("$launchDir/results/consensus/MK513622.1.N450.fasta").readLines()
+            assert lines.contains(">MK513622.1-N450 ")
+            assert lines.size() == 2
+
+            assert path("$launchDir/results/consensus/sample2.consensus.fasta").md5 == "dec2f2726d179782173b68570c7e1975"
+            lines = path("$launchDir/results/consensus/sample2.consensus.fasta").readLines()
+            assert lines.contains(">sample2 MK513622.1")
+            assert lines.contains("NNNNNNNNNNNNNNNNNNNNTCGATCCAGACTCCTGGACCGGTTGGTCAGGTTAATTGGA")
+            assert lines.size() == 263
+
+            assert path("$launchDir/results/consensus/sample2.N450.fasta").md5 == "ae1714122b596162f3dbee3616004bf9"
+            lines = path("$launchDir/results/consensus/sample2.N450.fasta").readLines()
+            assert lines.contains(">sample2-N450 MK513622.1")
             assert lines.size() == 2
 
             //  Reporting files
             assert path("$launchDir/results/reporting/sample_positional_normalized_depth.csv").exists()
             lines = path("$launchDir/results/reporting/sample_positional_normalized_depth.csv").readLines()
-            assert lines.size() == 2
+            assert lines.size() == 3
 
             assert path("$launchDir/results/reporting/sample_positional_normalized_depth_stats.csv").exists()
             lines = path("$launchDir/results/reporting/sample_positional_normalized_depth_stats.csv").readLines()
@@ -974,7 +1011,7 @@ nextflow_pipeline {
             assert path("$launchDir/results/dsids.tsv").exists()
             assert path("$launchDir/results/predictions.csv").exists()
             lines = path("$launchDir/results/predictions.csv").readLines()
-            assert lines.size() == 2
+            assert lines.size() == 3
 
             // IRIDA Next output
             def iridanext_json = path("$launchDir/results/iridanext.output.json").json
@@ -991,25 +1028,46 @@ nextflow_pipeline {
             assert iridanext_samples.sample1.findAll { it.path == "consensus/sample1.N450.fasta" }.size() == 1
             assert iridanext_samples.sample1.findAll { it.path == "consensus/sample1.consensus.fasta" }.size() == 1
             assert iridanext_samples.sample1.findAll { it.path == "vcf/final/sample1.pass.norm.vcf.gz" }.size() == 1
+            assert iridanext_samples.sample2.findAll { it.path == "consensus/sample2.N450.fasta" }.size() == 1
+            assert iridanext_samples.sample2.findAll { it.path == "consensus/sample2.consensus.fasta" }.size() == 1
+            assert iridanext_samples.sample2.findAll { it.path == "vcf/final/sample2.pass.norm.vcf.gz" }.size() == 1
 
             assert iridanext_metadata.sample1.genotype == "D8"
             assert iridanext_metadata.sample1.reference == "MH356245.1"
-            assert iridanext_metadata.sample1.matched_dsid == "Novel-65d31ec"
+            assert iridanext_metadata.sample1.matched_dsid == "Incomplete"
             assert iridanext_metadata.sample1.num_input_reads == "9368"
             assert iridanext_metadata.sample1.num_aligned_reads == "9364"
-            assert iridanext_metadata.sample1.num_consensus_n == "5"
-            assert iridanext_metadata.sample1.genome_completeness_percent == "99.97"
+            assert iridanext_metadata.sample1.num_consensus_n == "27"
+            assert iridanext_metadata.sample1.genome_completeness_percent == "99.83"
             assert iridanext_metadata.sample1.mean_sequencing_depth == "379.37"
             assert iridanext_metadata.sample1.median_sequencing_depth == "239.0"
-            assert iridanext_metadata.sample1.total_variants == "272"
-            assert iridanext_metadata.sample1.num_snps == "272"
+            assert iridanext_metadata.sample1.total_variants == "250"
+            assert iridanext_metadata.sample1.num_snps == "250"
             assert iridanext_metadata.sample1.num_iupac == "0"
             assert iridanext_metadata.sample1.genome_length == "15894"
             assert iridanext_metadata.sample1.divisible_by_6 == "True"
-            assert iridanext_metadata.sample1.N450_completeness == "100.0"
+            assert iridanext_metadata.sample1.N450_completeness == "99.56"
             assert iridanext_metadata.sample1.N450_mean_depth == "218.38"
-            assert iridanext_metadata.sample1.N450_status == "PASS"
+            assert iridanext_metadata.sample1.N450_status == "FAIL"
             assert iridanext_metadata.sample1.qc_status == "PASS"
+            assert iridanext_metadata.sample2.genotype == "B3"
+            assert iridanext_metadata.sample2.reference == "MK513622.1"
+            assert iridanext_metadata.sample2.matched_dsid == "Novel-0fffef2"
+            assert iridanext_metadata.sample2.num_input_reads == "6802"
+            assert iridanext_metadata.sample2.num_aligned_reads == "6802"
+            assert iridanext_metadata.sample2.num_consensus_n == "11525"
+            assert iridanext_metadata.sample2.genome_completeness_percent == "26.49"
+            assert iridanext_metadata.sample2.mean_sequencing_depth == "394.65"
+            assert iridanext_metadata.sample2.median_sequencing_depth == "0.0"
+            assert iridanext_metadata.sample2.total_variants == "27"
+            assert iridanext_metadata.sample2.num_snps == "27"
+            assert iridanext_metadata.sample2.num_iupac == "0"
+            assert iridanext_metadata.sample2.genome_length == "15678"
+            assert iridanext_metadata.sample2.divisible_by_6 == "True"
+            assert iridanext_metadata.sample2.N450_completeness == "100.0"
+            assert iridanext_metadata.sample2.N450_mean_depth == "897.2"
+            assert iridanext_metadata.sample2.N450_status == "PASS"
+            assert iridanext_metadata.sample2.qc_status == "INCOMPLETE_GENOME"
 
             // Pipeline info and tracking
             assert path("$launchDir/results/pipeline_info").exists()
@@ -1056,17 +1114,17 @@ nextflow_pipeline {
             assert lines.contains("sample1,D8,MH356245.1,Novel-65d31ec,8571,6469,1424,91.04,273.83,211.0,259,")
 
             // Intermediate generated reference files
-            assert path("$launchDir/results/reference/amplicon.bed").exists()
+            assert path("$launchDir/results/reference/MH356245.1.amplicon.bed").exists()
 
-            lines = path("$launchDir/results/reference/amplicon.bed").readLines()
+            lines = path("$launchDir/results/reference/MH356245.1.amplicon.bed").readLines()
             assert lines.contains("MH356245.1\t25\t1028\tMSV_1\t5\t+")
             assert lines.contains("MH356245.1\t165\t1113\tMSV_2\t1\t+")
             assert lines.contains("MH356245.1\t1007\t1975\tMSV_3\t2\t+")
             assert lines.size() == 23
 
-            assert path("$launchDir/results/reference/genome.bed").exists()
+            assert path("$launchDir/results/reference/MH356245.1.genome.bed").exists()
 
-            lines = path("$launchDir/results/reference/genome.bed").text
+            lines = path("$launchDir/results/reference/MH356245.1.genome.bed").text
             assert lines.contains("MH356245.1\t0\t15894")
 
             // Sample Outputs
@@ -1097,7 +1155,7 @@ nextflow_pipeline {
             assert lines.size() == 15895
 
             // Final Reports
-            assert path("$launchDir/results/Amplicon-Summary-MultiQC-Report_multiqc_report.html").exists()
+            assert path("$launchDir/results/reporting/MH356245.1-Amplicon-Summary-MultiQC-Report.html").exists()
             assert path("$launchDir/results/MeaSeq_Report.html").exists()
             assert path("$launchDir/results/overall.xlsx").exists()
             assert path("$launchDir/results/dsids.tsv").exists()
@@ -1108,7 +1166,7 @@ nextflow_pipeline {
             def iridanext_samples = iridanext_json.files.samples
             def iridanext_metadata = iridanext_json.metadata.samples
 
-            assert iridanext_global.findAll { it.path == "Amplicon-Summary-MultiQC-Report_multiqc_report.html" }.size() == 1
+            assert iridanext_global.findAll { it.path == "reporting/MH356245.1-Amplicon-Summary-MultiQC-Report.html" }.size() == 1
             assert iridanext_global.findAll { it.path == "MeaSeq_Report.html" }.size() == 1
             assert iridanext_global.findAll { it.path == "pipeline_info/measeq_software_mqc_versions.yml" }.size() == 1
             assert iridanext_global.findAll { it.path == "overall.xlsx" }.size() == 1
@@ -1150,13 +1208,13 @@ nextflow_pipeline {
 
         when {
             params {
-                input       = "${projectDir}/test_data/nanopore_samplesheet.csv"
+                input       = "${projectDir}/test_data/nanopore_predict_samplesheet.csv"
                 outdir      = "results"
                 platform    = "nanopore"
                 model       = "r1041_e82_400bps_sup_v410"
                 amplicon    = true
                 min_depth   = 30
-                min_variant_qual_c3 = 10
+                min_variant_qual_c3 = 18
                 ont_min_read_length = 400
             }
         }
@@ -1178,21 +1236,31 @@ nextflow_pipeline {
             // Using the first 11 columns only to get to variants count
             lines = path("$launchDir/results/overall.qc.csv").text
             assert lines.contains("sample,genotype,reference,matched_dsid,num_input_reads,num_aligned_reads,num_consensus_n,genome_completeness_percent,mean_sequencing_depth,median_sequencing_depth,total_variants,")
-            assert lines.contains("sample1,D8,MH356245.1,Novel-65d31ec,8571,6469,1424,91.04,273.83,211.0,259,")
+            assert lines.contains("sample1,D8,MH356245.1,Incomplete,8571,6469,1447,90.9,273.83,211.0,236,")
+            assert lines.contains("sample2,NA,MK513622.1,No Data,5171,664,14581,7.0,21.75,0.0,4,")
 
             // Intermediate generated reference files
-            assert path("$launchDir/results/reference/amplicon.bed").exists()
-
-            lines = path("$launchDir/results/reference/amplicon.bed").readLines()
+            assert path("$launchDir/results/reference/MH356245.1.amplicon.bed").exists()
+            lines = path("$launchDir/results/reference/MH356245.1.amplicon.bed").readLines()
             assert lines.contains("MH356245.1\t25\t1028\tMSV_1\t5\t+")
             assert lines.contains("MH356245.1\t165\t1113\tMSV_2\t1\t+")
             assert lines.contains("MH356245.1\t1007\t1975\tMSV_3\t2\t+")
             assert lines.size() == 23
 
-            assert path("$launchDir/results/reference/genome.bed").exists()
+            assert path("$launchDir/results/reference/MK513622.1.amplicon.bed").exists()
+            lines = path("$launchDir/results/reference/MK513622.1.amplicon.bed").readLines()
+            assert lines.contains("MK513622.1\t0\t921\tMSV_1\t5\t+")
+            assert lines.contains("MK513622.1\t58\t1006\tMSV_2\t1\t+")
+            assert lines.contains("MK513622.1\t900\t1868\tMSV_3\t2\t+")
+            assert lines.size() == 23
 
-            lines = path("$launchDir/results/reference/genome.bed").text
+            assert path("$launchDir/results/reference/MH356245.1.genome.bed").exists()
+            lines = path("$launchDir/results/reference/MH356245.1.genome.bed").text
             assert lines.contains("MH356245.1\t0\t15894")
+
+            assert path("$launchDir/results/reference/MK513622.1.genome.bed").exists()
+            lines = path("$launchDir/results/reference/MK513622.1.genome.bed").text
+            assert lines.contains("MK513622.1\t0\t15678")
 
             // Sample Outputs
             //  Fasta regions match
@@ -1201,34 +1269,48 @@ nextflow_pipeline {
             assert lines.contains(">MH356245.1-N450 ")
             assert lines.size() == 2
 
-            assert path("$launchDir/results/consensus/sample1.consensus.fasta").md5 == "dd056190aaa3bf9377291f3e7f171fdd"
+            assert path("$launchDir/results/consensus/sample1.consensus.fasta").md5 == "fd3e3d5779096d84d91a658b90266bec"
             lines = path("$launchDir/results/consensus/sample1.consensus.fasta").readLines()
             assert lines.contains(">sample1 MH356245.1")
             assert lines.contains("NNNNNNNNNNNNNNNNNNNNNNNNNATCAATCAATGATCATATTCTAGTACACTTAGGAT")
             assert lines.size() == 266
 
-            assert path("$launchDir/results/consensus/sample1.N450.fasta").md5 == "034fe45b9902229f414548b052dda631"
+            assert path("$launchDir/results/consensus/sample1.N450.fasta").md5 == "0def46c2bb25c4a6e293bacb8e6070bc"
             lines = path("$launchDir/results/consensus/sample1.N450.fasta").readLines()
             assert lines.contains(">sample1-N450 MH356245.1")
             assert lines.size() == 2
 
+            assert path("$launchDir/results/consensus/MK513622.1.N450.fasta").md5 == "92499cd59ad5c74e552762728ef5bafe"
+            lines = path("$launchDir/results/consensus/MK513622.1.N450.fasta").readLines()
+            assert lines.contains(">MK513622.1-N450 ")
+            assert lines.size() == 2
+
+            assert path("$launchDir/results/consensus/sample2.consensus.fasta").md5 == "bc2d4245948975b7ac5c92d2f3843c0e"
+            lines = path("$launchDir/results/consensus/sample2.consensus.fasta").readLines()
+            assert lines.contains(">sample2 MK513622.1")
+            assert lines.contains("GGCAGGCAGTTCGGGTCTCAGCAAACCATGCCTCTCAGCAATTGGATCAACTGAAGGCAG")
+            assert lines.size() == 263
+
+            assert path("$launchDir/results/consensus/sample2.N450.fasta").md5 == "d41d8cd98f00b204e9800998ecf8427e"
+
             //  Reporting files
             assert path("$launchDir/results/reporting/sample_positional_normalized_depth.csv").exists()
             lines = path("$launchDir/results/reporting/sample_positional_normalized_depth.csv").readLines()
-            assert lines.size() == 2
+            assert lines.size() == 3
 
             assert path("$launchDir/results/reporting/sample_positional_normalized_depth_stats.csv").exists()
             lines = path("$launchDir/results/reporting/sample_positional_normalized_depth_stats.csv").readLines()
             assert lines.size() == 15895
 
             // Final Reports
-            assert path("$launchDir/results/Amplicon-Summary-MultiQC-Report_multiqc_report.html").exists()
+            assert path("$launchDir/results/reporting/MH356245.1-Amplicon-Summary-MultiQC-Report.html").exists()
+            assert path("$launchDir/results/reporting/MK513622.1-Amplicon-Summary-MultiQC-Report.html").exists()
             assert path("$launchDir/results/MeaSeq_Report.html").exists()
             assert path("$launchDir/results/overall.xlsx").exists()
             assert path("$launchDir/results/dsids.tsv").exists()
             assert path("$launchDir/results/predictions.csv").exists()
             lines = path("$launchDir/results/predictions.csv").readLines()
-            assert lines.size() == 2
+            assert lines.size() == 3
 
             // IRIDA Next output
             def iridanext_json = path("$launchDir/results/iridanext.output.json").json
@@ -1236,35 +1318,57 @@ nextflow_pipeline {
             def iridanext_samples = iridanext_json.files.samples
             def iridanext_metadata = iridanext_json.metadata.samples
 
-            assert iridanext_global.findAll { it.path == "Amplicon-Summary-MultiQC-Report_multiqc_report.html" }.size() == 1
+            assert iridanext_global.findAll { it.path == "reporting/MH356245.1-Amplicon-Summary-MultiQC-Report.html" }.size() == 1
+            assert iridanext_global.findAll { it.path == "reporting/MK513622.1-Amplicon-Summary-MultiQC-Report.html" }.size() == 1
             assert iridanext_global.findAll { it.path == "MeaSeq_Report.html" }.size() == 1
             assert iridanext_global.findAll { it.path == "pipeline_info/measeq_software_mqc_versions.yml" }.size() == 1
             assert iridanext_global.findAll { it.path == "overall.xlsx" }.size() == 1
-            assert iridanext_global.findAll { it.path == "novel_dsids.tsv" }.size() == 1
             assert iridanext_global.findAll { it.path == "predictions.csv" }.size() == 1
 
             assert iridanext_samples.sample1.findAll { it.path == "consensus/sample1.N450.fasta" }.size() == 1
             assert iridanext_samples.sample1.findAll { it.path == "consensus/sample1.consensus.fasta" }.size() == 1
             assert iridanext_samples.sample1.findAll { it.path == "vcf/final/sample1.pass.norm.vcf.gz" }.size() == 1
+            assert iridanext_samples.sample2.findAll { it.path == "consensus/sample2.N450.fasta" }.size() == 1
+            assert iridanext_samples.sample2.findAll { it.path == "consensus/sample2.consensus.fasta" }.size() == 1
+            assert iridanext_samples.sample2.findAll { it.path == "vcf/final/sample2.pass.norm.vcf.gz" }.size() == 1
 
             assert iridanext_metadata.sample1.genotype == "D8"
             assert iridanext_metadata.sample1.reference == "MH356245.1"
-            assert iridanext_metadata.sample1.matched_dsid == "Novel-65d31ec"
+            assert iridanext_metadata.sample1.matched_dsid == "Incomplete"
             assert iridanext_metadata.sample1.num_input_reads == "8571"
             assert iridanext_metadata.sample1.num_aligned_reads == "6469"
-            assert iridanext_metadata.sample1.num_consensus_n == "1424"
-            assert iridanext_metadata.sample1.genome_completeness_percent == "91.04"
+            assert iridanext_metadata.sample1.num_consensus_n == "1447"
+            assert iridanext_metadata.sample1.genome_completeness_percent == "90.9"
             assert iridanext_metadata.sample1.mean_sequencing_depth == "273.83"
             assert iridanext_metadata.sample1.median_sequencing_depth == "211.0"
-            assert iridanext_metadata.sample1.total_variants == "259"
-            assert iridanext_metadata.sample1.num_snps == "259"
+            assert iridanext_metadata.sample1.total_variants == "236"
+            assert iridanext_metadata.sample1.num_snps == "236"
             assert iridanext_metadata.sample1.num_iupac == "0"
             assert iridanext_metadata.sample1.genome_length == "15894"
             assert iridanext_metadata.sample1.divisible_by_6 == "True"
-            assert iridanext_metadata.sample1.N450_completeness == "100.0"
+            assert iridanext_metadata.sample1.N450_completeness == "99.33"
             assert iridanext_metadata.sample1.N450_mean_depth == "214.4"
-            assert iridanext_metadata.sample1.N450_status == "PASS"
+            assert iridanext_metadata.sample1.N450_status == "FAIL"
             assert iridanext_metadata.sample1.qc_status == "PASS"
+            assert iridanext_metadata.sample2.genotype == "NA"
+            assert iridanext_metadata.sample2.reference == "MK513622.1"
+            assert iridanext_metadata.sample2.matched_dsid == "No Data"
+            assert iridanext_metadata.sample2.num_input_reads == "5171"
+            assert iridanext_metadata.sample2.num_aligned_reads == "664"
+            assert iridanext_metadata.sample2.num_consensus_n == "14581"
+            assert iridanext_metadata.sample2.genome_completeness_percent == "7.0"
+            assert iridanext_metadata.sample2.mean_sequencing_depth == "21.75"
+            assert iridanext_metadata.sample2.median_sequencing_depth == "0.0"
+            assert iridanext_metadata.sample2.total_variants == "4"
+            assert iridanext_metadata.sample2.num_snps == "4"
+            assert iridanext_metadata.sample2.num_iupac == "0"
+            assert iridanext_metadata.sample2.genome_length == "15678"
+            assert iridanext_metadata.sample2.divisible_by_6 == "True"
+            assert iridanext_metadata.sample2.N450_completeness == "0.0"
+            assert iridanext_metadata.sample2.N450_mean_depth == "0.0"
+            assert iridanext_metadata.sample2.N450_status == "FAIL"
+            assert iridanext_metadata.sample2.qc_status == "INCOMPLETE_GENOME"
+
 
             // Pipeline info and tracking
             assert path("$launchDir/results/pipeline_info").exists()

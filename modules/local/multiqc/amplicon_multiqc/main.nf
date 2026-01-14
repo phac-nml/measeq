@@ -7,20 +7,21 @@ process AMPLICON_MULTIQC {
         'biocontainers/multiqc:1.28--pyhdfd78af_0' }"
 
     input:
-    path multiqc_files, stageAs: "?/*"
-    path multiqc_config
+    tuple val(ref_id), path(multiqc_files, stageAs: "?/*")
+    path(multiqc_config)
 
     output:
-    path "*.html", emit: report
-    path "*_data"              , emit: data
-    path "*_plots"             , optional:true, emit: plots
-    path "versions.yml"        , emit: versions
+    path "*.html"       , emit: report
+    path "*_data"       , emit: data
+    path "*_plots"      , optional:true, emit: plots
+    path "versions.yml" , emit: versions
 
     script:
     """
     multiqc \\
         --force \\
         --config $multiqc_config \\
+        -n ${ref_id}-Amplicon-Summary-MultiQC-Report.html \\
         .
 
     cat <<-END_VERSIONS > versions.yml
@@ -33,7 +34,7 @@ process AMPLICON_MULTIQC {
     """
     mkdir multiqc_data
     mkdir multiqc_plots
-    touch multiqc_report.html
+    touch ${ref_id}-Amplicon-Summary-MultiQC-Report.html
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

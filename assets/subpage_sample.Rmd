@@ -91,6 +91,35 @@ sddt
 
 ### {-}
 ```{r, variant_plot, echo=FALSE, error=TRUE}
+# Initialize gene boxes for plots based on genome length
+if (sample_df$'Genome Length' < 15800 ) {
+  gene_info <- gene_df_short
+} else {
+  gene_info <- gene_df_long
+}
+gene_shapes_normal <- lapply(seq_along(gene_info$start), function(i) {
+  list(
+    type = "rect",
+    x0 = gene_info$start[i], x1 = gene_info$end[i],
+    y0 = -3.5, y1 = -0.5,
+    fillcolor = gene_info$color[i],
+    line = list(color = "black"),
+    opacity = 0.8,
+    layer = "below"
+  )
+})
+gene_shapes_log <- lapply(seq_along(gene_info$start), function(i) {
+  list(
+    type = "rect",
+    x0 = gene_info$start[i], x1 = gene_info$end[i],
+    y0 = 0.7, y1 = 0.9,
+    fillcolor = gene_info$color[i],
+    line = list(color = "black"),
+    opacity = 0.8,
+    layer = "below"
+  )
+})
+
 #### Variants Plot ####
 # Create table from bam info CSV showing variants and subvariants
 var_f <- paste0("variation/", sample, "_variation.csv")
@@ -140,9 +169,9 @@ final_shapes <- c(gene_shapes_normal, list(hline(75)))
 
 # Labels
 p <- p %>% add_text(
-  x = gene_label_loc,
-  y = rep(-6.5, length(gene_label_loc)),
-  text = gene_label,
+  x = gene_info$label_loc,
+  y = rep(-6.5, length(gene_info$label_loc)),
+  text = gene_info$label,
   textfont = list(size = 14, family = "Arial Black"),
   showlegend = FALSE
 )
@@ -230,7 +259,7 @@ ddt
 ```{r, depth_plot, echo=FALSE, error=TRUE}
 #### Depth Plots ####
 # Get data
-depth_f <- paste0("positional_depth/", sample, "_depth.tsv")
+depth_f <- paste0("positional_depth/", sample_df$Reference, "_", sample, "_depth.tsv")
 if (file.exists(depth_f) && file.info(depth_f)$size > 0) {
   coverage <- read.table(depth_f, sep = "\t", header = FALSE)
   colnames(coverage) <- c("chrom", "position", "depth")
@@ -294,9 +323,9 @@ depthp <- plot_ly(x = ~coverage$position, y = ~coverage$depth, type = "scatter",
 
 # Add labels
 depthp <- depthp %>% add_text(
-  x = gene_label_loc,
-  y = rep(0.55, length(gene_label_loc)),
-  text = gene_label,
+  x = gene_info$label_loc,
+  y = rep(0.55, length(gene_info$label_loc)),
+  text = gene_info$label,
   inherit = FALSE,
   type = "scatter",
   mode = "text",
@@ -366,9 +395,9 @@ qualityp <- plot_ly(quality ,x = ~quality$'pos', y = ~quality$'rms_baseq', type 
 
 # Add labels
 qualityp <- qualityp %>% add_text(
-  x = gene_label_loc,
-  y = rep(-6.5, length(gene_label_loc)),
-  text = gene_label,
+  x = gene_info$label_loc,
+  y = rep(-6.5, length(gene_info$label_loc)),
+  text = gene_info$label,
   inherit = FALSE,
   type = "scatter",
   mode = "text",

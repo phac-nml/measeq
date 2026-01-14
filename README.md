@@ -1,7 +1,7 @@
 # MeaSeq: Measles Sequence Analysis Automation
 
 - [Current Updates](#current-updates)
-  - [2025-12-08](#2025-12-08)
+  - [2026-01-13](#2026-01-113)
 - [Introduction](#introduction)
 - [Installation](#installation)
 - [Resource Requirements](#resources-requirements)
@@ -12,6 +12,7 @@
   - [Reference Assignment](#reference-assignment)
   - [Amplicon and Primer Files](#amplicon-and-primer-files)
   - [DSIds](#dsids)
+  - [Contact Information](#contact-information)
   - [More Run Options](#more-run-options)
   - [Testing](#testing)
 - [Outputs](#outputs)
@@ -26,17 +27,18 @@
 
 ## Current Updates
 
-### _2025-12-08_ Summary
+### _2026-01-13_ Summary
 
-- Sample references are now set based on the predicted genotype with a default fallback for non currently supported genotypes
+Full release version 1.0.0! Pipeline supports equivalent Illumina and Nanopore workflows allowing whole genome or amplicon sequencing analysis. The MeaSeq workflow generates whole genome consensus sequences, N450 sequences and reporting information, DSId hashing and assigning, and a final QC report. It can be run with a single reference or with the genotyping predictions.
 
-  - Currently supported: A, B3, D8
+#### Genotype Predictions
 
-    - Full support to come in `0.5.1`
-
-  - Users can still set their own reference with `--reference`
+- Sample references are now set based on the predicted genotype with a default fallback for non-supplied genotypes or unknown/mixed samples.
+  - Currently supported in the repo by default: A, B3, D8
+  - Users can supply their own references for other genotypes or update the current genotype ones based on their needs
+  - Users can set their own whole run reference (no predictions or genotype specific analysis) with `--reference`
   - [References Config](conf/reference.config)
-  - [References and Predictions section](#reference-assignment)
+  - More total information available in the [References and Predictions section](#reference-assignment)
 
 ### Future Direction
 
@@ -204,6 +206,10 @@ GTCAGTTCCACAGTGGCATCTGAACTCG
 ```
 
 If this parameter is not given, the DSIds will still be generated as hashes to group up samples in the dsid.tsv and in the final report.
+
+### Contact Information
+
+Users have the option of including their contact information on the final report of the pipeline to easily allow for the sharing of the report. Information for how to set up and add contact information [is provided in the usage document](./docs/usage.md#contact-information).
 
 ### More Run Options
 

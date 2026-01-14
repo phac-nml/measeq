@@ -95,6 +95,16 @@ workflow GENERATE_REPORT {
             newLine: true
         ).set { ch_collated_versions }
 
+    // Standardize contact information if given
+    def website = ''
+    if ( params.contact_website ) {
+        website = "https://www.${ params.contact_website.replaceFirst(/^https?:\/\//,'').replaceFirst(/^www\./,'') }"
+    }
+    def email = ''
+    if (params.contact_email) {
+        email = params.contact_email ==~ /[^@]+@[^@]+\.[^@]+/ ? "mailto:${params.contact_email}" : ""
+    }
+
     //
     // MODULE: Make custom final HTML Report
     //
@@ -112,7 +122,11 @@ workflow GENERATE_REPORT {
         ch_collated_versions,
         workflow.manifest.version,
         revision,
-        nextflow.version
+        nextflow.version,
+        params.contact_name ?: '',
+        email,
+        params.contact_phone ?: '',
+        website
     )
 
     emit:

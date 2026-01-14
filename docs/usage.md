@@ -19,6 +19,7 @@ This pipeline is intended to be run on measles virus (MeV) paired-end Illumina o
       - [Creating a `-params-file` for Setting References and Primers for Predicted Genotypes](#creating-a--params-file-for-setting-references-and-primers-for-predicted-genotypes)
       - [Change Preset References Using the Command Line](#passing-in-paths-through-the-command-line)
     - [Metadata TSV](#metadata-tsv)
+    - [Contact Information](#contact-information)
     - [All Parameters Table](#all-parameters-table)
   - [Other Settings and Parameter Files](#other-settings-and-parameter-files)
   - [Updating the Pipeline](#updating-the-pipeline)
@@ -106,15 +107,24 @@ You can override this prediction and use your own reference FASTA file by specif
 
 #### Changing Preset Reference Files
 
-To change the preset files for each genotype, you may use a params file [as detailed here](#other-settings-and-parameter-files) or pass the modified paths through the command line. Parameters that can be changed to set this include:
+To change the preset files for each measles genotype, you may use a params file [as detailed below](#creating-a--params-file-for-setting-references-and-primers-for-predicted-genotypes) or pass the modified paths through the command line.
+The parameters are specified using the pattern:
+
+```
+<Genotype>_ref
+<Genotype>_bed
+```
+
+where `<Genotype>` is the genotype identifier (e.g. B3, D8, A, etc.). For example, for genotype B3 you would use:
 
 ```
 B3_ref
 B3_bed
-D8_ref
-D8_bed
-A_ref
-A_bed
+```
+
+In addition, you can modify the defaults that are used when a genotype is not predicted or there is no genotype specific FASTA file by modifying the following parameters:
+
+```
 default_ref
 default_bed
 ```
@@ -163,6 +173,21 @@ MeV03	2024-09-05	...
 
 An example file can be [found here](../assets/metadata.tsv)
 
+#### Contact Information
+
+When running the pipeline, you have the option of supplying your information or your organization/lab's information to be printed in the final HTML report. You can supply the contact information either by passing in that information on the command line or by passing in a `params-file` YAML file with the contact information similar to the references. Currently, the pipeline supports providing your name, phone number, email, and website information.
+
+To pass in your contact information through the command line, you can use the following command:
+
+```bash
+nextflow run phac-nml/measeq -profile <PROFILE> --input <SAMPLESHEET.CSV> --platform <ILLUMINA OR NANOPORE> --contact_name <NAME> --contact_phone "123 456 7890" --contact_email <EMAIL> --contact_website <"WEBSITE.COM">
+```
+
+> [!NOTE]
+> You may decide to use any combination of these contact parameters as it fits you.
+
+> The website parameter supports specifying the website with or without the leading `www.` or `https://`
+
 #### All Parameters Table
 
 A table containing all of the parameter descriptions. You can also do `nextflow run phac-nml/measeq --help` to get them on the command line
@@ -194,6 +219,10 @@ A table containing all of the parameter descriptions. You can also do `nextflow 
 | --neg_control_pct_threshold  | Threshold of genome to be called in a negative control to fail it                            | False         | Int     | 10               |                                                   |
 | --neg_ctrl_substrings        | Substrings to match to sample names to identify negative controls. Separated by a ,          | False         | String  | neg,ntc,blank,en |                                                   |
 | --skip_negative_grading      | Skip grading negative controls and just output a PASS for Run QC                             | False         | Boolean | False            |                                                   |
+| --contact_name               | The name to be printed on the final HTML report                                              | False         | String  | null             |                                                   |
+| --contact_phone              | The phone number to be printed on the final HTML report                                      | False         | String  | null             |                                                   |
+| --contact_email              | The email address to be printed on the final HTML report                                     | False         | String  | null             |                                                   |
+| --contact_website            | The website to be printed on the final HTML report                                           | False         | String  | null             |                                                   |
 
 ### Other Settings and Parameter Files
 
