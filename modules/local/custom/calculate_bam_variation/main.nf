@@ -17,10 +17,12 @@ process CALCULATE_BAM_VARIATION {
     path "versions.yml", emit: versions
 
     script:
+    def args = task.ext.args ?: ''
     """
     calc_bam_variation.py \\
         --bam $bam \\
         --reference $reference \\
+        $args \\
         --min_read_count ${params.min_depth} \\
         --sample ${meta.id}
 

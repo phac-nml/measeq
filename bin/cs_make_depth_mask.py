@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 '''
 Script to create a genomic depth mask for consensus generation
-    Adapted from https://github.com/artic-network/fieldbioinformatics/blob/master/artic/make_depth_mask.py v1.6.2
-    to just remove the need for RG tags steps for non-amplicon data
+    Adapted from https://github.com/artic-network/fieldbioinformatics/blob/master/artic/make_depth_mask.py v1.6.2 to:
+        1. Remove the need for RG tags steps for non-amplicon data
+        2. Match the filters for freebayes such that the depth masking matches up, especially in the low depth MF-NCR
 
     Amplicon data is using the proper tool
 '''
@@ -21,6 +22,8 @@ def init_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument('--depth', type=int, default=20,
                         help="Max depth at which a position will be masked. Default: 20")
+    parser.add_argument('--platform', type=str, default='nanopore', choices=['nanopore', 'illumina'],
+                        help="Use read filtering criteria for depth calculation based on platform")
     parser.add_argument('--ignore-deletions', action="store_true", default=False,
                         help="if set, positional depth counts will ignore reads with reference deletions\
                         (i.e. evaluates positional depths on ref matches, not read span")
@@ -37,7 +40,7 @@ def intervals_extract(iterable):
         group = list(group)
         yield [group[0][1], group[-1][1]]
 
-def collect_depths(bamfile: str, refName: str, minDepth: int, ignoreDeletions: bool) -> list:
+def collect_depths(bamfile: str, refName: str, minDepth: int, platform: str, ignoreDeletions: bool) -> list:
     """Collect read depth of coverage per reference position in a BAM file.
 
     Parameters
@@ -75,8 +78,14 @@ def collect_depths(bamfile: str, refName: str, minDepth: int, ignoreDeletions: b
     # create a depth vector to hold the depths at each reference position
     depths = [0] * bamFile.get_reference_length(refName)
 
-    # generate the pileup
-    for pileupcolumn in bamFile.pileup(refName, max_depth=10000, truncate=False):
+    # Generate the pileup
+    #  Adjusted to match the freebayes filters so that freebayes and the depth mask are in sync for calls
+    min_mapq = 0
+    min_baseq = 13
+    if platform == 'illumina':
+        min_mapq = 30
+        min_baseq = 20
+    for pileupcolumn in bamFile.pileup(refName, max_depth=10000, truncate=False, min_mapping_quality=min_mapq, min_base_quality=min_baseq):
 
         # process the pileup column
         for pileupread in pileupcolumn.pileups:
@@ -113,7 +122,8 @@ def main():
     # Collect the depths from the pileup, replacing any depth<minDepth with 0
     try:
         depths = collect_depths(args.bamfile, seqID,
-                                    args.depth, args.ignore_deletions)
+                                    args.depth, args.platform,
+                                    args.ignore_deletions)
     except Exception as e:
         print(e)
         raise SystemExit(1)

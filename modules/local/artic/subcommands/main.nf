@@ -243,6 +243,7 @@ process CUSTOM_MAKE_DEPTH_MASK {
     input:
     tuple val(meta), path(bam), path(bai)
     tuple val(meta2), path(reference)
+    val platform
 
     output:
     tuple val(meta), path("${meta.id}.coverage_mask.txt"), emit: coverage_mask
@@ -252,6 +253,7 @@ process CUSTOM_MAKE_DEPTH_MASK {
     """
     cs_make_depth_mask.py \\
         --depth ${params.min_depth} \\
+        --platform $platform \\
         $reference \\
         $bam \\
         ${meta.id}.coverage_mask.txt

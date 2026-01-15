@@ -200,7 +200,7 @@ workflow ILLUMINA_CONSENSUS {
         .map { meta, bam, bai -> tuple(meta.ref_id, meta, bam, bai) }
     ch_freebayes_depth_input = ch_bam_bai_by_ref
         .combine(ch_ref_with_fai, by:0)
-        .multiMap { _ref_id, meta, bam, bai, meta_ref, fasta, fai ->
+        .multiMap { _ref_id, meta, bam, bai, meta_ref, fasta, _fai ->
             reference: tuple(meta_ref, fasta)
             bam_bai: tuple(meta, bam, bai)
         }
@@ -236,7 +236,8 @@ workflow ILLUMINA_CONSENSUS {
     //
     CUSTOM_MAKE_DEPTH_MASK(
         ch_freebayes_depth_input.bam_bai,
-        ch_freebayes_depth_input.reference
+        ch_freebayes_depth_input.reference,
+        'illumina'
     )
     ch_versions = ch_versions.mix(CUSTOM_MAKE_DEPTH_MASK.out.versions)
 

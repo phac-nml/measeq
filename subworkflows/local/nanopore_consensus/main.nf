@@ -246,7 +246,8 @@ workflow NANOPORE_CONSENSUS {
         // Run Module
         CUSTOM_MAKE_DEPTH_MASK(
             ch_custom_depth_input.bam_bai,
-            ch_custom_depth_input.reference
+            ch_custom_depth_input.reference,
+            'nanopore'
         )
         ch_versions = ch_versions.mix(CUSTOM_MAKE_DEPTH_MASK.out.versions.first())
         ch_depth_mask = CUSTOM_MAKE_DEPTH_MASK.out.coverage_mask
