@@ -236,8 +236,7 @@ workflow ILLUMINA_CONSENSUS {
     //
     CUSTOM_MAKE_DEPTH_MASK(
         ch_freebayes_depth_input.bam_bai,
-        ch_freebayes_depth_input.reference,
-        'illumina'
+        ch_freebayes_depth_input.reference
     )
     ch_versions = ch_versions.mix(CUSTOM_MAKE_DEPTH_MASK.out.versions)
 
