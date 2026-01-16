@@ -27,7 +27,6 @@ iupac_map = {
 def calculate_vafs(record):
     '''Calculate the variant allele fraction for each alt allele using freebayes' read/alt observation tags'''
     vafs = list()
-    total_depth = float(record.info["DP"])
     for i in range(0, len(record.alts)):
         alt_reads = int(record.info["AO"][i])
         vaf = round(float(alt_reads) / float(record.info["DP"]), 4)
@@ -195,11 +194,6 @@ def main():
     # Load VCF
     vcf = pysam.VariantFile(open(args.file[0],'r'))
 
-    # Initalize depth mask to all zeros for all contigs
-    for r in vcf.header.records:
-        if r.type == "CONTIG":
-            genome_length = int(r['length'])
-
     out_header = vcf.header
 
     # Open the output file with the filtered variant sites
@@ -218,16 +212,17 @@ def main():
 
     for record in vcf:
 
-        # Set depth for this part of the genome
-        # this works for both gVCF blocks and regular variants
-        # because pos/stop are set appropriately
-        v_start = record.pos
-        v_end = record.stop
+        # Get the variant depth
         depth = record.info["DP"]
+        low_depth = False
 
-        # Do nothing with Records that don't meet our minimum depth
+        # Ignore records that don't meet our minimum depth other than for multiallelic sites
         if depth < args.min_depth:
-            continue
+            # For multiallelic variants, the freebayes depth may not be exactly positional
+            #  So let them pass and mask them later if the position is below the given minimum
+            if not any([x for x in record.alts if len(x) > 1]):
+                continue
+            low_depth = True
 
         # Determine if any allele in the variant is an indel
         has_indel = False
@@ -263,8 +258,7 @@ def main():
                 continue
 
             # Discard low quality sites as recommended by freebayes
-            #  Might need to add a proper calculation here for it based on postiion depth but
-            #  based on the data nothing really is this low unless its very mixed or low low depth
+            #  Based on the data nothing really lower than the default unless it is low low quality
             if record.qual < args.min_quality:
                 # Tracking for TSV only
                 tsv_data_list.append([
@@ -309,6 +303,8 @@ def main():
 
             # Setting up for TSV output for later reporting
             #  Format: chrom, pos, ref, alt, qual, depth, vaf, tag
+            if low_depth:
+                tsv_tag += ', Low Depth'
             tsv_data_list.append([
                 out_r.chrom,
                 out_r.pos,
