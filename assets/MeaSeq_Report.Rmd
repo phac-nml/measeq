@@ -13,6 +13,7 @@ knitr:
   opts_chunk:
     fig_embed: false
 params:
+  min_depth: 10
   version: ""
   revision: ""
   nf_version: ""
@@ -571,6 +572,7 @@ for ( sample_v in samples ) {
   # Assign data to subpage_env
   assign("sample_df", sample_df, subpage_env)
   assign("sample", sample_v, subpage_env)
+  assign("params", params, subpage_env)
 
   # Knit sample subpage using the subpage_env and add result to out vector
   subpages = c(subpages, knitr::knit_child('subpage_sample.Rmd', envir = subpage_env))

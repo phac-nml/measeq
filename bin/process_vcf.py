@@ -212,22 +212,23 @@ def main():
 
     for record in vcf:
 
-        # Get the variant depth
-        depth = record.info["DP"]
-        low_depth = False
-
-        # Ignore records that don't meet our minimum depth other than for multiallelic sites
-        if depth < args.min_depth:
-            # For multiallelic variants, the freebayes depth may not be exactly positional
-            #  So let them pass and mask them later if the position is below the given minimum
-            if not any([x for x in record.alts if len(x) > 1]):
-                continue
-            low_depth = True
-
         # Determine if any allele in the variant is an indel
         has_indel = False
         for i in range(0, len(record.alts)):
             has_indel = has_indel or len(record.ref) != len(record.alts[i])
+
+        # Get the variant depth
+        depth = record.info["DP"]
+        low_depth = False
+
+        # Ignore records that don't meet our minimum depth other than for multi-allelic sites
+        if depth < args.min_depth:
+            # For multi-allelic variants only, the freebayes depth may not be exactly positional
+            #  So let them pass and mask them later if the variant position is below the given minimum depth
+            #  This helps resolve on the cut-off depths especially in the MF-NCR
+            if not any([x for x in record.alts if len(x) > 1]):
+                continue
+            low_depth = True
 
         # process the input variant record to handle multi-allelic variants and MNPs
         out_records = list()
@@ -249,6 +250,11 @@ def main():
             vaf = out_r.info["VAF"][0]
             is_indel = len(out_r.ref) != len(out_r.alts[0])
 
+            # Recheck that an indel is not low-depth if the site was multi-allelic initially
+            #  This should help avoid errant indels in the MF-NCR
+            if (is_indel) and (depth < args.min_depth):
+                continue
+
             # Discard low frequency variants
             if vaf < args.lower_ambiguity_frequency:
                 continue
@@ -258,7 +264,7 @@ def main():
                 continue
 
             # Discard low quality sites as recommended by freebayes
-            #  Based on the data nothing really lower than the default unless it is low low quality
+            #  Based on the data nothing really lower than the default min_qual unless it is low low quality
             if record.qual < args.min_quality:
                 # Tracking for TSV only
                 tsv_data_list.append([
@@ -278,22 +284,28 @@ def main():
             consensus_base = out_r.alts[0]
             genotype = (1,)
 
-            # high-frequency subs and indels are always applied without ambiguity
+            # High-frequency subs and indels are always applied without ambiguity
             # we don't have to do an indel VAF check here as it is dealt with in handle_indel
             if vaf > args.upper_ambiguity_frequency or is_indel:
                 # always apply these to the consensus
                 consensus_tag = "consensus"
-                tsv_tag = "Consensus"
+                tsv_tag = "Passing Alt Allele Fraction"
+                if vaf >= 0.90:
+                    tsv_tag = "High Alt Allele Fraction"
+                elif is_indel:
+                    tsv_tag = "Passing Indel"
             else:
                 # To capture IUPACs in reports easier have a separate column
                 iupac_base = get_base_code(out_tuple[1], args.upper_ambiguity_frequency)
 
                 # Record ambiguous SNPs in the consensus sequence with IUPAC codes
                 consensus_tag = "ambiguous"
-                tsv_tag = f"Ambiguous - {iupac_base}"
                 # Genotype needs to be mixed to get an iupac if that is what the base should be
                 if iupac_base not in ['A', 'T', 'G', 'C']:
                     genotype = (0,1)
+                    tsv_tag = f"Ambiguous Base - {iupac_base}"
+                else:
+                    tsv_tag = "Passing Low Alt Allele Fraction"
 
             # Output for consensus generation and reporting
             out_r.info["ConsensusTag"] = consensus_tag
@@ -304,7 +316,7 @@ def main():
             # Setting up for TSV output for later reporting
             #  Format: chrom, pos, ref, alt, qual, depth, vaf, tag
             if low_depth:
-                tsv_tag += ', Low Depth'
+                tsv_tag = "Low Depth"
             tsv_data_list.append([
                 out_r.chrom,
                 out_r.pos,

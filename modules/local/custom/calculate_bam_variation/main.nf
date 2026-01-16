@@ -23,7 +23,6 @@ process CALCULATE_BAM_VARIATION {
         --bam $bam \\
         --reference $reference \\
         $args \\
-        --min_read_count ${params.min_depth} \\
         --sample ${meta.id}
 
     cat <<-END_VERSIONS > versions.yml

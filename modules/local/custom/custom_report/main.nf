@@ -15,6 +15,7 @@ process MAKE_CUSTOM_REPORT {
     path report_template
     path subpages
     path version_yml
+    val min_depth
     val pipeline_version
     val revision
     val nf_version
@@ -53,6 +54,7 @@ process MAKE_CUSTOM_REPORT {
         '$report_template',
         params = list(
             overall_qc = '$overall_qc_csv',
+            min_depth = $min_depth,
             version = '$pipeline_version',
             revision = '$revision',
             nf_version = '$nf_version',

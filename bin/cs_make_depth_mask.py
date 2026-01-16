@@ -3,7 +3,7 @@
 Script to create a genomic depth mask for consensus generation
     Adapted from https://github.com/artic-network/fieldbioinformatics/blob/master/artic/make_depth_mask.py v1.6.2 to:
         1. Remove the need for RG tags steps for non-amplicon data
-        2. Adjust the depth filter baseq back to default (13)
+        2. Adjust the depth filter baseq to 12
 
     Amplicon data is using the proper tool
 '''
