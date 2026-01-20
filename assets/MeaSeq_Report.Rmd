@@ -331,7 +331,7 @@ summary_depth_df <- long_df %>%
 #  Currently only full genomes (~15894bp) and genomes with the 5' and 3' UTR cut (~15678bp) as references so
 #  use that to determine location of gene boxes for some plots instead of needing to load in a GFF (at the moment)
 gene_label <- c("N", "N450", "P/V/C", "M", "F", "H", "L")
-gene_color <- c("#0A9F9D", "#044342", "#C52E19", "#6C8645", "#F98400", "#5BBCD6", "#F2AD00")
+gene_color <- c("#12f5f1ff", "#0da9a7ff", "#C52E19", "#6C8645", "#F98400", "#77be78ff", "#F2AD00")
 
 # Genomes around 15678bp
 gene_start_short <- c(1, 1128, 1700, 3331, 5351, 7164, 9127)
@@ -408,7 +408,8 @@ make_depth_plot <- function(genome_id, summary_depth_df, panel_label) {
     ) +
     geom_rect(
       data = gene_df,
-      aes(xmin = start, xmax = end, ymin = box_ymin, ymax = box_ymax, fill = color),
+      aes(xmin = start, xmax = end, ymin = box_ymin, ymax = box_ymax),
+      fill = gene_df$color,
       color = "black",
       inherit.aes = FALSE,
       show.legend = FALSE
