@@ -26,8 +26,8 @@ nextflow_workflow {
                     )
                 input[2] = Channel.of(
                         [
-                            [id: "SRR31023629.downsampled", single_end: true, ref_id: "MH356245.1"],
-                            file("$baseDir/test_data/nanopore_fastqs/SRR31023629.downsampled.fastq.gz")
+                            [id: "SRR31023694.downsampled", single_end: true, ref_id: "MH356245.1"],
+                            file("$baseDir/test_data/nanopore_fastqs/SRR31023694.downsampled.fastq.gz")
                         ]
                     )
                 input[3] = Channel.of(
@@ -64,22 +64,22 @@ nextflow_workflow {
 
             // Files exist
             // Nanoq
-            assert path("${launchDir}/results/nanoq/SRR31023629.downsampled_filtered.fastq").exists()
-            assert path("${launchDir}/results/nanoq/SRR31023629.downsampled_filtered.stats").exists()
+            assert path("${launchDir}/results/nanoq/SRR31023694.downsampled_filtered.fastq").exists()
+            assert path("${launchDir}/results/nanoq/SRR31023694.downsampled_filtered.stats").exists()
             // BAM
-            assert path("${launchDir}/results/bam/minimap2/SRR31023629.downsampled.sorted.bam").exists()
-            assert path("${launchDir}/results/bam/minimap2/SRR31023629.downsampled.sorted.bam.bai").exists()
+            assert path("${launchDir}/results/bam/minimap2/SRR31023694.downsampled.sorted.bam").exists()
+            assert path("${launchDir}/results/bam/minimap2/SRR31023694.downsampled.sorted.bam.bai").exists()
             // VCF
-            assert path("${launchDir}/results/vcf/artic/SRR31023629.downsampled.fail.vcf").exists()
-            assert path("${launchDir}/results/vcf/artic/SRR31023629.downsampled.pass.vcf.gz").exists()
-            assert path("${launchDir}/results/vcf/artic/SRR31023629.downsampled.pass.vcf.gz.tbi").exists()
-            assert path("${launchDir}/results/vcf/clair3/SRR31023629.downsampled.1.vcf").exists()
-            assert path("${launchDir}/results/vcf/clair3/SRR31023629.downsampled.2.vcf").exists()
-            assert path("${launchDir}/results/vcf/final/SRR31023629.downsampled.pass.norm.vcf.gz").exists()
-            assert path("${launchDir}/results/vcf/final/SRR31023629.downsampled.consensus.tsv").exists()
-            assert path("${launchDir}/results/vcf/final/SRR31023629.downsampled.pass.norm.vcf.gz.tbi").exists()
+            assert path("${launchDir}/results/vcf/artic/SRR31023694.downsampled.fail.vcf").exists()
+            assert path("${launchDir}/results/vcf/artic/SRR31023694.downsampled.pass.vcf.gz").exists()
+            assert path("${launchDir}/results/vcf/artic/SRR31023694.downsampled.pass.vcf.gz.tbi").exists()
+            assert path("${launchDir}/results/vcf/clair3/SRR31023694.downsampled.1.vcf").exists()
+            assert path("${launchDir}/results/vcf/clair3/SRR31023694.downsampled.2.vcf").exists()
+            assert path("${launchDir}/results/vcf/final/SRR31023694.downsampled.pass.norm.vcf.gz").exists()
+            assert path("${launchDir}/results/vcf/final/SRR31023694.downsampled.consensus.tsv").exists()
+            assert path("${launchDir}/results/vcf/final/SRR31023694.downsampled.pass.norm.vcf.gz.tbi").exists()
             // Consensus
-            assert path("${launchDir}/results/consensus/SRR31023629.downsampled.consensus.fasta").md5 == "0dd5b4f47be1aa2657467cb1906e1b10"
+            assert path("${launchDir}/results/consensus/SRR31023694.downsampled.consensus.fasta").md5 == "43b8e4c2311963725452e45a69a0fc7c"
         }
     }
 }
