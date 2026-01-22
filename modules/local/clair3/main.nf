@@ -33,10 +33,12 @@ process CLAIR3_POOL {
         --platform='ont' \\
         --model_path="$model" \\
         --output="${meta.id}-out" \\
-        --haploid_precise \\
+        --haploid_sensitive \\
         --enable_long_indel \\
         --include_all_ctgs \\
-        --chunk_size=10000 \\
+        --chunk_size=5000 \\
+        --ref_pct_full=1 \\
+        --var_pct_full=1 \\
         --no_phasing_for_fa \\
         --enable_variant_calling_at_sequence_head_and_tail
 
@@ -91,10 +93,12 @@ process CLAIR3_NO_POOL {
         --platform='ont' \\
         --model_path="$model" \\
         --output="${meta.id}-out" \\
-        --haploid_precise \\
+        --haploid_sensitive \\
         --enable_long_indel \\
         --include_all_ctgs \\
-        --chunk_size=10000 \\
+        --chunk_size=5000 \\
+        --ref_pct_full=1 \\
+        --var_pct_full=1 \\
         --no_phasing_for_fa \\
         --enable_variant_calling_at_sequence_head_and_tail
 
