@@ -145,13 +145,13 @@
                 },
                 "normalise_ont": {
                     "type": "integer",
-                    "default": 2000,
+                    "default": 100,
                     "minimum": 0,
-                    "description": "Normalise each amplicon barcode to set depth"
+                    "description": "Normalise each amplicon barcode to set depth. Clair3 works better on amplicon data where each position in the genome is around the same depth"
                 },
                 "min_variant_qual_c3": {
                     "type": "integer",
-                    "default": 8,
+                    "default": 7,
                     "minimum": 0,
                     "description": "Minimum variant quality to pass clair3 filters"
                 },

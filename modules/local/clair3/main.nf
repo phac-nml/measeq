@@ -97,8 +97,6 @@ process CLAIR3_NO_POOL {
         --enable_long_indel \\
         --include_all_ctgs \\
         --chunk_size=5000 \\
-        --ref_pct_full=1 \\
-        --var_pct_full=1 \\
         --no_phasing_for_fa \\
         --enable_variant_calling_at_sequence_head_and_tail
 
