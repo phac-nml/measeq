@@ -25,8 +25,15 @@ process CLAIR3_POOL {
 
     script:
     """
+    # Filter bam to be the pool only
+    #  Otherwise the full alignment mode may see the differences in depth at the overlap
+    #  region and not call specific SNPs
+    samtools view -b -r $pool $bam -o ${pool}.sorted.bam
+    samtools index ${pool}.sorted.bam
+
+    # Run clair3 after
     run_clair3.sh \\
-        --bam_fn=$bam \\
+        --bam_fn=${pool}.sorted.bam \\
         --bed_fn=$pool_bed \\
         --ref_fn=$reference \\
         --threads=${task.cpus} \\
@@ -98,6 +105,8 @@ process CLAIR3_NO_POOL {
         --include_all_ctgs \\
         --chunk_size=5000 \\
         --no_phasing_for_fa \\
+        --ref_pct_full=1 \\
+        --var_pct_full=1 \\
         --enable_variant_calling_at_sequence_head_and_tail
 
     gunzip ${meta.id}-out/merge_output.vcf.gz
