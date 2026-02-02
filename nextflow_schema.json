@@ -143,23 +143,35 @@
                     "pattern": "^\\S+$",
                     "fa_icon": "fab fa-modx"
                 },
+                "ont_min_read_length": {
+                    "type": "integer",
+                    "default": 200,
+                    "minimum": 0,
+                    "description": "Minimum read length for input ONT reads"
+                },
+                "ont_min_base_qual": {
+                    "type": "integer",
+                    "default": 12,
+                    "minimum": 0,
+                    "description": "Minimum base quality of ONT reads to keep"
+                },
                 "normalise_ont": {
                     "type": "integer",
                     "default": 500,
                     "minimum": 0,
                     "description": "Normalise each amplicon barcode to set depth"
                 },
+                "ont_keep_incorrect_primers": {
+                    "type": "integer",
+                    "default": 200,
+                    "minimum": 0,
+                    "description": "Minimum read length for input ONT reads"
+                },
                 "min_variant_qual_c3": {
                     "type": "integer",
                     "default": 7,
                     "minimum": 0,
                     "description": "Minimum variant quality to pass clair3 filters"
-                },
-                "ont_min_read_length": {
-                    "type": "integer",
-                    "default": 200,
-                    "minimum": 0,
-                    "description": "Minimum read length for input ONT reads"
                 }
             }
         },
