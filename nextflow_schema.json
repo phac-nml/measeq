@@ -162,10 +162,9 @@
                     "description": "Normalise each amplicon barcode to set depth"
                 },
                 "ont_keep_incorrect_primers": {
-                    "type": "integer",
-                    "default": 200,
-                    "minimum": 0,
-                    "description": "Minimum read length for input ONT reads"
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Keep reads with incorrect primer pairs"
                 },
                 "min_variant_qual_c3": {
                     "type": "integer",
