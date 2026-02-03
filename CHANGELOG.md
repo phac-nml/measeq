@@ -15,6 +15,11 @@ This full release adds in support for all 24 genotypes when running with the gen
 
   - Recommended to set these with a `-params-file` if setting up multiple to make it easier to rerun the pipeline
 
+- New parameters to help allow more control to ONT data
+
+  - `ont_min_base_qual`: The minimum base quality of ONT reads to keep
+  - `ont_keep_incorrect_primers`: When running with amplicon data, keep reads that don't match up to their primer pair
+
 - Reenabled support for contact information in [PR #26](https://github.com/phac-nml/measeq/pull/26/files) to be added to the final report using any combination of:
   - `--contact_name`: Name(s) to put on the contact page
   - `--contact_phone`: Phone number

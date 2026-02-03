@@ -187,17 +187,29 @@ p
 ```
 
 > **Figure 2.** Subconsensus Variant Read Counts. The sample pileup was analyzed to find positions in the genome where the non-reference allele percentage was >=15%.
-> All positions with >=10 reads, a positional read base quality of >=20 and a map quality >=30 were included in the analysis.
-> Mixed sites in this figure that are not in the variant table are variants that have failed processing so they are reference bases in the final consensus and not IUPAC bases.
+> All positions with >=8 reads, a positional read base quality of >=12 and a map quality >=30 were included in the analysis.
+> Mixed sites in the figure that are not in the variant table are variants that have failed processing and contain the reference bases in the final consensus
+> if they are above the set minimum depth.
 
 ## Row
 
 ### {-}
 ```{r, variant_table, echo=FALSE, error=TRUE}
 #### Variants Table ####
-# Get data
+# Get variants tsv data
 var_f <- paste0("variant_tsv/", sample, ".consensus.tsv")
 var_c_names <- c("pos", "ref", "alt", "qual", "depth", "vaf", "tag")
+
+# Get depth data to confirm any low-depth variants
+depth_f <- paste0("positional_depth/", sample_df$Reference, "_", sample, "_depth.tsv")
+if (file.exists(depth_f) && file.info(depth_f)$size > 0) {
+  coverage <- read.table(depth_f, sep = "\t", header = FALSE)
+  colnames(coverage) <- c("chrom", "position", "depth")
+} else {
+  coverage <- data.frame(matrix(ncol = 3, nrow = 1))
+  colv <- c("chrom", "position", "depth")
+  colnames(coverage) <- colv
+}
 
 # Create table
 if (file.exists(var_f)) {
@@ -208,21 +220,27 @@ if (file.exists(var_f)) {
   variants <- select(variants, var_c_names)
   # Filter out failed variants
   variants <- variants[variants$tag != "Fail", ]
+  # Filter out low-depth masked variants
+  variants <- variants %>%
+    left_join(coverage, by = c("pos" = "position")) %>%
+    filter(depth.y >= params$min_depth) %>%
+    select(-depth.y, -chrom)
+  # Create table
   variants <- variants %>%
     rename(
       "Pos" = pos,
       "Ref" = ref,
       "Alt" = alt,
       "Qual" = qual,
-      "Depth" = depth,
-      "Variant Allele Fraction" = vaf,
+      "Depth" = depth.x,
+      "Alt Allele Fraction" = vaf,
       "Type" = tag
     )
   ddt <- variants %>%
     datatable(rownames = FALSE,
       caption = htmltools::tags$caption(
         style = 'caption-side: top',
-        htmltools::strong('Table III: '), 'Consensus Variants Summary Table. All variants found in the consensus sequence are in the following table'
+        htmltools::strong('Table III: '), 'Consensus Variant Summary Table. VCF-based summary table of the variants found in the final consensus sequence. The "Type" column displaying more information on what the base is in the final sequence and any other notes on it.'
       ),
       options = list(
         pageLength = 10,
@@ -234,10 +252,10 @@ if (file.exists(var_f)) {
       )
     ) %>%
     formatRound(columns = c('Qual'), digits = 2) %>%
-    formatRound(columns = c('Variant Allele Fraction'), digits = 4) %>%
+    formatRound(columns = c('Alt Allele Fraction'), digits = 4) %>%
     # Bars to show at a glance
     formatStyle(
-      'Variant Allele Fraction',
+      'Alt Allele Fraction',
       background = styleColorBar(range(0,1), 'lightblue', angle = -90),
       backgroundSize = '88% 88%',
       backgroundRepeat = 'no-repeat',
@@ -258,17 +276,7 @@ ddt
 ### {-}
 ```{r, depth_plot, echo=FALSE, error=TRUE}
 #### Depth Plots ####
-# Get data
-depth_f <- paste0("positional_depth/", sample_df$Reference, "_", sample, "_depth.tsv")
-if (file.exists(depth_f) && file.info(depth_f)$size > 0) {
-  coverage <- read.table(depth_f, sep = "\t", header = FALSE)
-  colnames(coverage) <- c("chrom", "position", "depth")
-} else {
-  coverage <- data.frame(matrix(ncol = 3, nrow = 1))
-  colv <- c("chrom", "position", "depth")
-  colnames(coverage) <- colv
-}
-
+# Data already gotten in last step
 # Set depths of 0 to 1 to allow continuous visualization with log plot
 coverage$depth[coverage$depth == 0] <- 1
 

@@ -120,6 +120,7 @@ workflow GENERATE_REPORT {
         ch_report_template,
         ch_report_subpages.collect(),
         ch_collated_versions,
+        params.min_depth,
         workflow.manifest.version,
         revision,
         nextflow.version,

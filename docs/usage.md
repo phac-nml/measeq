@@ -101,7 +101,7 @@ Additional options to help run the pipeline to suit your needs
 
 #### Assigning Your Own Reference
 
-By default, the pipeline predicts a sample's genotype using a supplemented measles WHO N450 reference dataset and uses that to set a reference FASTA file to map the sample's reads to. These available preset reference FASTA files correspond to the D8, B3, and A genotypes of the measles virus. If a sample is predicted to be another genotype, then the pipeline defaults to use the set `--default_ref` reference FASTA file which matches the D8 reference genome by default.
+By default, the pipeline predicts a sample's genotype using a supplemented measles WHO N450 reference dataset and uses prediction that to set a reference FASTA file for that sample's processing. These available preset reference FASTA files correspond to the D8, B3, and A genotypes of the measles virus. If a sample is predicted to be another genotype, then the pipeline defaults to use the set `--default_ref` reference FASTA file which matches the D8 reference genome by default.
 
 You can override this prediction and use your own reference FASTA file by specifying the path to the file using `--reference`. Please note that all samples within that run will now use the FASTA file you have specified.
 
@@ -209,9 +209,11 @@ A table containing all of the parameter descriptions. You can also do `nextflow 
 | --min_indel_threshold        | Minimum thresholds to keep an indel                                                          | False         | Float   | 0.60             | Illumina only                                     |
 | --min_alt_fraction_freeabyes | Require at least this fraction of observations supporting an alt allele to evaluate position | False         | Float   | 0.05             | Illumina only                                     |
 | --min_variant_qual_freebayes | Minimum freebayes quality (probability) to filter variants                                   | False         | Integer | 20               | Illumina only                                     |
-| --normalise_ont              | Normalise each amplicon barcode to set depth                                                 | False         | Int     | 2000             | Nanopore only                                     |
-| --min_variant_qual_c3        | Minimum variant quality to pass clair3 filters                                               | False         | Int     | 8                | Nanopore only                                     |
 | --ont_min_read_length        | Minimum read length for input ONT reads                                                      | False         | Int     | 200              | Nanopore only                                     |
+| --ont_min_base_qual          | Minimum base quality of ONT reads to keep                                                    | False         | Int     | 12               | Nanopore only                                     |
+| --normalise_ont              | Normalise each amplicon barcode to set depth                                                 | False         | Int     | 2000             | Nanopore only                                     |
+| --ont_keep_incorrect_primers | Keep reads that don't correctly match to their proper primer pair                            | False         | Boolean | False            | Nanopore only                                     |
+| --min_variant_qual_c3        | Minimum variant quality to pass clair3 filters                                               | False         | Int     | 8                | Nanopore only                                     |
 | --metadata                   | Path to metadata TSV file containing at minimum 'sample' column                              | False         | Path    | null             | See [Metadata TSV](#metadata-tsv)                 |
 | --dsid_fasta                 | Path to DSID multi-fasta to match output consensus data to                                   | False         | Path    | null             | See [DSId Matching in README](../README.md#dsids) |
 | --min_depth                  | Minimum depth to call a base                                                                 | False         | Int     | 10               |                                                   |

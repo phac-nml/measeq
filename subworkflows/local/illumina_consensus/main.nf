@@ -200,7 +200,7 @@ workflow ILLUMINA_CONSENSUS {
         .map { meta, bam, bai -> tuple(meta.ref_id, meta, bam, bai) }
     ch_freebayes_depth_input = ch_bam_bai_by_ref
         .combine(ch_ref_with_fai, by:0)
-        .multiMap { _ref_id, meta, bam, bai, meta_ref, fasta, fai ->
+        .multiMap { _ref_id, meta, bam, bai, meta_ref, fasta, _fai ->
             reference: tuple(meta_ref, fasta)
             bam_bai: tuple(meta, bam, bai)
         }

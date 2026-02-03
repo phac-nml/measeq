@@ -69,7 +69,7 @@ nextflow_workflow {
 
             // Consensus md5 --> If it matches, all variants were the same so intermediate files SHOULD be ok/the same
             //  Adjustment for 0.5.0 to use different primers so slight changes
-            assert path("${launchDir}/results/consensus/SRR7517490.consensus.fasta").md5 == "0010cc054285afabcc6c5acd5a8c573e"
+            assert path("${launchDir}/results/consensus/SRR7517490.consensus.fasta").md5 == "623cefbbaf96667cca6612db75a94ade"
         }
     }
 }
