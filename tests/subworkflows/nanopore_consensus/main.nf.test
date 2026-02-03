@@ -55,6 +55,7 @@ nextflow_workflow {
                 model = "r1041_e82_400bps_sup_v410"
                 min_depth = 30
                 ont_min_read_length = 400
+                normalise_ont = 2000
             }
         }
         then {
@@ -79,7 +80,7 @@ nextflow_workflow {
             assert path("${launchDir}/results/vcf/final/SRR31023694.downsampled.consensus.tsv").exists()
             assert path("${launchDir}/results/vcf/final/SRR31023694.downsampled.pass.norm.vcf.gz.tbi").exists()
             // Consensus
-            assert path("${launchDir}/results/consensus/SRR31023694.downsampled.consensus.fasta").md5 == "43b8e4c2311963725452e45a69a0fc7c"
+            assert path("${launchDir}/results/consensus/SRR31023694.downsampled.consensus.fasta").md5 == "eb4e7e47a3b018287b8ec66e7306636b"
         }
     }
 }
