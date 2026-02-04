@@ -3,6 +3,37 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.0.0] - 2026-02-04
+
+Initial full pipeline release that includes equivalent Illumina and Nanopore workflows with full genome consensus sequence generation, N450 reporting, DSId hashing and assigning, and a final QC report.
+
+This full release adds in support for all 24 genotypes when running with the genotype predictions provided the user sets up all the appropriate files. Currently: A, B3, and D8 are suppored in this repo although its recommended that users determine their own reference and primer files as they may not match the defaults.
+
+### `Added`
+
+- Support for all 24 genotypes and their primer files [PR #26](https://github.com/phac-nml/measeq/pull/26/files)
+
+  - Recommended to set these with a `-params-file` if setting up multiple to make it easier to rerun the pipeline
+
+- New parameters to help allow more control to ONT data
+
+  - `ont_min_base_qual`: The minimum base quality of ONT reads to keep
+  - `ont_keep_incorrect_primers`: When running with amplicon data, keep reads that don't match up to their primer pair
+
+- Reenabled support for contact information in [PR #26](https://github.com/phac-nml/measeq/pull/26/files) to be added to the final report using any combination of:
+  - `--contact_name`: Name(s) to put on the contact page
+  - `--contact_phone`: Phone number
+  - `--contact_email`: Email
+  - `--contact_website`: Website URL
+
+### `Adjusted`
+
+- Handling of intermediate files to allow the use of a full measles genome and/or genomes with the 5' and 3' UTR cut as reference
+
+- Splitting of amplicon data to be per genome in case of the use of different amplicons across reference files
+
+- Reorganization of the final report's mean genomic depth to be per genome and on its own tab in case of multiple references
+
 ## [v0.5.0] - 2025-12-08
 
 The pipeline has been reorganized to run each sample with it's own reference to allow for the prediction of each sample's genotype and its mapping to its appropriate reference.
@@ -207,6 +238,7 @@ Small addition of Picard MarkDuplicates workflow along with some new tests
 
 - MeaSeq pipeline created and initial code added
 
+[v1.0.0]: https://github.com/phac-nml/measeq/releases/tag/1.0.0
 [v0.5.0]: https://github.com/phac-nml/measeq/releases/tag/0.5.0
 [v0.4.3]: https://github.com/phac-nml/measeq/releases/tag/0.4.3
 [v0.4.2]: https://github.com/phac-nml/measeq/releases/tag/0.4.2

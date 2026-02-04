@@ -133,31 +133,44 @@
                 "model": {
                     "type": "string",
                     "description": "Clair3 model to use for variant calling. Will attempt to download the model",
+                    "pattern": "^[A-Za-z0-9_\\-\\.]*$",
                     "fa_icon": "fab fa-modx"
                 },
                 "local_model": {
                     "type": "string",
                     "description": "Path to local clair3 model directory for variant calling",
                     "format": "directory-path",
+                    "pattern": "^\\S+$",
                     "fa_icon": "fab fa-modx"
-                },
-                "normalise_ont": {
-                    "type": "integer",
-                    "default": 2000,
-                    "minimum": 0,
-                    "description": "Normalise each amplicon barcode to set depth"
-                },
-                "min_variant_qual_c3": {
-                    "type": "integer",
-                    "default": 8,
-                    "minimum": 0,
-                    "description": "Minimum variant quality to pass clair3 filters"
                 },
                 "ont_min_read_length": {
                     "type": "integer",
                     "default": 200,
                     "minimum": 0,
                     "description": "Minimum read length for input ONT reads"
+                },
+                "ont_min_base_qual": {
+                    "type": "integer",
+                    "default": 12,
+                    "minimum": 0,
+                    "description": "Minimum base quality of ONT reads to keep"
+                },
+                "normalise_ont": {
+                    "type": "integer",
+                    "default": 500,
+                    "minimum": 0,
+                    "description": "Normalise each amplicon barcode to set depth"
+                },
+                "ont_keep_incorrect_primers": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Keep reads with incorrect primer pairs"
+                },
+                "min_variant_qual_c3": {
+                    "type": "integer",
+                    "default": 7,
+                    "minimum": 0,
+                    "description": "Minimum variant quality to pass clair3 filters"
                 }
             }
         },
@@ -171,6 +184,8 @@
                     "type": "string",
                     "description": "Path to reference sequence to map measles fastqs to",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt"
                 },
                 "metadata": {
@@ -185,6 +200,8 @@
                     "type": "string",
                     "description": "Path to DSID multi-fasta to match output consensus data to",
                     "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt"
                 },
                 "min_depth": {
@@ -206,7 +223,7 @@
                 },
                 "neg_ctrl_substrings": {
                     "type": "string",
-                    "pattern": "^\\S+$",
+                    "pattern": "^[A-Za-z0-9_,\\-\\.]*$",
                     "default": "neg,ntc,blank,en",
                     "description": "Substrings to match to sample names to identify negative controls. Separated by a ,"
                 },
@@ -286,59 +303,442 @@
                 }
             }
         },
+        "contact_options": {
+            "title": "Contact information options",
+            "type": "object",
+            "description": "Options relating to contact information printing on final report",
+            "default": "",
+            "properties": {
+                "contact_name": {
+                    "type": "string",
+                    "description": "Name of the person or organization running the pipeline",
+                    "fa_icon": "fas fa-vector-square",
+                    "pattern": "^[A-Za-z0-9\\ _\\-\\.]*$"
+                },
+                "contact_website": {
+                    "type": "string",
+                    "description": "Website of the person or organization running the pipeline",
+                    "fa_icon": "fas fa-vector-square",
+                    "pattern": "^[A-Za-z0-9_\\-\\:\\/\\.\\%]*$"
+                },
+                "contact_phone": {
+                    "type": "string",
+                    "description": "Phone number of the person or organization running the pipeline",
+                    "fa_icon": "fas fa-vector-square",
+                    "pattern": "^[0-9+() _-]*$"
+                },
+                "contact_email": {
+                    "type": "string",
+                    "description": "Email of the person or organization running the pipeline",
+                    "fa_icon": "fas fa-envelope",
+                    "pattern": "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$"
+                }
+            }
+        },
         "reference_options": {
             "title": "Reference options",
             "type": "object",
             "description": "Reference options when no specific reference is specified in the command",
-            "default": "",
             "properties": {
-                "B3_ref": {
-                    "type": "string",
-                    "description": "Path to B3 reference fasta",
-                    "format": "file-path",
-                    "fa_icon": "far fa-file-alt"
-                },
-                "D8_ref": {
-                    "type": "string",
-                    "description": "Path to D8 reference fasta",
-                    "format": "file-path",
-                    "fa_icon": "far fa-file-alt"
-                },
-                "A_ref": {
-                    "type": "string",
-                    "description": "Path to A reference fasta",
-                    "format": "file-path",
-                    "fa_icon": "far fa-file-alt"
-                },
                 "default_ref": {
                     "type": "string",
                     "description": "Path to D8 reference fasta",
                     "format": "file-path",
-                    "fa_icon": "far fa-file-alt"
-                },
-                "B3_bed": {
-                    "type": "string",
-                    "description": "Path to B3 primers bed file",
-                    "format": "file-path",
-                    "fa_icon": "far fa-file-alt"
-                },
-                "D8_bed": {
-                    "type": "string",
-                    "description": "Path to D8 primers bed file",
-                    "format": "file-path",
-                    "fa_icon": "far fa-file-alt"
-                },
-                "A_bed": {
-                    "type": "string",
-                    "description": "Path to A primers bed file",
-                    "format": "file-path",
-                    "fa_icon": "far fa-file-alt"
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
                 },
                 "default_bed": {
                     "type": "string",
                     "description": "Path to D8 primers bed file",
                     "format": "file-path",
-                    "fa_icon": "far fa-file-alt"
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "A_ref": {
+                    "type": "string",
+                    "description": "Path to A reference fasta",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "A_bed": {
+                    "type": "string",
+                    "description": "Path to A primers bed file",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "B1_ref": {
+                    "type": "string",
+                    "description": "Path to B1 reference fasta",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "B1_bed": {
+                    "type": "string",
+                    "description": "Path to B1 primers bed file",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "B2_ref": {
+                    "type": "string",
+                    "description": "Path to B2 reference fasta",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "B2_bed": {
+                    "type": "string",
+                    "description": "Path to B2 primers bed file",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "B3_ref": {
+                    "type": "string",
+                    "description": "Path to B3 reference fasta",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "B3_bed": {
+                    "type": "string",
+                    "description": "Path to B3 primers bed file",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "C1_ref": {
+                    "type": "string",
+                    "description": "Path to C1 reference fasta",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "C1_bed": {
+                    "type": "string",
+                    "description": "Path to C1 primers bed file",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "C2_ref": {
+                    "type": "string",
+                    "description": "Path to C2 reference fasta",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "C2_bed": {
+                    "type": "string",
+                    "description": "Path to C2 primers bed file",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "D1_ref": {
+                    "type": "string",
+                    "description": "Path to D1 reference fasta",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "D1_bed": {
+                    "type": "string",
+                    "description": "Path to D1 primers bed file",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "D2_ref": {
+                    "type": "string",
+                    "description": "Path to D2 reference fasta",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "D2_bed": {
+                    "type": "string",
+                    "description": "Path to D2 primers bed file",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "D3_ref": {
+                    "type": "string",
+                    "description": "Path to D3 reference fasta",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "D3_bed": {
+                    "type": "string",
+                    "description": "Path to D3 primers bed file",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "D4_ref": {
+                    "type": "string",
+                    "description": "Path to D4 reference fasta",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "D4_bed": {
+                    "type": "string",
+                    "description": "Path to D4 primers bed file",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "D5_ref": {
+                    "type": "string",
+                    "description": "Path to D5 reference fasta",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "D5_bed": {
+                    "type": "string",
+                    "description": "Path to D5 primers bed file",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "D6_ref": {
+                    "type": "string",
+                    "description": "Path to D6 reference fasta",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "D6_bed": {
+                    "type": "string",
+                    "description": "Path to D6 primers bed file",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "D7_ref": {
+                    "type": "string",
+                    "description": "Path to D7 reference fasta",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "D7_bed": {
+                    "type": "string",
+                    "description": "Path to D7 primers bed file",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "D8_ref": {
+                    "type": "string",
+                    "description": "Path to D8 reference fasta",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "D8_bed": {
+                    "type": "string",
+                    "description": "Path to D8 primers bed file",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "D9_ref": {
+                    "type": "string",
+                    "description": "Path to D9 reference fasta",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "D9_bed": {
+                    "type": "string",
+                    "description": "Path to D9 primers bed file",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "D10_ref": {
+                    "type": "string",
+                    "description": "Path to D10 reference fasta",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "D10_bed": {
+                    "type": "string",
+                    "description": "Path to D10 primers bed file",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "D11_ref": {
+                    "type": "string",
+                    "description": "Path to D11 reference fasta",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "D11_bed": {
+                    "type": "string",
+                    "description": "Path to D11 primers bed file",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "E_ref": {
+                    "type": "string",
+                    "description": "Path to E reference fasta",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "E_bed": {
+                    "type": "string",
+                    "description": "Path to E primers bed file",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "F_ref": {
+                    "type": "string",
+                    "description": "Path to F reference fasta",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "F_bed": {
+                    "type": "string",
+                    "description": "Path to F primers bed file",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "G1_ref": {
+                    "type": "string",
+                    "description": "Path to G1 reference fasta",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "G1_bed": {
+                    "type": "string",
+                    "description": "Path to G1 primers bed file",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "G2_ref": {
+                    "type": "string",
+                    "description": "Path to G2 reference fasta",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "G2_bed": {
+                    "type": "string",
+                    "description": "Path to G2 primers bed file",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "G3_ref": {
+                    "type": "string",
+                    "description": "Path to G3 reference fasta",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "G3_bed": {
+                    "type": "string",
+                    "description": "Path to G3 primers bed file",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "H1_ref": {
+                    "type": "string",
+                    "description": "Path to H1 reference fasta",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "H1_bed": {
+                    "type": "string",
+                    "description": "Path to H1 primers bed file",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "H2_ref": {
+                    "type": "string",
+                    "description": "Path to H2 reference fasta",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
+                "H2_bed": {
+                    "type": "string",
+                    "description": "Path to H2 primers bed file",
+                    "format": "file-path",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
                 }
             }
         }
@@ -367,6 +767,9 @@
         },
         {
             "$ref": "#/definitions/generic_options"
+        },
+        {
+            "$ref": "#/definitions/contact_options"
         },
         {
             "$ref": "#/definitions/reference_options"

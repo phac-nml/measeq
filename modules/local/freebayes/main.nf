@@ -24,7 +24,7 @@ process FREEBAYES {
         -C 1 \\
         -F ${params.min_alt_fraction_freeabyes} \\
         --pooled-continuous \\
-        --min-coverage ${params.min_depth} \\
+        --min-coverage 5 \\
         --standard-filters \\
         | sed s/QR,Number=1,Type=Integer/QR,Number=1,Type=Float/ > ${meta.id}.vcf
 

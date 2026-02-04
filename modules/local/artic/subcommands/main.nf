@@ -34,6 +34,7 @@ process ARTIC_ALIGN_TRIM {
     output:
     tuple val(meta), path("${meta.id}.*trimmed.rg.sorted.bam"), path("${meta.id}.*trimmed.rg.sorted.bam.bai"), emit: bam
     tuple val(meta), path("${meta.id}.amplicon_depths.tsv"), emit: amp_report
+    tuple val(meta), path("${meta.id}.alignreport-${mode}.csv"), emit: align_report
     path "versions.yml", emit: versions
 
     script:
@@ -47,11 +48,14 @@ process ARTIC_ALIGN_TRIM {
         outName = "${meta.id}.primertrimmed.rg.sorted.bam"
         argsList.add("--trim-primers")
     }
+    // Remove or keep incorrect primers
+    if ( ! params.ont_keep_incorrect_primers ) {
+        argsList.add("--remove-incorrect-pairs")
+    }
     def argsConfig = argsList.join(" ")
     """
     align_trim \\
         $argsConfig \\
-        --remove-incorrect-pairs \\
         --report ${meta.id}.alignreport-${mode}.csv \\
         --amp-depth-report ${meta.id}.amplicon_depths.tsv \\
         --primer-match-threshold 15 \\

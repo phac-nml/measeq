@@ -1,7 +1,7 @@
 # MeaSeq: Measles Sequence Analysis Automation
 
 - [Current Updates](#current-updates)
-  - [2025-12-08](#2025-12-08)
+  - [2026-01-13](#2026-01-113)
 - [Introduction](#introduction)
 - [Installation](#installation)
 - [Resource Requirements](#resources-requirements)
@@ -12,6 +12,7 @@
   - [Reference Assignment](#reference-assignment)
   - [Amplicon and Primer Files](#amplicon-and-primer-files)
   - [DSIds](#dsids)
+  - [Contact Information](#contact-information)
   - [More Run Options](#more-run-options)
   - [Testing](#testing)
 - [Outputs](#outputs)
@@ -26,17 +27,19 @@
 
 ## Current Updates
 
-### _2025-12-08_ Summary
+### _2026-02-04_ Summary
 
-- Sample references are now set based on the predicted genotype with a default fallback for non currently supported genotypes
+Full release version 1.0.0! Pipeline supports equivalent Illumina and Nanopore workflows allowing whole genome or amplicon sequencing analysis. The MeaSeq workflow generates whole genome consensus sequences, N450 sequences and reporting information, DSId hashing and assigning, and a final QC report. It can be run with a single reference or with the genotyping predictions.
 
-  - Currently supported: A, B3, D8
+#### Genotype Predictions
 
-    - Full support to come in `0.5.1`
-
-  - Users can still set their own reference with `--reference`
+- Sample references are now set based on the predicted genotype with a default fallback for non-supplied genotypes or unknown/mixed samples.
+  - Currently supported in the repo by default: A, B3, D8
+  - _Recommended_ users set their own references and primers
+  - Users can supply their own references for other genotypes or update the current genotype ones based on their needs
+  - Users can set their own whole run reference (no predictions or genotype specific analysis) with `--reference`
   - [References Config](conf/reference.config)
-  - [References and Predictions section](#reference-assignment)
+  - More total information available in the [References and Predictions section](#reference-assignment)
 
 ### Future Direction
 
@@ -149,9 +152,9 @@ Additional or local models can also be used, you just have to provide a path to 
 
 ### Reference Assignment
 
-With [MeaSeq v0.5.0](https://github.com/phac-nml/measeq/releases/tag/0.5.0), we have simplified the pipeline's running command by not requiring the `--reference` parameter. Within this update, we have moved to a per-sample reference assignment based on predicting the input sample's most likely genotype. In doing so, we have preset 3 reference files based on three measles virus genotypes (B3, D8, A). If a sample is predicted to be one of these genotypes, then the pipeline processes the sample using the corresponding reference FASTA file. If the sample's most likely genotype doesn't correspond to one of these genotypes, then the pipeline defaults to the set `--default_ref` reference FASTA file which matches the D8 reference genome by default.
+With [MeaSeq v0.5.0](https://github.com/phac-nml/measeq/releases/tag/0.5.0) and later, the `--reference` parameter is no longer required. Instead, the pipeline now runs on a per-sample reference assignment based on predicting the input sample's most likely genotype. In doing so, we have preset 3 reference files based on three measles virus genotypes (B3, D8, A). If a sample is predicted to be one of these genotypes, then the pipeline processes the sample using the corresponding reference FASTA file. If the sample's most likely genotype doesn't correspond to one of these genotypes, then the pipeline defaults to the set `--default_ref` reference FASTA file which matches the D8 reference genome by default.
 
-It is _recommended_ that users evaluate and setup their own reference and primer files when running with predictions as they may differ from what is provided by default (internally used references and primers). This should only need to be done once and then the setup can be used for subsequent runs. [Instructions are available](docs/usage.md#specifying-parameters-to-preset-specific-reference-fasta-and-primer-bed-files) to set this up
+It is _highly recommended_ that users evaluate and setup their own reference sequences and especially primer files when running with predictions as they may differ from what is provided by default (which are internally used references and primers). This should only need to be done once and then the setup can be used for subsequent runs. [Instructions are available](docs/usage.md#specifying-parameters-to-preset-specific-reference-fasta-and-primer-bed-files) to set this up.
 
 #### Specifying Singular Reference
 
@@ -165,7 +168,7 @@ Evalutating and adjusting the preset reference genomes and primer bed files is r
 
 _Both_ Illumina and Nanopore support running amplicon data using a primer bed file to trim primer positions with either [`iVar`](https://github.com/andersen-lab/ivar) or [`ARTIC`](https://github.com/artic-network/align_trim). To run amplicon data when running with genotype predictions, specify the `--amplicon` parameter and the primer file associated with the predicted genotype will be used to trim the reads.
 
-If running the pipeline with your own reference using `--reference <FASTA>`, you have to specify your own primer bed file with `--primer_bed <PRIMER_BED>` to run amplicon data. The primer bed file details the location where the primers have been mapped to within the reference genome. An example primer bed file looks as such:
+If running the pipeline with your own reference using `--reference <FASTA>`, you have to specify your own primer bed file with `--primer_bed <PRIMER_BED>` to run amplicon data. The primer bed file details the location of where the primers map to in the reference genome. An example primer bed file looks as such:
 
 **primer.bed**
 
@@ -204,6 +207,10 @@ GTCAGTTCCACAGTGGCATCTGAACTCG
 ```
 
 If this parameter is not given, the DSIds will still be generated as hashes to group up samples in the dsid.tsv and in the final report.
+
+### Contact Information
+
+Users have the option of including their contact information on the final report of the pipeline to easily allow for the sharing of the report. Information for how to set up and add contact information [is provided in the usage document](./docs/usage.md#contact-information).
 
 ### More Run Options
 

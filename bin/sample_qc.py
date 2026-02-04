@@ -232,12 +232,13 @@ def parse_consensus(fasta: SeqRecord) -> Tuple[int, float, int, bool]:
 
     Returns:
     --------
+    List of 1-index N positions
     Integer number of Ns
     Float genome completeness calculated from the number of Ns
     Integer genome length
     Bool TRUE if divisible, FALSE if not
     '''
-    n_pos =  [i for i, base in enumerate(fasta.seq.lower()) if base == 'n']
+    n_pos =  [i for i, base in enumerate(fasta.seq.lower(), start=1) if base == 'n']
     count_n = len(n_pos)
     seq_len = len(fasta.seq)
     completeness = (1 - (count_n / seq_len)) * 100
@@ -245,7 +246,7 @@ def parse_consensus(fasta: SeqRecord) -> Tuple[int, float, int, bool]:
     divisible = True
     if seq_len % 6 != 0:
         divisible = False
-    return count_n, completeness, seq_len, divisible
+    return n_pos, count_n, completeness, seq_len, divisible
 
 
 def _create_variantpos_dict(var: Path, var_range: range) -> dict:
@@ -256,7 +257,7 @@ def _create_variantpos_dict(var: Path, var_range: range) -> dict:
     }
 
 
-def parse_vcf(vcf_file: Path) -> Tuple[str, list, str, dict]:
+def parse_vcf(vcf_file: Path, n_pos: list) -> Tuple[str, list, str, dict]:
     '''
     Purpose:
     --------
@@ -266,6 +267,8 @@ def parse_vcf(vcf_file: Path) -> Tuple[str, list, str, dict]:
     -----------
     vcf_file - Path
         Path to input gzipped vcf file from args
+    n_pos - List
+        List of N positions to remove any low-depth filtered variants from reporting
 
     Returns:
     --------
@@ -303,7 +306,10 @@ def parse_vcf(vcf_file: Path) -> Tuple[str, list, str, dict]:
             if str(record.ALT[0]).upper() == 'N':
                 continue
             # Other odd issue, skip positions where alt is None
-            if record.ALT[0] == None:
+            if record.ALT[0] is None:
+                continue
+            # Make sure the variant wasn't masked by depth mask
+            if int(record.POS) in n_pos:
                 continue
             # Multiple alleles not supported warning
             #  These should have been corrected in previous processing steps as well to only have 1
@@ -642,9 +648,9 @@ def main() -> None:
 
     num_aligned_reads = get_read_count(args.bam)
     consensus = SeqIO.read(args.consensus, "fasta")
-    count_n, completeness, seq_len, divisible = parse_consensus(consensus)
+    n_pos, count_n, completeness, seq_len, divisible = parse_consensus(consensus)
     mean_dep, median_dep = parse_depth_bed(args.depth, range(1,seq_len+1)) # Use the whole genome for calc
-    variants, variant_positions, var_count_dict = parse_vcf(args.vcf)
+    variants, variant_positions, var_count_dict = parse_vcf(args.vcf, n_pos)
     frameshift, nonsense, stop_mutation = get_custom_nextclade_vals(args.nextclade_custom, args.sample)
 
     # Optional inputs

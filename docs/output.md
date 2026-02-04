@@ -28,33 +28,33 @@ The pipeline is built using Nextflow and processes data using the following step
   - [FastQC](#fastqc) - Untrimmed read QC plots
   - [Fastp](#fastp) - Trim paired-end illumina reads
   - [BWAMem2](#bwamem2) - Map to the provided measles reference
-  - [iVar Trim](#ivar-trim) - Amplicon only, trim the BAM file by primer position
-  - [Picard MarkDuplicates](#picard-markduplicates) - Remove duplicate reads from BAM file
-  - [Freebayes](#freebayes) - Call variants from the BAM file
-  - [Process VCF](#process-vcf) - Process the variants called from the BAM file using python script and `bcftools norm`
+  - [iVar Trim](#ivar-trim) - Amplicon only: Trim the BAM file by primer position
+  - [Picard MarkDuplicates](#picard-markduplicates) - Optional: Remove optical duplicate reads from BAM file
+  - [Freebayes](#freebayes) - Call candidate variants from the BAM file
+  - [Process VCF](#process-vcf) - Process candidate variants called from the BAM file using python script and `bcftools norm`
   - [Make Depth Mask](#make-depth-mask) - Determine sites below the minimum depth to mask as Ns
   - [BCFTools Consensus](#bcftools-consensus) - Generate final sample consensus sequence
 
 - [Nanopore Processing](#nanopore-processing)
 
   - [FastQC](#fastqc) - Untrimmed read QC plots
-  - [Artic Get Models](#artic-get-models) - Download clair3 models
-  - [NanoQ](#nanoq) - Trim nanopore reads
+  - [Artic Get Models](#artic-get-models) - Download clair3 models for analysis
+  - [NanoQ](#nanoq) - Trim nanopore reads based for quality and length
   - [Minimap2](#minimap2) - Map to provided measles reference
-  - [Artic Align Trim](#artic-align-trim) - Amplicon only, trim the bam file by primer position
-  - [Clair3](#clair3) - Call variants from BAM file, if amplicon call variants by amplicon pool
-  - [Artic VCF Merge](#artic-vcf-merge) - Amplicon only, merge the pooled VCF files
+  - [Artic Align Trim](#artic-align-trim) - Amplicon only: Trim the bam file by primer position to remove primers or reads that don't fit into their amplicon
+  - [Clair3](#clair3) - Call candidate variants from BAM file, if amplicon, call variants by amplicon pool and position
+  - [Artic VCF Merge](#artic-vcf-merge) - Amplicon only: Merge the pooled VCF files
   - [Make Depth Mask](#make-depth-mask-1) - Determine sites below the minimum depth to mask as Ns
-  - [VCF Filter](#vcf-filter) - Filter clair3 variants that don't meet required thresholds
-  - [BCFTools Norm](#bcftools-norm) - Normalize variants
+  - [VCF Filter](#vcf-filter) - Filter clair3 variants that don't meet required quality, depth, and allele frequency thresholds
+  - [BCFTools Norm](#bcftools-norm) - Normalize final called variants
   - [BCFTools Consensus](#bcftools-consensus-1) - Generate final sample consensus sequence
   - [VCF to TSV](#vcf-to-tsv) - Generate a TSV file based on the VCF to feed into final report
 
 - [Quality Control](#quality-control)
 
-  - [Nextclade](#nextclade) - Run nextclade on N450 dataset to get genotype and the custom dataset to get frameshift and nonsense mutations
+  - [Nextclade](#nextclade) - Run nextclade on N450 dataset to get genotype and on the custom dataset to get frameshift and nonsense mutation information
   - [Samtools Depth](#samtools-depth) - Calculate and summarize per-position depth
-  - [Compare DSId](#compare-dsid) - Compare sample N450 to DSId fasta N450 to type sample
+  - [Compare DSId](#compare-dsid) - Compare sample N450 to DSId fastas (if available) to assign DSId or Novel hash to type sample
   - [Make Sample QC](#make-sample-qc) - Concatenate relevant sample-specific files for QC evaluation and determine QC result
   - [Make Final QC](#make-final-qc) - Concatenate all sample QC and check controls for a final run evaluation
 
@@ -91,8 +91,8 @@ A script is used to predict a sample's genotype using a supplemented measles WHO
 <summary>Output files</summary>
 
 - `reference/`
-  - `genome.bed`: Coordinates bed file for the reference genome
-  - `REFERENCE.fasta.fai`: Reference index file
+  - `<REFERENCE>.genome.bed`: Coordinates bed file for the reference genome
+  - `<REFERENCE>.fasta.fai`: Reference index file
 
 </details>
 
@@ -104,9 +104,9 @@ Samtools and some manipulations are used to generate the intermediate reference 
 <summary>Output files</summary>
 
 - `reference`
-  - `amplicon.bed`: Summary amplicon bed file containing amplicon regions from end of Forward primer to start of Reverse
+  - `<REFERENCE>.amplicon.bed`: Summary amplicon bed file containing amplicon regions from end of Forward primer to start of Reverse
 - `reference/amplicon_regions`
-  - `<POOL>.bed`: Split amplicon.bed file by pool
+  - `<POOL>.<REFERENCE>.bed`: Split amplicon.bed file by pool
 
 </details>
 
@@ -131,7 +131,7 @@ This step pulls the defined Nextclade N450 measles dataset for genotyping both t
 <summary>Output files</summary>
 
 - `consensus/`
-  - `REFERENCE.N450.fasta`: Reference N450 sequence
+  - `<REFERENCE>.N450.fasta`: Reference N450 sequence
 
 </details>
 
@@ -408,7 +408,7 @@ Nextclade is run using the previously described N450 dataset to determine the ge
 <summary>Output files</summary>
 
 - `reporting/positional_depth/`
-  - `<SAMPLE>_depth.tsv`: Depth per reference position
+  - `<REFERENCE>.<SAMPLE>_depth.tsv`: Depth per reference position
 
 </details>
 
@@ -474,8 +474,8 @@ In the pipeline, we are summarizing positions where 90% of the read is in the am
 <summary>Output files</summary>
 
 - `reporting/amplicon/`
-  - `amplicon_depth_full.tsv`: Full read depth counts for each amplicon
-  - `amplicon_depth_heatmap_mqc.tsv`: Log10 read depth counts for each amplicon for final MultiQC report
+  - `<REFERENCE>.amplicon_depth_full.tsv`: Full read depth counts for each amplicon
+  - `<REFERENCE>.amplicon_depth_heatmap_mqc.tsv`: Log10 read depth counts for each amplicon for final MultiQC report
   - `SAMPLE_amplicon_depth.tsv`: Individual sample amplicon depth counts
 
 </details>
@@ -488,7 +488,7 @@ The full stats file for each sample is broken down to look at how deep each ampl
 <summary>Output files</summary>
 
 - `reporting/amplicon/`
-  - `amplicon_completeness_heatmap_mqc.tsv`: Summary matrix of all of the amplicons per sample in the run
+  - `<REFERENCE>.amplicon_completeness_heatmap_mqc.tsv`: Summary matrix of all of the amplicons per sample in the run
   - `<SAMPLE>_amplicon_completeness.tsv`: Individual table for how complete each amplicon in the sample is from 0-1
 
 </details>
@@ -500,7 +500,8 @@ The amplicon completeness is calculated from the final consensus sequence based 
 <details markdown="1">
 <summary>Output files</summary>
 
-- `Amplicon-Summary-MultiQC-Report_multiqc_report.html`: file containing plots showing how well each amplicon was sequenced
+- `reporting/`
+  - `<REFERENCE>.Amplicon-Summary-MultiQC-Report.html`: file containing plots showing how well each amplicon was sequenced
 
 </details>
 
@@ -583,7 +584,6 @@ Format:
 
 ```
 OUTDIR
-├── Amplicon_Report.html (if amplicons)
 ├── predictions.csv
 ├── bam
 |  ├── bwamem
@@ -621,16 +621,17 @@ OUTDIR
 |   ├── params.json
 |   └── pipeline_dag.html
 ├── reference
-|   ├── amplicon.bed
+|   ├── <REFERENCE>.amplicon.bed
 |   ├── amplicon_regions
-|   |   ├── 1.bed
-|   |   ├── 2.bed
+|   |   ├── 1.<REFERENCE>.bed
+|   |   ├── 2.<REFERENCE>.bed
 |   |   └── etc
 |   ├── bwamem
 |   |   └── <INDEX FILES>
-|   ├── genome.bed
-|   └── refstats.txt
+|   ├── <REFERENCE>.genome.bed
+|   └── <REFERENCE>.refstats.txt
 ├── reporting
+    ├── <REFERENCE>.Amplicon-Summary-MultiQC-Report.html (if amplicons)
 |   ├── amplicon (if amplicon)
 |   |   └── <INTERMEDIATE AMPLICON FILES>
 |   ├── positional_depth
@@ -657,7 +658,6 @@ OUTDIR
 
 ```
 OUTDIR
-├── Amplicon_Report.html (if amplicons)
 ├── predictions.csv
 ├── bam
 |  ├── artic (if amplicons)
@@ -692,16 +692,17 @@ OUTDIR
 |   ├── params.json
 |   └── pipeline_dag.html
 ├── reference
-|   ├── amplicon.bed
+|   ├── <REFERENCE>.amplicon.bed
 |   ├── amplicon_regions
-|   |   ├── 1.bed
-|   |   ├── 2.bed
+|   |   ├── 1.<REFERENCE>.bed
+|   |   ├── 2.<REFERENCE>.bed
 |   |   └── etc
 |   ├── clair3_models
 |   |   └── <DOWNLOADED MODELS>
-|   ├── genome.bed
-|   └── refstats.txt
+|   ├── <REFERENCE>.genome.bed
+|   └── <REFERENCE>.refstats.txt
 ├── reporting
+    ├── <REFERENCE>.Amplicon-Summary-MultiQC-Report.html (if amplicons)
 |   ├── amplicon (if amplicon)
 |   |   └── <INTERMEDIATE AMPLICON FILES>
 |   ├── positional_depth

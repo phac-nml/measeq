@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 '''
 Script to create a genomic depth mask for consensus generation
-    Adapted from https://github.com/artic-network/fieldbioinformatics/blob/master/artic/make_depth_mask.py v1.6.2
-    to just remove the need for RG tags steps for non-amplicon data
+    Adapted from https://github.com/artic-network/fieldbioinformatics/blob/master/artic/make_depth_mask.py v1.6.2 to:
+        1. Remove the need for RG tags steps for non-amplicon data
+        2. Adjust the depth filter baseq to default of 12 to line up with ONT data threshold
 
     Amplicon data is using the proper tool
 '''
@@ -75,8 +76,8 @@ def collect_depths(bamfile: str, refName: str, minDepth: int, ignoreDeletions: b
     # create a depth vector to hold the depths at each reference position
     depths = [0] * bamFile.get_reference_length(refName)
 
-    # generate the pileup
-    for pileupcolumn in bamFile.pileup(refName, max_depth=10000, truncate=False, min_base_quality=0):
+    # Generate the pileup
+    for pileupcolumn in bamFile.pileup(refName, max_depth=10000, truncate=False, min_mapping_quality=30, min_base_quality=12):
 
         # process the pileup column
         for pileupread in pileupcolumn.pileups:

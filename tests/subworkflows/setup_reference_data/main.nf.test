@@ -26,23 +26,20 @@ nextflow_workflow {
             workflow {
                 """
                 input[0] = Channel.of(
+                    [
+                        [id: "SRR7517490", single_end: false],
                         [
-                            [id: "MH356245.1"],
-                            file("$baseDir/assets/reference/D8/MH356245.1.reference.fasta")
+                            file("$baseDir/test_data/illumina_fastqs/SRR7517490_R1.fastq.gz"),
+                            file("$baseDir/test_data/illumina_fastqs/SRR7517490_R2.fastq.gz")
                         ]
-                    )
-                input[1] = Channel.of(
-                        [
-                            [id: "MH356245.1"],
-                            file("$baseDir/test_data/primer.bed")
-                        ]
-                    )
-                input[2] = NEXTCLADE_DATASETGET.out.dataset
+                    ]
+                )
+                input[1] = NEXTCLADE_DATASETGET.out.dataset
                 """
             }
             params {
                 outdir = "results"
-                primer_bed = "$baseDir/test_data/primer.bed"
+                amplicon = true
             }
         }
         then {
@@ -52,13 +49,13 @@ nextflow_workflow {
 
             // Files exist
             // Reference Intermediates
-            assert path("${launchDir}/results/reference/genome.bed").exists()
-            assert path("${launchDir}/results/reference/amplicon.bed").exists()
-            assert path("${launchDir}/results/reference/refstats.txt").exists()
+            assert path("${launchDir}/results/reference/MH356245.1.genome.bed").exists()
+            assert path("${launchDir}/results/reference/MH356245.1.amplicon.bed").exists()
+            assert path("${launchDir}/results/reference/MH356245.1.refstats.txt").exists()
             assert path("${launchDir}/results/reference/MH356245.1.reference.fasta.fai").exists()
             // Amplicon Regions
-            assert path("${launchDir}/results/reference/amplicon_regions/1.bed").exists()
-            assert path("${launchDir}/results/reference/amplicon_regions/2.bed").exists()
+            assert path("${launchDir}/results/reference/amplicon_regions/1.MH356245.1.bed").exists()
+            assert path("${launchDir}/results/reference/amplicon_regions/2.MH356245.1.bed").exists()
         }
     }
 }

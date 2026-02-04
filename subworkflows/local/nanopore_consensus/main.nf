@@ -71,7 +71,6 @@ workflow NANOPORE_CONSENSUS {
     //
     // MODULE: Run Minimap2
     //
-
     // Prepare Input
     ch_minimap_input = NANOQ.out.reads
         .map { meta, reads -> tuple(meta.ref_id, meta, reads) }
@@ -108,7 +107,6 @@ workflow NANOPORE_CONSENSUS {
         //  Trimming based on primers as there are a lot and we don't want them
         //  affecting the variants
         //
-
         // Prepare Input
         ch_artic_align_input = ch_bam_bai
             .map { meta, bam, bai -> tuple(meta.ref_id, meta, bam, bai) }
@@ -131,7 +129,6 @@ workflow NANOPORE_CONSENSUS {
         // MODULE: Clair3 with pools
         //  Each pools run separately for variant calls
         //
-
         // Prepare Inputs
         ch_trimmed_bams_w_pool = ch_bam
             .map { meta, bam, bai -> tuple(meta.ref_id, meta, bam, bai) }
@@ -169,7 +166,6 @@ workflow NANOPORE_CONSENSUS {
         // MODULE: Merge pooled VCFs
         //  To merge vcfs, have to utilize the transformVCFList function based on how artic handles input
         //
-
         // Prepare Input
         ch_artic_vcf_input = ch_pooled_vcfs
             .map { meta, vcf -> tuple(meta.ref_id, meta, vcf) }
@@ -190,7 +186,6 @@ workflow NANOPORE_CONSENSUS {
         //
         // MODULE: Make depth mask based on minimum depth to call position
         //
-
         // Prepare Inputs
         ch_artic_depth_input = ch_bam
             .map { meta, bam, bai -> tuple(meta.ref_id, meta, bam, bai) }
@@ -215,7 +210,6 @@ workflow NANOPORE_CONSENSUS {
 
         // MODULE: Clair3 with no pool splitting
         //
-
         // Prepare Inputs
         ch_no_pool_input = ch_bam_bai
             .map  { meta, bam, bai -> tuple(meta.ref_id, meta, bam, bai) }
@@ -240,7 +234,6 @@ workflow NANOPORE_CONSENSUS {
         //
         // MODULE: Make depth mask based on minimum depth to call position
         //
-
         // Prepare Inputs
         ch_custom_depth_input = ch_bam_bai
             .map  { meta, bam, bai -> tuple(meta.ref_id, meta, bam, bai) }
@@ -272,7 +265,6 @@ workflow NANOPORE_CONSENSUS {
     //
     // MODULE: Mask failing regions
     //
-
     // Prepare Inputs
     // Join depth and failed VCF
     ch_mask_inputs = ch_depth_mask
@@ -317,7 +309,6 @@ workflow NANOPORE_CONSENSUS {
     //
     // MODULE: Adjust the final fasta header for easier downstream analysis
     //
-
     // Prepare Inputs
     ch_adjust_input = BCFTOOLS_CONSENSUS.out.fasta
         .map { meta, con_fasta -> tuple(meta.ref_id, meta, con_fasta) }

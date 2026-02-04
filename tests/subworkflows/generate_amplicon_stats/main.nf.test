@@ -48,11 +48,11 @@ nextflow_workflow {
             assert path("${launchDir}/results/reporting/amplicon/sample1_amplicon_completeness.tsv").exists()
             assert path("${launchDir}/results/reporting/amplicon/sample1_amplicon_depth.tsv").exists()
             assert path("${launchDir}/results/reporting/amplicon/sample1_amplicon_stats.bed").exists()
-            assert path("${launchDir}/results/reporting/amplicon/amplicon_completeness_heatmap_mqc.tsv").exists()
-            assert path("${launchDir}/results/reporting/amplicon/amplicon_depth_full.tsv").exists()
-            assert path("${launchDir}/results/reporting/amplicon/amplicon_depth_heatmap_mqc.tsv").exists()
+            assert path("${launchDir}/results/reporting/amplicon/MH356245.1_amplicon_completeness_heatmap_mqc.tsv").exists()
+            assert path("${launchDir}/results/reporting/amplicon/MH356245.1_amplicon_depth_full.tsv").exists()
+            assert path("${launchDir}/results/reporting/amplicon/MH356245.1_amplicon_depth_heatmap_mqc.tsv").exists()
             // Amplicon Report
-            assert path("${launchDir}/results/Amplicon-Summary-MultiQC-Report_multiqc_report.html").exists()
+            assert path("${launchDir}/results/reporting/MH356245.1-Amplicon-Summary-MultiQC-Report.html").exists()
         }
     }
 }
