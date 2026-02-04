@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This pipeline is intended to be run on measles virus (MeV) paired-end Illumina or single-end Nanopore sequencing data. It is written in nextflow to process MeV specific data with various outputs. This pipeline is intended for rapid deployment in outbreak situations in Canada and abroad.
+This pipeline is written in nextflow and intended to be run specifically on measles virus (MeV) paired-end Illumina or single-end Nanopore sequencing data. This pipeline is intended for rapid deployment in outbreak situations in Canada and abroad.
 
 ## Index
 

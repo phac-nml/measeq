@@ -28,33 +28,33 @@ The pipeline is built using Nextflow and processes data using the following step
   - [FastQC](#fastqc) - Untrimmed read QC plots
   - [Fastp](#fastp) - Trim paired-end illumina reads
   - [BWAMem2](#bwamem2) - Map to the provided measles reference
-  - [iVar Trim](#ivar-trim) - Amplicon only, trim the BAM file by primer position
-  - [Picard MarkDuplicates](#picard-markduplicates) - Remove duplicate reads from BAM file
-  - [Freebayes](#freebayes) - Call variants from the BAM file
-  - [Process VCF](#process-vcf) - Process the variants called from the BAM file using python script and `bcftools norm`
+  - [iVar Trim](#ivar-trim) - Amplicon only: Trim the BAM file by primer position
+  - [Picard MarkDuplicates](#picard-markduplicates) - Optional: Remove optical duplicate reads from BAM file
+  - [Freebayes](#freebayes) - Call candidate variants from the BAM file
+  - [Process VCF](#process-vcf) - Process candidate variants called from the BAM file using python script and `bcftools norm`
   - [Make Depth Mask](#make-depth-mask) - Determine sites below the minimum depth to mask as Ns
   - [BCFTools Consensus](#bcftools-consensus) - Generate final sample consensus sequence
 
 - [Nanopore Processing](#nanopore-processing)
 
   - [FastQC](#fastqc) - Untrimmed read QC plots
-  - [Artic Get Models](#artic-get-models) - Download clair3 models
-  - [NanoQ](#nanoq) - Trim nanopore reads
+  - [Artic Get Models](#artic-get-models) - Download clair3 models for analysis
+  - [NanoQ](#nanoq) - Trim nanopore reads based for quality and length
   - [Minimap2](#minimap2) - Map to provided measles reference
-  - [Artic Align Trim](#artic-align-trim) - Amplicon only, trim the bam file by primer position
-  - [Clair3](#clair3) - Call variants from BAM file, if amplicon call variants by amplicon pool
-  - [Artic VCF Merge](#artic-vcf-merge) - Amplicon only, merge the pooled VCF files
+  - [Artic Align Trim](#artic-align-trim) - Amplicon only: Trim the bam file by primer position to remove primers or reads that don't fit into their amplicon
+  - [Clair3](#clair3) - Call candidate variants from BAM file, if amplicon, call variants by amplicon pool and position
+  - [Artic VCF Merge](#artic-vcf-merge) - Amplicon only: Merge the pooled VCF files
   - [Make Depth Mask](#make-depth-mask-1) - Determine sites below the minimum depth to mask as Ns
-  - [VCF Filter](#vcf-filter) - Filter clair3 variants that don't meet required thresholds
-  - [BCFTools Norm](#bcftools-norm) - Normalize variants
+  - [VCF Filter](#vcf-filter) - Filter clair3 variants that don't meet required quality, depth, and allele frequency thresholds
+  - [BCFTools Norm](#bcftools-norm) - Normalize final called variants
   - [BCFTools Consensus](#bcftools-consensus-1) - Generate final sample consensus sequence
   - [VCF to TSV](#vcf-to-tsv) - Generate a TSV file based on the VCF to feed into final report
 
 - [Quality Control](#quality-control)
 
-  - [Nextclade](#nextclade) - Run nextclade on N450 dataset to get genotype and the custom dataset to get frameshift and nonsense mutations
+  - [Nextclade](#nextclade) - Run nextclade on N450 dataset to get genotype and on the custom dataset to get frameshift and nonsense mutation information
   - [Samtools Depth](#samtools-depth) - Calculate and summarize per-position depth
-  - [Compare DSId](#compare-dsid) - Compare sample N450 to DSId fasta N450 to type sample
+  - [Compare DSId](#compare-dsid) - Compare sample N450 to DSId fastas (if available) to assign DSId or Novel hash to type sample
   - [Make Sample QC](#make-sample-qc) - Concatenate relevant sample-specific files for QC evaluation and determine QC result
   - [Make Final QC](#make-final-qc) - Concatenate all sample QC and check controls for a final run evaluation
 
