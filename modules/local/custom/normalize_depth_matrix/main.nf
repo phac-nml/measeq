@@ -2,7 +2,9 @@ process NORMALIZE_DEPTH_MATRIX {
     label 'process_single'
 
     conda "${moduleDir}/environment.yml"
-    container "quay.io/biocontainers/pandas:1.5.2"
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
+        ? 'https://depot.galaxyproject.org/singularity/pandas:1.5.2'
+        : 'biocontainers/pandas:1.5.2' }"
 
     input:
     path(depth_tsvs)
