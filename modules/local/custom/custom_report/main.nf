@@ -3,7 +3,7 @@ process MAKE_CUSTOM_REPORT {
 
     conda "${moduleDir}/environment.yml"
     // No singularity container
-    container "${ !task.ext.override_configured_container_registry
+    container "${ task.ext.override_configured_container_registry != false
         ? 'docker.io/darianhole/measeq-report:1.0.0'
         : 'darianhole/measeq-report:1.0.0' }"
 
