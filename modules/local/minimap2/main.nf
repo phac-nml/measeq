@@ -4,9 +4,11 @@ process MINIMAP2_ALIGN {
 
     // Using the seqera one as it has more updated tools that the mulled biocontainer one from what I can see
     conda "${moduleDir}/environment.yml"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/66/66dc96eff11ab80dfd5c044e9b3425f52d818847b9c074794cf0c02bfa781661/data' :
-        'community.wave.seqera.io/library/minimap2_samtools:33bb43c18d22e29c' }"
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
+        ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/66/66dc96eff11ab80dfd5c044e9b3425f52d818847b9c074794cf0c02bfa781661/data'
+        : task.ext.override_configured_container_registry != false
+            ? 'community.wave.seqera.io/library/minimap2_samtools:33bb43c18d22e29c'
+            : 'library/minimap2_samtools:33bb43c18d22e29c' }"
 
     input:
     tuple val(meta), path(fastq)
