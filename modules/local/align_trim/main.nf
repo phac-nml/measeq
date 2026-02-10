@@ -3,10 +3,9 @@ process ALIGN_TRIM {
     tag "$meta.id"
 
     conda "${moduleDir}/environment.yml"
-    // No singularity container
-    container "${ task.ext.override_configured_container_registry != false
-        ? 'docker.io/ahmedabdalla4/align_trim-samtools:latest'
-        : 'ahmedabdalla4/align_trim-samtools:latest' }"
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/artic:1.8.5--pyhdfd78af_0' :
+        'biocontainers/artic:1.8.5--pyhdfd78af_0' }"
 
     input:
     tuple val(meta), path(bam), path(bai)
@@ -37,7 +36,7 @@ process ALIGN_TRIM {
     }
     def argsConfig = argsList.join(" ")
     """
-    awk -F'\t' 'BEGIN{OFS=FS} {if (NF==6) print \$0, "ACCT"; else print \$0}' "${primer_bed}" > tmp.bed && mv tmp.bed "${primer_bed}"
+    awk -F'\t' 'BEGIN{OFS=FS} {if (NF==6) print \$0, "NA"; else print \$0}' "${primer_bed}" > tmp.bed && mv tmp.bed "${primer_bed}"
 
     align_trim \\
         $argsConfig \\
