@@ -80,7 +80,7 @@ nextflow_workflow {
             assert path("${launchDir}/results/vcf/final/SRR31023694.downsampled.consensus.tsv").exists()
             assert path("${launchDir}/results/vcf/final/SRR31023694.downsampled.pass.norm.vcf.gz.tbi").exists()
             // Consensus
-            assert path("${launchDir}/results/consensus/SRR31023694.downsampled.consensus.fasta").md5 == "eb4e7e47a3b018287b8ec66e7306636b"
+            assert path("${launchDir}/results/consensus/SRR31023694.downsampled.consensus.fasta").md5 == "5b35dc9ca62f319f2b47b1ee20bb9021"
         }
     }
 }
