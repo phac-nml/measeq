@@ -48,7 +48,9 @@ process GENERATE_AMPLICON_BED {
     tag "${meta.id}"
 
     conda "conda-forge::python=3.10.2"
-    container "quay.io/biocontainers/python:3.10.2"
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
+        ? 'https://depot.galaxyproject.org/singularity/python:3.10.2'
+        : 'biocontainers/python:3.10.2' }"
 
     input:
     tuple val(meta), path(bed)
@@ -90,7 +92,9 @@ process SPLIT_AMPLICON_REGION {
     label 'process_single'
     tag "${meta.id}"
 
-    container "biocontainers/coreutils:8.31--h14c3975_0"
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
+        ? 'https://depot.galaxyproject.org/singularity/coreutils:8.31--h14c3975_0'
+        : 'biocontainers/coreutils:8.31--h14c3975_0' }"
 
     input:
     tuple val(meta), path(bed)

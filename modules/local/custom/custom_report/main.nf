@@ -1,8 +1,11 @@
 process MAKE_CUSTOM_REPORT {
-    label 'process_high_memory'
+    label 'process_medium'
 
     conda "${moduleDir}/environment.yml"
-    container "docker.io/darianhole/measeq-report:latest"
+    // No singularity container
+    container "${ task.ext.override_configured_container_registry != false
+        ? 'docker.io/darianhole/measeq-report:1.0.0'
+        : 'darianhole/measeq-report:1.0.0' }"
 
     input:
     path overall_qc_csv

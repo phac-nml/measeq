@@ -12,7 +12,7 @@ include { ARTIC_GET_MODELS        } from '../../../modules/local/artic/get_model
 include { NANOQ                   } from '../../../modules/nf-core/nanoq/main'
 include { MINIMAP2_ALIGN          } from '../../../modules/local/minimap2/main'
 // Amplicon Variant Calling
-include { ARTIC_ALIGN_TRIM        } from '../../../modules/local/artic/subcommands/main'
+include { ALIGN_TRIM              } from '../../../modules/local/align_trim/main'
 include { CLAIR3_POOL             } from '../../../modules/local/clair3/main'
 include { ARTIC_VCF_MERGE         } from '../../../modules/local/artic/subcommands/main'
 include { ARTIC_MAKE_DEPTH_MASK   } from '../../../modules/local/artic/subcommands/main'
@@ -117,13 +117,13 @@ workflow NANOPORE_CONSENSUS {
             }
 
         // Run Module
-        ARTIC_ALIGN_TRIM (
+        ALIGN_TRIM (
             ch_artic_align_input.bam_bai,
             ch_artic_align_input.bed,
             'primers'
         )
-        ch_versions = ch_versions.mix(ARTIC_ALIGN_TRIM.out.versions.first())
-        ch_bam = ARTIC_ALIGN_TRIM.out.bam
+        ch_versions = ch_versions.mix(ALIGN_TRIM.out.versions.first())
+        ch_bam = ALIGN_TRIM.out.bam
 
         //
         // MODULE: Clair3 with pools

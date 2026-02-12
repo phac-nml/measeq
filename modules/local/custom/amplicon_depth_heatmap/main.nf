@@ -3,7 +3,9 @@ process AMPLICON_DEPTH_HEATMAP {
     tag "$ref_id"
 
     conda "${moduleDir}/environment.yml"
-    container "quay.io/biocontainers/pandas:1.5.2"
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
+        ? 'https://depot.galaxyproject.org/singularity/pandas:1.5.2'
+        : 'biocontainers/pandas:1.5.2' }"
 
     input:
     tuple val(ref_id), path(amplicon_beds)

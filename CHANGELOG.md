@@ -3,6 +3,18 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.0.1] - 2026-02-10
+
+Adjusting containers to add in the `task.ext.override_configured_container_registry` to processes with containers not from quay. This allows more flexibility and the ability to use a custom or private container registry for all processes. Also meets our [IRIDA Next Criteria](https://github.com/phac-nml/pipeline-standards?tab=readme-ov-file#622-configuring-module-software-with-private-or-alternate-container-registries)
+
+Updating the script that trims nanopore alignment ends to a newer version that takes into account a seed, ensuring the reproducibility of results across multiple runs
+
+### `Adjusted`
+
+- Processes where the container registry is not quay have `task.ext.override_configured_container_registry` added [PR #30](https://github.com/phac-nml/measeq/pull/30)
+- Process `MAKE_CUSTOM_REPORT` adjusted from label `process_high_memory` to `process_medium` [PR #30](https://github.com/phac-nml/measeq/pull/30)
+- Process `ARTIC_ALIGN_TRIM` adjusted to a newer version of ARTIC [PR#31](https://github.com/phac-nml/measeq/pull/31) and renamed `ALIGN_TRIM`
+
 ## [v1.0.0] - 2026-02-04
 
 Initial full pipeline release that includes equivalent Illumina and Nanopore workflows with full genome consensus sequence generation, N450 reporting, DSId hashing and assigning, and a final QC report.
@@ -238,6 +250,7 @@ Small addition of Picard MarkDuplicates workflow along with some new tests
 
 - MeaSeq pipeline created and initial code added
 
+[v1.0.1]: https://github.com/phac-nml/measeq/releases/tag/1.0.1
 [v1.0.0]: https://github.com/phac-nml/measeq/releases/tag/1.0.0
 [v0.5.0]: https://github.com/phac-nml/measeq/releases/tag/0.5.0
 [v0.4.3]: https://github.com/phac-nml/measeq/releases/tag/0.4.3
