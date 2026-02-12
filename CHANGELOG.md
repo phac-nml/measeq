@@ -3,7 +3,7 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v1.0.1] - 2026-02-10
+## [v1.0.1] - 2026-02-12
 
 Adjusting containers to add in the `task.ext.override_configured_container_registry` to processes with containers not from quay. This allows more flexibility and the ability to use a custom or private container registry for all processes. Also meets our [IRIDA Next Criteria](https://github.com/phac-nml/pipeline-standards?tab=readme-ov-file#622-configuring-module-software-with-private-or-alternate-container-registries)
 
