@@ -81,7 +81,7 @@ process CUSTOM_VCF_FILTER {
     output:
     tuple val(meta), path("${meta.id}.pass.vcf.gz"), path("${meta.id}.pass.vcf.gz.tbi"), emit: pass_vcf
     tuple val(meta), path("${meta.id}.fail.vcf"), emit: fail_vcf
-    tuple val(meta), path("${meta.id}.suppress.txt"), emit: suppress_txt 
+    tuple val(meta), path("${meta.id}.suppress.txt"), emit: suppress_txt
     path "versions.yml", emit: versions
 
     script:
