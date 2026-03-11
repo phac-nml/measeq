@@ -226,7 +226,7 @@ def parse_variation_from_bam(bamfile: str, ref_dict: dict, base_q: int,
     min_report_percent: int
         Minimum non-reference base percentage to report out. Default: 15
     variant_call_threshold: int
-        Threshold at which a variant is called. Default: 70
+        Threshold at which a variant is called. Default: 75
     indel_call_threshold: int
         Threshold at which an indel variant is called. Default: 50
 

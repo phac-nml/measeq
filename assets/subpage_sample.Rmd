@@ -187,7 +187,7 @@ p
 ```
 
 > **Figure 2.** Subconsensus Variant Read Counts. The sample pileup was analyzed to find positions in the genome where the non-reference allele percentage was >=15%.
-> All positions with >=8 reads, a positional read base quality of >=12 and a map quality >=30 were included in the analysis.
+> All positions with >=8 reads, a positional read base quality of >=0 and a map quality >=0 were included in the analysis.
 > Mixed sites in the figure that are not in the variant table are variants that have failed processing and contain the reference bases in the final consensus
 > if they are above the set minimum depth.
 

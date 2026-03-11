@@ -3,6 +3,32 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.1.0] - 2026-03-12
+
+Focusing on fixing small inconsistencies between final reports and output consensus sequences along with a few small bugfixes and parameter adjustments
+
+### `Fixes`
+
+- Artic `align_trim` downgraded to `1.7.4` to fix issue where final position reads are being trimmed too strictly causing the last few bases to always be dropped
+- Depth calculations adjusted so that calculations between depth mask and samtools depth match in final report
+- Some nanopore variants were missed at the end of the genome
+  - Artic version in subcommands bumped to `v1.8.5` to solve this
+
+### `Adjusted`
+
+- Nanopore variant filter added a depth percentage check at a required minimum 10% of the total positional depth to make sure variants in overlapping regions are not extremely low in depth compared to the other amplicon
+  - If there is a massive discrepency and there is a true variant it should be in both so it will still be kept
+  - If there is no variant in the other overlapping amplicon that would suggest an error so ignore
+  - Parameter added called `min_variant_threshold_c3` to handle this
+
+- Multi-allelic illumina variants are labelled as such if they are lower depth and have been split up
+
+### `Added`
+
+- Illumina primer trimming parameter additions
+  - `iVar trim` offset added as a parameter, set to one by default to help trim tricky primer combinations with parameter `ivar_offset`
+  - `iVar trim` primers TSV file option added as a hidden parameter called `ivar_primer_pairs` for if users who would like to use it
+
 ## [v1.0.1] - 2026-02-12
 
 Adjusting containers to add in the `task.ext.override_configured_container_registry` to processes with containers not from quay. This allows more flexibility and the ability to use a custom or private container registry for all processes. Also meets our [IRIDA Next Criteria](https://github.com/phac-nml/pipeline-standards?tab=readme-ov-file#622-configuring-module-software-with-private-or-alternate-container-registries)
@@ -250,6 +276,7 @@ Small addition of Picard MarkDuplicates workflow along with some new tests
 
 - MeaSeq pipeline created and initial code added
 
+[v1.1.0]: https://github.com/phac-nml/measeq/releases/tag/1.0.1
 [v1.0.1]: https://github.com/phac-nml/measeq/releases/tag/1.0.1
 [v1.0.0]: https://github.com/phac-nml/measeq/releases/tag/1.0.0
 [v0.5.0]: https://github.com/phac-nml/measeq/releases/tag/0.5.0

@@ -5,10 +5,30 @@ Filter VCF Variants originally from https://github.com/artic-network/fieldbioinf
 Notable Changes:
   - Added a custom parameter to adjust the QUAL threshold with it set at 8 by default.
   - Added a filter for RefCall bases.
+  - Depth based kick out for overlapping areas where there is a variant that doesn't make sense
 '''
 
 from cyvcf2 import VCF, Writer
 from collections import defaultdict
+import subprocess
+
+def create_depth_map(bam):
+    """
+    Creating a depth map with samtools structured based on Genomic position as {Pos: Depth}
+    """
+    depth_map = {}
+    with subprocess.Popen(
+        ['samtools', 'depth', '-a', bam],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        text=True,
+        bufsize=1
+    ) as process:
+        for line in process.stdout:
+            # chrom - pos - depth
+            pos_data = line.strip().split('\t')
+            depth_map[int(pos_data[1])] = int(pos_data[2])
+    return depth_map
 
 def in_frame(v):
     if len(v.ALT) > 1:
@@ -75,6 +95,8 @@ def go(args):
     vcf_writer_filtered.write_header()
     filter = Clair3Filter(args.no_frameshifts, args.min_depth, args.min_qual)
 
+    depth_map = create_depth_map(args.inputbam)
+
     variants = [v for v in vcf_reader]
 
     group_variants = defaultdict(list)
@@ -84,10 +106,17 @@ def go(args):
 
     for v in variants:
 
-        # quick pre-filter to remove rubbish that we don't want adding to the mask
+        # Quick pre-filter to remove rubbish that we don't want adding to the mask
         try:
-            if v.INFO["DP"] <= 1:
+            if v.format("DP")[0][0] <= 1:
                 print(f"Suppress variant {v.POS} due to low depth")
+                continue
+
+            # If there is a massive depth difference in an amplicon overlap area ignore
+            #  We'd expect ~50/50 for an overlap with normalization so 10% would be very low
+            #  And a real variant would be in both pools so if one was lower than the other that'd add to it here
+            if v.format("DP")[0][0] < args.min_threshold_depth * depth_map[v.POS]:
+                print(f"Supress variant at {v.POS} due to depth difference of {v.format('DP')[0][0]} to {depth_map[v.POS]}")
                 continue
 
         except KeyError:
@@ -114,7 +143,7 @@ def go(args):
                 vcf_writer_filtered.write_record(v)
 
             else:
-                print("Suppress variant %s\n" % (v.POS))
+                print("Suppress variant %s" % (v.POS))
 
 
 def main():
@@ -123,8 +152,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--no-frameshifts", action="store_true")
     parser.add_argument("--min-depth", type=int)
-    parser.add_argument('--min-qual', type=int, default=8)
+    parser.add_argument("--min-qual", type=int, default=8)
+    parser.add_argument("--min-threshold-depth", type=float, default=0.05)
     parser.add_argument("inputvcf")
+    parser.add_argument("inputbam")
     parser.add_argument("output_pass_vcf")
     parser.add_argument("output_fail_vcf")
 

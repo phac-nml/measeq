@@ -83,6 +83,21 @@
                     "minimum": 0,
                     "fa_icon": "far fa-minus-square"
                 },
+                "ivar_primer_pairs": {
+                    "type": "string",
+                    "pattern": "^\\S+\\.tsv$",
+                    "format": "file-path",
+                    "description": "[Experimental] Path to iVar primer pair TSV information file containing left and right primer names for the same amplicon",
+                    "fa_icon": "fas fa-file-csv",
+                    "hidden": true
+                },
+                "ivar_offset": {
+                    "type": "integer",
+                    "description": "Reads that occur at the specified offset positions relative to primer positions will also be trimmed",
+                    "default": 1,
+                    "minimum": 0,
+                    "fa_icon": "far fa-minus-square"
+                },
                 "min_ambiguity_threshold": {
                     "type": "number",
                     "description": "Minimum threshold to call a position as an IUPAC",
@@ -171,6 +186,13 @@
                     "default": 7,
                     "minimum": 0,
                     "description": "Minimum variant quality to pass clair3 filters"
+                },
+                "min_variant_threshold_c3": {
+                    "type": "number",
+                    "default": 0.05,
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Minimum overall site depth threshold for a variant to be included. So default 0.05 = a minimum of 5% of the positions depth for a variant to be included"
                 }
             }
         },
