@@ -16,11 +16,12 @@ Focusing on fixing small inconsistencies between final reports and output consen
 
 ### `Adjusted`
 
-- Nanopore variant filter added a depth percentage check at a required minimum 10% of the total positional depth to make sure variants in overlapping regions are not extremely low in depth compared to the other amplicon
+- Nanopore variant filter added a depth percentage check at a required minimum 5% of the total positional depth to make sure variants in overlapping regions are not extremely low in depth compared to the other amplicon
 
   - If there is a massive discrepency and there is a true variant it should be in both so it will still be kept
   - If there is no variant in the other overlapping amplicon that would suggest an error so ignore
   - Parameter added called `min_variant_threshold_c3` to handle this
+  - LowQual sites ignored
 
 - Multi-allelic illumina variants are labelled as such if they are lower depth and have been split up
 

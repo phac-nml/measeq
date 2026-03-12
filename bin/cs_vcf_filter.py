@@ -3,8 +3,9 @@
 Filter VCF Variants originally from https://github.com/artic-network/fieldbioinformatics/blob/master/artic/vcf_filter.py
 
 Notable Changes:
-  - Added a custom parameter to adjust the QUAL threshold with it set at 8 by default.
-  - Added a filter for RefCall bases.
+  - Added a custom parameter to adjust the QUAL threshold with it set at 8 by default
+  - Added a filter for RefCall bases
+  - Added a filter for LowQual sites
   - Depth based kick out for overlapping areas where there is a variant that doesn't make sense
 '''
 
@@ -113,10 +114,10 @@ def go(args):
                 continue
 
             # If there is a massive depth difference in an amplicon overlap area ignore
-            #  We'd expect ~50/50 for an overlap with normalization so 10% would be very low
+            #  We'd expect ~50/50 for an overlap with normalization so 5% would be very low
             #  And a real variant would be in both pools so if one was lower than the other that'd add to it here
             if v.format("DP")[0][0] < args.min_threshold_depth * depth_map[v.POS]:
-                print(f"Supress variant at {v.POS} due to depth difference of {v.format('DP')[0][0]} to {depth_map[v.POS]}")
+                print(f"Supress variant at {v.POS} due to depth difference of {v.format('DP')[0][0]} to overall site depth {depth_map[v.POS]}")
                 continue
 
         except KeyError:
@@ -124,8 +125,13 @@ def go(args):
 
         # Completely skip RefCalls
         if v.ALT == []:
-            print(f"skipping RefCall at {v.POS}")
+            print(f"Skipping RefCall at {v.POS}")
             continue
+        # Completely skip LowQual (sub 2 quality)
+        #  As usually there is no evidence that these are mixed sites
+        #  which is what masking is for
+        if v.QUAL < 2:
+            print(f"Skipping LowQual of {v.QUAL} at {v.POS}")
 
         # now apply the filter to send variants to PASS or FAIL file
         if filter.check_filter(v):

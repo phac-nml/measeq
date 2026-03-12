@@ -40,6 +40,8 @@ process ARTIC_VCF_MERGE {
     script:
     def vcfs_in_str = transformVCFList(vcfs)
     """
+    awk -F'\t' 'BEGIN{OFS=FS} {if (NF==6) print \$0, "NA"; else print \$0}' "${primer_bed}" > tmp.bed && mv tmp.bed "${primer_bed}"
+
     artic_vcf_merge \\
         ${meta.id} \\
         $primer_bed \\

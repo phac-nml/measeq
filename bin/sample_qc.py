@@ -186,7 +186,7 @@ def parse_fastp_json(injson: Path) -> float:
         return json_obj['filtering_result']['passed_filter_reads']
 
 
-def parse_depth_bed(bed: Path, segment: range) -> Tuple[float, float, float]:
+def parse_depth_bed(bed: Path, segment: range) -> Tuple[float, float]:
     '''
     Purpose:
     --------
@@ -206,22 +206,17 @@ def parse_depth_bed(bed: Path, segment: range) -> Tuple[float, float, float]:
     with open(bed, 'r') as handle:
         reader = csv.reader(handle, delimiter='\t')
         # Format is: Chrom, Pos, Depth
-        above_20_count = 0
         for row in reader:
             if int(row[1]) in segment:
                 depth.append(int(row[2]))
 
-            if int(row[2]) >= 20 and int(row[1]) in segment:
-                above_20_count += 1
-
     # Empty file return nothing
     if depth == []:
-        return 0, 0, 0
+        return 0, 0
     # Otherwise calc
     mean_dep = round(statistics.mean(depth), 2)
     median_dep = round(statistics.median(depth), 1)
-    above_20_complete = round((above_20_count / len(depth) * 100), 2)
-    return mean_dep, median_dep, above_20_complete
+    return mean_dep, median_dep
 
 
 def parse_consensus(fasta: SeqRecord) -> Tuple[int, float, int, str]:
@@ -654,7 +649,7 @@ def main() -> None:
     num_aligned_reads = get_read_count(args.bam)
     consensus = SeqIO.read(args.consensus, "fasta")
     n_pos, count_n, completeness, seq_len, divisible = parse_consensus(consensus)
-    mean_dep, median_dep, above_20_completeness = parse_depth_bed(args.depth, range(0,seq_len+1)) # Use the whole genome for calc
+    mean_dep, median_dep = parse_depth_bed(args.depth, range(0,seq_len+1)) # Use the whole genome for calc
     variants, variant_positions, var_count_dict = parse_vcf(args.vcf, n_pos)
     frameshift, nonsense, stop_mutation = get_custom_nextclade_vals(args.nextclade_custom, args.sample)
 
@@ -672,11 +667,8 @@ def main() -> None:
     n450_median_depth = 0
 
     if n450_completeness > 0:
-        n450_mean_depth, n450_median_depth, _ = parse_depth_bed(args.depth, n450_range)
+        n450_mean_depth, n450_median_depth = parse_depth_bed(args.depth, n450_range)
     n450_status = grade_n450(matched_dsid, n450_mean_depth, n450_completeness)
-
-    # MF-NCR
-    mf_mean, mf_med, mf_20x = parse_depth_bed(args.depth, range(4338,5350))
 
     # Grade qc
     frameshift_status = (frameshift != '')
@@ -704,7 +696,6 @@ def main() -> None:
         'num_aligned_reads': [num_aligned_reads],
         'num_consensus_n': [count_n],
         'genome_completeness_percent': [completeness],
-        'Above 20x Coverage': [above_20_completeness],
         'mean_sequencing_depth': [mean_dep],
         'median_sequencing_depth': [median_dep],
         'total_variants': [var_count_dict['total_variants']],
@@ -724,8 +715,6 @@ def main() -> None:
         'N450_completeness': [n450_completeness],
         'N450_mean_depth': [n450_mean_depth],
         'N450_status': [n450_status],
-        'MF-NCR Mean': [mf_mean],
-        'MF-NCR Median': [mf_med],
         'qc_status': [qc_status],
         'N450_fasta': [f">{args.sample}-N450\n{n450_seq}"],
         'genome_fasta': [f">{args.sample}\n{consensus.seq.upper()}"],

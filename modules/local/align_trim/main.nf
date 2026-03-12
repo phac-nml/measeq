@@ -25,12 +25,11 @@ process ALIGN_TRIM {
     // Start mode = Trim to start of primers instead of ends
     if ( mode == "primers" ) {
         outName = "${meta.id}.primertrimmed.rg.sorted.bam"
-    } else {
-        argsList.add("--no-trim-primers")
+        argsList.add("--trim-primers")
     }
     // Remove or keep incorrect primers
-    if ( params.ont_keep_incorrect_primers ) {
-        argsList.add("--allow-incorrect-pairs")
+    if ( ! params.ont_keep_incorrect_primers ) {
+        argsList.add("--remove-incorrect-pairs")
     }
     def argsConfig = argsList.join(" ")
     """
