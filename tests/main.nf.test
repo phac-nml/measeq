@@ -801,7 +801,7 @@ nextflow_pipeline {
             assert iridanext_metadata.add_sample2.genome_length == "15894"
             assert iridanext_metadata.add_sample2.divisible_by_6 == "PASS"
             assert iridanext_metadata.add_sample2.N450_completeness == "100.0"
-            assert iridanext_metadata.add_sample2.N450_mean_depth == "560.97"
+            assert iridanext_metadata.add_sample2.N450_mean_depth == "561.12"
             assert iridanext_metadata.add_sample2.N450_status == "PASS"
             assert iridanext_metadata.add_sample2.qc_status == "PASS"
 

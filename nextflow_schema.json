@@ -94,7 +94,7 @@
                 "ivar_offset": {
                     "type": "integer",
                     "description": "Reads that occur at the specified offset positions relative to primer positions will also be trimmed",
-                    "default": 1,
+                    "default": 0,
                     "minimum": 0,
                     "fa_icon": "far fa-minus-square"
                 },

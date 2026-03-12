@@ -349,6 +349,7 @@ Mask locations where there is not enough information to call a base using a mini
   - `<SAMPLE>.fail.vcf`: Merged variants failing the variant filters
   - `<SAMPLE>.pass.vcf.gz`: Merged variants passing the variant filters
   - `<SAMPLE>.pass.vcf.gz.tbi`: Index of passing variants
+  - `<SAMPLE>.suppress.txt`: Variants that were suppressed from both the pass and fail VCFs due to their extremely low quality/support
 
 </details>
 

@@ -26,9 +26,9 @@
 
 ## Current Updates
 
-### _2026-02-04_ Summary
+### _2026-03-013_ Summary
 
-Full release version 1.0.0! Pipeline supports equivalent Illumina and Nanopore workflows allowing whole genome or amplicon sequencing analysis. The MeaSeq workflow generates whole genome consensus sequences, N450 sequences and reporting information, DSId hashing and assigning, and a final QC report. It can be run with a single reference or with the genotyping predictions.
+Full release version 1.1.0! Pipeline supports equivalent Illumina and Nanopore workflows allowing whole genome or amplicon sequencing analysis. The MeaSeq workflow generates whole genome consensus sequences, N450 sequences and reporting information, DSId hashing and assigning, and a final QC report. It can be run with a single reference or with the genotyping predictions and a config setup containing a users preferred references.
 
 #### Genotype Predictions
 
@@ -41,6 +41,10 @@ Full release version 1.0.0! Pipeline supports equivalent Illumina and Nanopore w
   - More total information available in the [References and Predictions section](#reference-assignment)
 
 ### Future Direction
+
+- Updating the final report and maintaining best practices/tool updates as they are released
+
+- Writing a quick summary paper of the process and uses for reporting
 
 - For IRIDA-Next, we're hoping to evaluate generic viral pipeline options (or create one) and merge in virus specific post-processing stages
   - So measeq post-processing would end up included there
