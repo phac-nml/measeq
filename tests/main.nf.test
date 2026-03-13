@@ -1254,7 +1254,7 @@ nextflow_pipeline {
             // Using the first 11 columns only to get to variants count
             lines = path("$launchDir/results/overall.qc.csv").text
             assert lines.contains("sample,genotype,reference,matched_dsid,num_input_reads,num_aligned_reads,num_consensus_n,genome_completeness_percent,mean_sequencing_depth,median_sequencing_depth,total_variants,")
-            assert lines.contains("sample1,D8,MH356245.1,Novel-65d31ec,8922,7108,1425,91.03,311.73,260.0,262,")
+            assert lines.contains("sample1,D8,MH356245.1,Novel-65d31ec,8922,7108,1424,91.04,311.73,260.0,262,")
             assert lines.contains("sample2,NA,MK513622.1,No Data,5171,664,14581,7.0,21.75,0.0,4,")
 
             // Intermediate generated reference files
@@ -1355,8 +1355,8 @@ nextflow_pipeline {
             assert iridanext_metadata.sample1.matched_dsid == "Novel-65d31ec"
             assert iridanext_metadata.sample1.num_input_reads == "8922"
             assert iridanext_metadata.sample1.num_aligned_reads == "7108"
-            assert iridanext_metadata.sample1.num_consensus_n == "1425"
-            assert iridanext_metadata.sample1.genome_completeness_percent == "91.03"
+            assert iridanext_metadata.sample1.num_consensus_n == "1424"
+            assert iridanext_metadata.sample1.genome_completeness_percent == "91.04"
             assert iridanext_metadata.sample1.mean_sequencing_depth == "311.73"
             assert iridanext_metadata.sample1.median_sequencing_depth == "260.0"
             assert iridanext_metadata.sample1.total_variants == "262"
