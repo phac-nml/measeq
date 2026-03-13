@@ -55,7 +55,7 @@ nextflow_workflow {
                 model = "r1041_e82_400bps_sup_v410"
                 min_depth = 30
                 ont_min_read_length = 400
-                normalise_ont = 2000
+                normalise_ont = 0
             }
         }
         then {

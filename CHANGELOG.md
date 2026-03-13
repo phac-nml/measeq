@@ -278,7 +278,7 @@ Small addition of Picard MarkDuplicates workflow along with some new tests
 
 - MeaSeq pipeline created and initial code added
 
-[v1.1.0]: https://github.com/phac-nml/measeq/releases/tag/1.0.1
+[v1.1.0]: https://github.com/phac-nml/measeq/releases/tag/1.1.0
 [v1.0.1]: https://github.com/phac-nml/measeq/releases/tag/1.0.1
 [v1.0.0]: https://github.com/phac-nml/measeq/releases/tag/1.0.0
 [v0.5.0]: https://github.com/phac-nml/measeq/releases/tag/0.5.0

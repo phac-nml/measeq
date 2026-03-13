@@ -1105,7 +1105,7 @@ nextflow_pipeline {
                 min_depth   = 30
                 min_variant_qual_c3 = 10
                 ont_min_read_length = 400
-                normalise_ont = 2000
+                normalise_ont = 0
             }
         }
         then {
@@ -1126,7 +1126,7 @@ nextflow_pipeline {
             // Using the first 11 columns only to get to variants count
             lines = path("$launchDir/results/overall.qc.csv").text
             assert lines.contains("sample,genotype,reference,matched_dsid,num_input_reads,num_aligned_reads,num_consensus_n,genome_completeness_percent,mean_sequencing_depth,median_sequencing_depth,total_variants,")
-            assert lines.contains("sample1,D8,MH356245.1,Novel-65d31ec,8922,7108,1425,91.03,311.73,260.0,262,")
+            assert lines.contains("sample1,D8,MH356245.1,Novel-65d31ec,8922,7108,1424,91.04,311.73,260.0,262,")
 
             // Intermediate generated reference files
             assert path("$launchDir/results/reference/MH356245.1.amplicon.bed").exists()
@@ -1149,7 +1149,7 @@ nextflow_pipeline {
             assert lines.contains(">MH356245.1-N450 ")
             assert lines.size() == 2
 
-            assert path("$launchDir/results/consensus/sample1.consensus.fasta").md5 == "0bcbce4cb45796aba15e5182ecbecdb9"
+            assert path("$launchDir/results/consensus/sample1.consensus.fasta").md5 == "51c485594b7ccd30b9c4bfb4a371e654"
             lines = path("$launchDir/results/consensus/sample1.consensus.fasta").readLines()
             assert lines.contains(">sample1 MH356245.1")
             assert lines.contains("NNNNNNNNNNNNNNNNNNNNNNNNNATCAATCAATGATCATATTCTAGTACACTTAGGAT")
@@ -1196,8 +1196,8 @@ nextflow_pipeline {
             assert iridanext_metadata.sample1.matched_dsid == "Novel-65d31ec"
             assert iridanext_metadata.sample1.num_input_reads == "8922"
             assert iridanext_metadata.sample1.num_aligned_reads == "7108"
-            assert iridanext_metadata.sample1.num_consensus_n == "1425"
-            assert iridanext_metadata.sample1.genome_completeness_percent == "91.03"
+            assert iridanext_metadata.sample1.num_consensus_n == "1424"
+            assert iridanext_metadata.sample1.genome_completeness_percent == "91.04"
             assert iridanext_metadata.sample1.mean_sequencing_depth == "311.73"
             assert iridanext_metadata.sample1.median_sequencing_depth == "260.0"
             assert iridanext_metadata.sample1.total_variants == "262"
@@ -1287,7 +1287,7 @@ nextflow_pipeline {
             assert lines.contains(">MH356245.1-N450 ")
             assert lines.size() == 2
 
-            assert path("$launchDir/results/consensus/sample1.consensus.fasta").md5 == "0bcbce4cb45796aba15e5182ecbecdb9"
+            assert path("$launchDir/results/consensus/sample1.consensus.fasta").md5 == "51c485594b7ccd30b9c4bfb4a371e654"
             lines = path("$launchDir/results/consensus/sample1.consensus.fasta").readLines()
             assert lines.contains(">sample1 MH356245.1")
             assert lines.contains("NNNNNNNNNNNNNNNNNNNNNNNNNATCAATCAATGATCATATTCTAGTACACTTAGGAT")

@@ -132,6 +132,7 @@ def go(args):
         #  which is what masking is for
         if v.QUAL < 2:
             print(f"Skipping LowQual of {v.QUAL} at {v.POS}")
+            continue
 
         # now apply the filter to send variants to PASS or FAIL file
         if filter.check_filter(v):
