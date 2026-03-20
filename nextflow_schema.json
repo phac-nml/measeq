@@ -122,7 +122,7 @@
                     "maximum": 1,
                     "fa_icon": "far fa-minus-square"
                 },
-                "min_alt_fraction_freeabyes": {
+                "min_alt_fraction_freebayes": {
                     "type": "number",
                     "description": "Require at least this fraction of observations supporting an alt allele to evaluate position",
                     "default": 0.05,
@@ -187,7 +187,14 @@
                     "minimum": 0,
                     "description": "Minimum variant quality to pass clair3 filters"
                 },
-                "min_variant_threshold_c3": {
+                "min_allele_freq_c3": {
+                    "type": "number",
+                    "default": 0.6,
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Minimum alt allele frequency to pass a clair3 variant"
+                },
+                "min_site_threshold_c3": {
                     "type": "number",
                     "default": 0.05,
                     "minimum": 0,

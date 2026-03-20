@@ -45,12 +45,12 @@ def in_frame(v):
     return False
 
 class Clair3Filter:
-    def __init__(self, no_frameshifts, min_depth, min_variant_quality):
+    def __init__(self, no_frameshifts, min_depth, min_variant_quality, min_allele_frequency):
         self.no_frameshifts = no_frameshifts
         self.min_depth = min_depth
         self.min_variant_quality = min_variant_quality
         self.min_frameshift_quality = 30
-        self.min_allele_frequency = 0.60
+        self.min_allele_frequency = min_allele_frequency
 
     def check_filter(self, v):
         qual = v.QUAL
@@ -94,7 +94,7 @@ def go(args):
     vcf_writer.write_header()
     vcf_writer_filtered = Writer(args.output_fail_vcf, vcf_reader, "w")
     vcf_writer_filtered.write_header()
-    filter = Clair3Filter(args.no_frameshifts, args.min_depth, args.min_qual)
+    filter = Clair3Filter(args.no_frameshifts, args.min_depth, args.min_qual, args.min_allele_freq)
 
     depth_map = create_depth_map(args.inputbam)
 
@@ -160,6 +160,7 @@ def main():
     parser.add_argument("--no-frameshifts", action="store_true")
     parser.add_argument("--min-depth", type=int)
     parser.add_argument("--min-qual", type=int, default=8)
+    parser.add_argument("--min-allele-freq", type=float, default=0.60)
     parser.add_argument("--min-threshold-depth", type=float, default=0.05)
     parser.add_argument("inputvcf")
     parser.add_argument("inputbam")

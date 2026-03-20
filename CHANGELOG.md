@@ -20,8 +20,10 @@ Update focusing on fixing small inconsistencies between final reports and output
 
   - If there is a massive discrepency and there is a true variant it should be in both so it will still be kept
   - If there is no variant in the other overlapping amplicon that would suggest an error so ignore
-  - Parameter added called `min_variant_threshold_c3` to handle this
+  - Parameter added called `min_site_threshold_c3` to handle this
   - LowQual sites ignored from masking
+
+- Nanopore variant filter parameter `min_allele_freq_c3` added to allow more control to users
 
 - Multi-allelic illumina variants are labelled as such if they are lower depth and have been split up [PR #33](https://github.com/phac-nml/measeq/pull/33)
 

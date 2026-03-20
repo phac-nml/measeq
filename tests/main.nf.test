@@ -203,9 +203,11 @@ nextflow_pipeline {
             assert iridanext_global.findAll { it.path == "overall.xlsx" }.size() == 1
             assert iridanext_global.findAll { it.path == "novel_dsids.tsv" }.size() == 1
 
+            assert iridanext_samples.add_sample1.findAll { it.path == "bam/ivar/sample1.primertrimmed.sorted.bam" }.size() == 1
             assert iridanext_samples.add_sample1.findAll { it.path == "consensus/sample1.N450.fasta" }.size() == 1
             assert iridanext_samples.add_sample1.findAll { it.path == "consensus/sample1.consensus.fasta" }.size() == 1
             assert iridanext_samples.add_sample1.findAll { it.path == "vcf/processed_vcf/sample1.processed.norm.vcf.gz" }.size() == 1
+            assert iridanext_samples.add_sample2.findAll { it.path == "bam/ivar/sample2.primertrimmed.sorted.bam" }.size() == 1
             assert iridanext_samples.add_sample2.findAll { it.path == "consensus/sample2.N450.fasta" }.size() == 1
             assert iridanext_samples.add_sample2.findAll { it.path == "consensus/sample2.consensus.fasta" }.size() == 1
             assert iridanext_samples.add_sample2.findAll { it.path == "vcf/processed_vcf/sample2.processed.norm.vcf.gz" }.size() == 1
@@ -391,9 +393,11 @@ nextflow_pipeline {
             assert iridanext_global.findAll { it.path == "novel_dsids.tsv" }.size() == 1
             assert iridanext_global.findAll { it.path == "predictions.csv" }.size() == 1
 
+            assert iridanext_samples.add_sample1.findAll { it.path == "bam/ivar/sample1.primertrimmed.sorted.bam" }.size() == 1
             assert iridanext_samples.add_sample1.findAll { it.path == "consensus/sample1.N450.fasta" }.size() == 1
             assert iridanext_samples.add_sample1.findAll { it.path == "consensus/sample1.consensus.fasta" }.size() == 1
             assert iridanext_samples.add_sample1.findAll { it.path == "vcf/processed_vcf/sample1.processed.norm.vcf.gz" }.size() == 1
+            assert iridanext_samples.add_sample2.findAll { it.path == "bam/ivar/sample2.primertrimmed.sorted.bam" }.size() == 1
             assert iridanext_samples.add_sample2.findAll { it.path == "consensus/sample2.N450.fasta" }.size() == 1
             assert iridanext_samples.add_sample2.findAll { it.path == "consensus/sample2.consensus.fasta" }.size() == 1
             assert iridanext_samples.add_sample2.findAll { it.path == "vcf/processed_vcf/sample2.processed.norm.vcf.gz" }.size() == 1
@@ -1187,6 +1191,7 @@ nextflow_pipeline {
             assert iridanext_global.findAll { it.path == "overall.xlsx" }.size() == 1
             assert iridanext_global.findAll { it.path == "novel_dsids.tsv" }.size() == 1
 
+            assert iridanext_samples.sample1.findAll { it.path == "bam/artic/sample1.primertrimmed.rg.sorted.bam" }.size() == 1
             assert iridanext_samples.sample1.findAll { it.path == "consensus/sample1.N450.fasta" }.size() == 1
             assert iridanext_samples.sample1.findAll { it.path == "consensus/sample1.consensus.fasta" }.size() == 1
             assert iridanext_samples.sample1.findAll { it.path == "vcf/final/sample1.pass.norm.vcf.gz" }.size() == 1
@@ -1343,6 +1348,7 @@ nextflow_pipeline {
             assert iridanext_global.findAll { it.path == "overall.xlsx" }.size() == 1
             assert iridanext_global.findAll { it.path == "predictions.csv" }.size() == 1
 
+            assert iridanext_samples.sample1.findAll { it.path == "bam/artic/sample1.primertrimmed.rg.sorted.bam" }.size() == 1
             assert iridanext_samples.sample1.findAll { it.path == "consensus/sample1.N450.fasta" }.size() == 1
             assert iridanext_samples.sample1.findAll { it.path == "consensus/sample1.consensus.fasta" }.size() == 1
             assert iridanext_samples.sample1.findAll { it.path == "vcf/final/sample1.pass.norm.vcf.gz" }.size() == 1

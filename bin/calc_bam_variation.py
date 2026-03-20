@@ -64,14 +64,14 @@ def init_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         '--variant_call_threshold',
         required=False,
-        type=int,
+        type=float,
         default=75,
         help='Minimum percentage for a variant to called'
     )
     parser.add_argument(
         '--indel_call_threshold',
         required=False,
-        type=int,
+        type=float,
         default=50,
         help='Minimum percentage for an indel variant to called'
     )
@@ -159,7 +159,7 @@ def calc_base_percent(pileup_dict: dict, base: str) -> float:
     """
     return round(((pileup_dict[base] / pileup_dict["total_reads"]) * 100), 2)
 
-def determine_type(pileup_dict: dict, most_common_base: str, variant_call_threshold: int, indel_call_threshold: int) -> str:
+def determine_type(pileup_dict: dict, most_common_base: str, variant_call_threshold: float, indel_call_threshold: float) -> str:
     """
     Purpose
     -------
@@ -171,9 +171,9 @@ def determine_type(pileup_dict: dict, most_common_base: str, variant_call_thresh
         Contains: {Position: Base} for the reference genome
     most_common_base: str
         The most common base found at pileup location
-    variant_call_threshold: int
+    variant_call_threshold: float
         Threshold at which a variant is called. Default: 75
-    indel_call_threshold: int
+    indel_call_threshold: float
         Threshold at which an indel variant is called. Default: 50
 
     Returns
@@ -202,8 +202,8 @@ def determine_type(pileup_dict: dict, most_common_base: str, variant_call_thresh
 
 def parse_variation_from_bam(bamfile: str, ref_dict: dict, base_q: int,
                              map_q: int, min_read_count: int,
-                             min_report_percent: int, variant_call_threshold: int,
-                             indel_call_threshold: int
+                             min_report_percent: int, variant_call_threshold: float,
+                             indel_call_threshold: float
                             ) -> list:
     """
     Purpose
@@ -225,9 +225,9 @@ def parse_variation_from_bam(bamfile: str, ref_dict: dict, base_q: int,
         Minimum reads required to report position. Default: 20
     min_report_percent: int
         Minimum non-reference base percentage to report out. Default: 15
-    variant_call_threshold: int
+    variant_call_threshold: float
         Threshold at which a variant is called. Default: 75
-    indel_call_threshold: int
+    indel_call_threshold: float
         Threshold at which an indel variant is called. Default: 50
 
     Returns
