@@ -165,7 +165,8 @@ p <- plot_ly(variants) %>%
   )
 
 #### Add in the Gene Annotations ####
-final_shapes <- c(gene_shapes_normal, list(hline(75)))
+final_thresh <- (params$variant_threshold * 100)
+final_shapes <- c(gene_shapes_normal, list(hline(final_thresh)))
 
 # Labels
 p <- p %>% add_text(
@@ -187,9 +188,9 @@ p
 ```
 
 > **Figure 2.** Subconsensus Variant Read Counts. The sample pileup was analyzed to find positions in the genome where the non-reference allele percentage was >=15%.
-> All positions with >=8 reads, a positional read base quality of >=12 and a map quality >=30 were included in the analysis.
+> All positions with >=8 reads (slightly less than the default minimum depth), a positional read base quality of >=0 and a map quality >=0 were included in the analysis.
 > Mixed sites in the figure that are not in the variant table are variants that have failed processing and contain the reference bases in the final consensus
-> if they are above the set minimum depth.
+> if they are above the set minimum depth. The dashed line represents the threshold at which a variant is confidently called.
 
 ## Row
 

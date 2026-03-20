@@ -19,14 +19,15 @@ process MINIMAP2_ALIGN {
     path "versions.yml", emit: versions
 
     script:
+    def args = task.ext.args ?: ''
+    def args2 = task.ext.args2 ?: ''
     """
     minimap2 \\
-        -a \\
-        -x map-ont \\
+        $args \\
         -t task.cpus \\
         $reference \\
         $fastq \\
-    | samtools view -b -F 2308 - \\
+    | samtools view -b $args2 - \\
     | samtools sort -o ${meta.id}.sorted.bam
 
     samtools index ${meta.id}.sorted.bam

@@ -77,8 +77,14 @@ def collect_depths(bamfile: str, refName: str, minDepth: int, ignoreDeletions: b
     depths = [0] * bamFile.get_reference_length(refName)
 
     # Generate the pileup
-    for pileupcolumn in bamFile.pileup(refName, max_depth=10000, truncate=False, min_mapping_quality=30, min_base_quality=12):
-
+    for pileupcolumn in bamFile.pileup(
+        refName,
+        start=0,
+        max_depth=10000,
+        truncate=False,
+        min_mapping_quality=0,
+        min_base_quality=0
+    ):
         # process the pileup column
         for pileupread in pileupcolumn.pileups:
             # process the pileup read

@@ -18,6 +18,7 @@ params:
   revision: ""
   nf_version: ""
   overall_qc: ""
+  variant_threshold: 0.75
   name: ""
   email: ""
   phone: ""
@@ -472,6 +473,7 @@ metrics_df <- select(summary_df,
   `Mean Depth`,
   `Median Depth`,
   `Total Variants`,
+  `# IUPACs`,
   `Genome Completeness (%)`,
   `Genome Length`,
   `N450 Status`,

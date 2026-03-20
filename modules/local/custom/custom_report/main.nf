@@ -35,6 +35,7 @@ process MAKE_CUSTOM_REPORT {
     task.ext.when == null || task.ext.when
 
     script:
+    def threshold = params.platform == "illumina" ? "${params.max_ambiguity_threshold}" : "${params.min_allele_freq_c3}"
     """
     # Organize a bit
     mkdir -p positional_depth
@@ -61,6 +62,7 @@ process MAKE_CUSTOM_REPORT {
             version = '$pipeline_version',
             revision = '$revision',
             nf_version = '$nf_version',
+            variant_threshold = $threshold,
             name = '$name',
             email = '$email',
             phone = '$phone',

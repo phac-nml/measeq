@@ -78,7 +78,7 @@ def handle_sub(vcf_header, record):
         base_frequency.append({ "A":0.0, "C":0.0, "G":0.0, "T":0.0 })
 
     for alt, vaf in zip(record.alts, vafs):
-        # For rare case when a SNP is the most prevalent but there is also an idel
+        # For rare case when a SNP is the most prevalent but there is also an indel
         if len(alt) != sub_length:
             indel_vafs += vaf
             continue
@@ -146,7 +146,6 @@ def get_base_code(base_dict, upper_ambiguity):
     # Filter bases with value above 1 - threshold
     threshold = 1 - upper_ambiguity
     significant_bases = {k for k, v in base_dict.items() if v >= threshold}
-    print(significant_bases, base_dict, upper_ambiguity)
 
     # Consensus
     if len(significant_bases) == 1:
@@ -238,6 +237,11 @@ def main():
         else:
             out_records = handle_sub(out_header, record)
 
+        # Just for final report
+        split_multiallelic = False
+        if len(out_records) > 1:
+            split_multiallelic = True
+
         # Classify variants using VAF cutoffs for IUPAC ambiguity codes, etc
         #  For out_tuple, its record, base_frequency dict (for IUPAC)
         accept_variant = False
@@ -247,7 +251,7 @@ def main():
             assert(len(out_r.alts) == 1)
 
             # Add final VAF
-            vaf = out_r.info["VAF"][0]
+            vaf = round(out_r.info["VAF"][0], 4)
             is_indel = len(out_r.ref) != len(out_r.alts[0])
 
             # Recheck that an indel is not low-depth if the site was multi-allelic initially
@@ -298,14 +302,17 @@ def main():
                 # To capture IUPACs in reports easier have a separate column
                 iupac_base = get_base_code(out_tuple[1], args.upper_ambiguity_frequency)
 
-                # Record ambiguous SNPs in the consensus sequence with IUPAC codes
-                consensus_tag = "ambiguous"
                 # Genotype needs to be mixed to get an iupac if that is what the base should be
                 if iupac_base not in ['A', 'T', 'G', 'C']:
                     genotype = (0,1)
+                    # Record ambiguous SNPs in the consensus sequence with IUPAC codes
+                    consensus_tag = "ambiguous"
                     tsv_tag = f"Ambiguous Base - {iupac_base}"
                 else:
+                    # Will keep the consensus tag
                     tsv_tag = "Passing Low Alt Allele Fraction"
+                    if split_multiallelic:
+                        tsv_tag = "Passing Split Multi-Allelic Site"
 
             # Output for consensus generation and reporting
             out_r.info["ConsensusTag"] = consensus_tag

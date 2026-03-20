@@ -219,7 +219,7 @@ def parse_depth_bed(bed: Path, segment: range) -> Tuple[float, float]:
     return mean_dep, median_dep
 
 
-def parse_consensus(fasta: SeqRecord) -> Tuple[int, float, int, bool]:
+def parse_consensus(fasta: SeqRecord) -> Tuple[int, float, int, str]:
     '''
     Purpose:
     --------
@@ -236,16 +236,16 @@ def parse_consensus(fasta: SeqRecord) -> Tuple[int, float, int, bool]:
     Integer number of Ns
     Float genome completeness calculated from the number of Ns
     Integer genome length
-    Bool TRUE if divisible, FALSE if not
+    String PASS if divisible, FAIL if not
     '''
     n_pos =  [i for i, base in enumerate(fasta.seq.lower(), start=1) if base == 'n']
     count_n = len(n_pos)
     seq_len = len(fasta.seq)
     completeness = (1 - (count_n / seq_len)) * 100
     completeness = round(completeness, 2)
-    divisible = True
+    divisible = "PASS"
     if seq_len % 6 != 0:
-        divisible = False
+        divisible = "FAIL"
     return n_pos, count_n, completeness, seq_len, divisible
 
 
@@ -478,9 +478,9 @@ def parse_n450_nextclade(nextclade_csv: Path, sample: str) -> Tuple[str, range]:
         to_n450 = 0
         if ',' in d['insertions']:
             to_n450 = len(d['insertions'].split(',')[0].split(':')[1])
-        return genotype, range(to_n450+1, to_n450+451)
+        return genotype, range(to_n450, to_n450+451)
     else:
-        return '', range(1,452)
+        return '', range(0,452)
 
 
 def get_custom_nextclade_vals(nextclade_csv: Path, sample: str) -> Tuple[str, str, str]:
@@ -569,7 +569,7 @@ def grade_n450(dsid: str, n450_mean_depth: float, n450_completeness: float) -> s
     return 'PASS'
 
 
-def grade_qc(completeness: float, mean_dep: float, median_dep: float, divisible: bool,
+def grade_qc(completeness: float, mean_dep: float, median_dep: float, divisible: str,
              frameshift: bool, nonsense_mutation: bool, stop_mutation: bool, genotype_match: bool) -> str:
     '''
     Purpose:
@@ -584,8 +584,8 @@ def grade_qc(completeness: float, mean_dep: float, median_dep: float, divisible:
         Mean sequencing depth
     median_dep - float
         Median sequencing depth
-    divisible - bool
-        If sample is divisible by 6
+    divisible - str
+        If sample is divisible by 6 = PASS
     frameshift - bool
         If there was a frameshift mutation identified
     nonsense_mutation - bool
@@ -608,11 +608,11 @@ def grade_qc(completeness: float, mean_dep: float, median_dep: float, divisible:
             return 'INCOMPLETE_GENOME'
         else:
             qc_status.append('PARTIAL_GENOME')
-    # Coverage Depth
+    # Overall Coverage Depth
     if (mean_dep < 20) or (median_dep < 20):
         qc_status.append('LOW_SEQ_DEPTH')
     # Divisible by 6
-    if not divisible:
+    if divisible == "FAIL":
         qc_status.append('NOT_DIVISIBLE')
     # Frameshift
     if frameshift:
@@ -649,7 +649,7 @@ def main() -> None:
     num_aligned_reads = get_read_count(args.bam)
     consensus = SeqIO.read(args.consensus, "fasta")
     n_pos, count_n, completeness, seq_len, divisible = parse_consensus(consensus)
-    mean_dep, median_dep = parse_depth_bed(args.depth, range(1,seq_len+1)) # Use the whole genome for calc
+    mean_dep, median_dep = parse_depth_bed(args.depth, range(0,seq_len+1)) # Use the whole genome for calc
     variants, variant_positions, var_count_dict = parse_vcf(args.vcf, n_pos)
     frameshift, nonsense, stop_mutation = get_custom_nextclade_vals(args.nextclade_custom, args.sample)
 
@@ -714,7 +714,7 @@ def main() -> None:
         'sequencing_primer_variants': [seq_primer_overlap],
         'N450_completeness': [n450_completeness],
         'N450_mean_depth': [n450_mean_depth],
-        'N450_status' :[n450_status],
+        'N450_status': [n450_status],
         'qc_status': [qc_status],
         'N450_fasta': [f">{args.sample}-N450\n{n450_seq}"],
         'genome_fasta': [f">{args.sample}\n{consensus.seq.upper()}"],

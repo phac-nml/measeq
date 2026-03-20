@@ -23,8 +23,8 @@ process ARTIC_VCF_MERGE {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/artic:1.7.4--pyhdfd78af_0' :
-        'biocontainers/artic:1.7.4--pyhdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/artic:1.8.5--pyhdfd78af_0' :
+        'biocontainers/artic:1.8.5--pyhdfd78af_0' }"
 
     // The vcf_tuples input is [[ path(vcf), val(pool) ], [...]]
     //   The path(vcf) is turned into a string of the full path using the val() input type
@@ -40,6 +40,8 @@ process ARTIC_VCF_MERGE {
     script:
     def vcfs_in_str = transformVCFList(vcfs)
     """
+    awk -F'\t' 'BEGIN{OFS=FS} {if (NF==6) print \$0, "NA"; else print \$0}' "${primer_bed}" > tmp.bed && mv tmp.bed "${primer_bed}"
+
     artic_vcf_merge \\
         ${meta.id} \\
         $primer_bed \\
@@ -72,15 +74,16 @@ process CUSTOM_VCF_FILTER {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/artic:1.7.4--pyhdfd78af_0' :
-        'biocontainers/artic:1.7.4--pyhdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/artic:1.8.5--pyhdfd78af_0' :
+        'biocontainers/artic:1.8.5--pyhdfd78af_0' }"
 
     input:
-    tuple val(meta), path(vcf)
+    tuple val(meta), path(vcf), path(bam), path(bai)
 
     output:
     tuple val(meta), path("${meta.id}.pass.vcf.gz"), path("${meta.id}.pass.vcf.gz.tbi"), emit: pass_vcf
     tuple val(meta), path("${meta.id}.fail.vcf"), emit: fail_vcf
+    tuple val(meta), path("${meta.id}.suppress.txt"), emit: suppress_txt
     path "versions.yml", emit: versions
 
     script:
@@ -93,9 +96,13 @@ process CUSTOM_VCF_FILTER {
         $frameshiftArg \\
         --min-depth ${params.min_depth} \\
         --min-qual ${params.min_variant_qual_c3} \\
+        --min-allele-freq ${params.min_allele_freq_c3} \\
+        --min-threshold-depth ${params.min_site_threshold_c3} \\
         $vcf \\
+        $bam \\
         ${meta.id}.pass.vcf \\
-        ${meta.id}.fail.vcf
+        ${meta.id}.fail.vcf \\
+        > ${meta.id}.suppress.txt
     bgzip -f ${meta.id}.pass.vcf
     tabix -p vcf ${meta.id}.pass.vcf.gz
 
@@ -121,13 +128,13 @@ process CUSTOM_VCF_FILTER {
 }
 
 process ARTIC_MAKE_DEPTH_MASK{
-    label 'process_single'
+    label 'process_small'
     tag "$meta.id"
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/artic:1.7.4--pyhdfd78af_0' :
-        'biocontainers/artic:1.7.4--pyhdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/artic:1.8.5--pyhdfd78af_0' :
+        'biocontainers/artic:1.8.5--pyhdfd78af_0' }"
 
     input:
     tuple val(meta), path(bam), path(bai)
@@ -167,13 +174,13 @@ process ARTIC_MAKE_DEPTH_MASK{
 // Slow but the bedtools adaptation I was working on I couldn't quite get to be genomic index
 //  Will have to look at that more as it was a lot quicker
 process CUSTOM_MAKE_DEPTH_MASK {
-    label 'process_single'
+    label 'process_small'
     tag "${meta.id}"
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/artic:1.7.4--pyhdfd78af_0' :
-        'biocontainers/artic:1.7.4--pyhdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/artic:1.8.5--pyhdfd78af_0' :
+        'biocontainers/artic:1.8.5--pyhdfd78af_0' }"
 
     input:
     tuple val(meta), path(bam), path(bai)
@@ -216,8 +223,8 @@ process ARTIC_MASK {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/artic:1.7.4--pyhdfd78af_0' :
-        'biocontainers/artic:1.7.4--pyhdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/artic:1.8.5--pyhdfd78af_0' :
+        'biocontainers/artic:1.8.5--pyhdfd78af_0' }"
 
     input:
     tuple val(meta), path(coverage_mask), path(fail_vcf)

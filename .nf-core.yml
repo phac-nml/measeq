@@ -56,7 +56,7 @@ template:
   name: measeq
   description: Measles Sequencing and Analysis
   author: Darian Hole, Ahmed Abdalla, Molly Pratt
-  version: 1.0.1
+  version: 1.1.0
   force: true
   outdir: .
   skip_features:
