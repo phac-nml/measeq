@@ -27,7 +27,9 @@ Update focusing on fixing small inconsistencies between final reports and output
 
 - Multi-allelic illumina variants are labelled as such if they are lower depth and have been split up [PR #33](https://github.com/phac-nml/measeq/pull/33)
 
-- New column for Nanopore data called `num_masked` which replaces `num_iupac` [PR #34](https://github.com/phac-nml/measeq/pull/33)
+- New column for Nanopore data called `num_masked` which replaces `num_iupac` [PR #35](https://github.com/phac-nml/measeq/pull/35)
+  - This was done we are not calling mixed sites as IUPAC bases in ONT data
+  - It can be seen in the final CSV file, excel file, and final report
 
 ### `Added`
 
