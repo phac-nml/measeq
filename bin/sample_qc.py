@@ -22,6 +22,13 @@ def init_parser() -> argparse.ArgumentParser:
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
+        '-p',
+        '--platform',
+        required=True,
+        choices=["illumina", "nanopore"],
+        help='Platform used - nanopore or illumina'
+    )
+    parser.add_argument(
         '-b',
         '--bam',
         required=True,
@@ -97,6 +104,13 @@ def init_parser() -> argparse.ArgumentParser:
         required=True,
         type=Path,
         help='TSV containing compared DSID calls'
+    )
+    parser.add_argument(
+        '-t',
+        '--consensus_tsv',
+        required=True,
+        type=Path,
+        help='TSV containing consensus calls for ONT data finding masked sites'
     )
     parser.add_argument(
         '--nanoq_json',
@@ -569,6 +583,16 @@ def grade_n450(dsid: str, n450_mean_depth: float, n450_completeness: float) -> s
     return 'PASS'
 
 
+def check_consensus_tsv_masked(tsv: Path) -> int:
+    '''Check for masked sites in consensus TSV'''
+    failed_sites = 0
+    with open(tsv, 'r') as f:
+        for line in f:
+            if 'Masked' in line.strip('\n').split('\t'):
+                failed_sites += 1
+    return failed_sites
+
+
 def grade_qc(completeness: float, mean_dep: float, median_dep: float, divisible: str,
              frameshift: bool, nonsense_mutation: bool, stop_mutation: bool, genotype_match: bool) -> str:
     '''
@@ -654,7 +678,6 @@ def main() -> None:
     frameshift, nonsense, stop_mutation = get_custom_nextclade_vals(args.nextclade_custom, args.sample)
 
     # Optional inputs
-
     seq_primer_overlap = 'NA'
     if args.seq_bed:
         seq_primer_overlap = check_primers(args.seq_bed, variant_positions)
@@ -686,6 +709,14 @@ def main() -> None:
     except ValueError:
         n450_seq = 'N'*450
 
+    # Different key cols for ambiguous data
+    #  As we mask mixed sites in Nanopore and call IUPACs in Illumina
+    iupac_key = 'num_iupac'
+    iupac_val = var_count_dict['num_iupac']
+    if args.platform == 'nanopore':
+        iupac_key = 'num_masked'
+        iupac_val = check_consensus_tsv_masked(args.consensus_tsv)
+
     # Output
     final = {
         'sample': [args.sample],
@@ -700,7 +731,7 @@ def main() -> None:
         'median_sequencing_depth': [median_dep],
         'total_variants': [var_count_dict['total_variants']],
         'num_snps': [var_count_dict['num_snps']],
-        'num_iupac': [var_count_dict['num_iupac']],
+        iupac_key: [iupac_val],
         'num_deletions': [var_count_dict['num_deletions']],
         'num_deletion_sites': [var_count_dict['num_deletion_sites']],
         'num_insertions': [var_count_dict['num_insertions']],

@@ -8,7 +8,7 @@ process VCF_TO_TSV {
         'biocontainers/artic:1.8.5--pyhdfd78af_0' }"
 
     input:
-    tuple val(meta), path(vcf), path(tbi)
+    tuple val(meta), path(vcf), path(tbi), path(fail_vcf)
 
     output:
     tuple val(meta), path("${meta.id}.consensus.tsv"), optional: true, emit: tsv
@@ -18,13 +18,14 @@ process VCF_TO_TSV {
     """
     vcf_to_tsv.py \\
         --sample "${meta.id}" \\
-        --vcf $vcf
+        --vcf $vcf \\
+        --fail_vcf $fail_vcf
 
     # Versions #
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         artic: \$(echo \$(artic --version 2>&1) | sed 's/artic //')
-        vcf_to_tsv: 0.1.0
+        vcf_to_tsv: 0.2.0
     END_VERSIONS
     """
 
@@ -36,7 +37,7 @@ process VCF_TO_TSV {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         artic: \$(echo \$(artic --version 2>&1) | sed 's/artic //')
-        vcf_to_tsv: 0.1.0
+        vcf_to_tsv: 0.2.0
     END_VERSIONS
     """
 }

@@ -918,7 +918,7 @@ nextflow_pipeline {
             assert iridanext_metadata.sample1.median_sequencing_depth == "278.0"
             assert iridanext_metadata.sample1.total_variants == "277"
             assert iridanext_metadata.sample1.num_snps == "277"
-            assert iridanext_metadata.sample1.num_iupac == "0"
+            assert iridanext_metadata.sample1.num_masked == "2"
             assert iridanext_metadata.sample1.genome_length == "15894"
             assert iridanext_metadata.sample1.divisible_by_6 == "PASS"
             assert iridanext_metadata.sample1.N450_completeness == "100.0"
@@ -1059,7 +1059,7 @@ nextflow_pipeline {
             assert iridanext_metadata.sample1.median_sequencing_depth == "278.0"
             assert iridanext_metadata.sample1.total_variants == "275"
             assert iridanext_metadata.sample1.num_snps == "275"
-            assert iridanext_metadata.sample1.num_iupac == "0"
+            assert iridanext_metadata.sample1.num_masked == "4"
             assert iridanext_metadata.sample1.genome_length == "15894"
             assert iridanext_metadata.sample1.divisible_by_6 == "PASS"
             assert iridanext_metadata.sample1.N450_completeness == "100.0"
@@ -1078,7 +1078,7 @@ nextflow_pipeline {
             assert iridanext_metadata.sample2.median_sequencing_depth == "0.0"
             assert iridanext_metadata.sample2.total_variants == "33"
             assert iridanext_metadata.sample2.num_snps == "33"
-            assert iridanext_metadata.sample2.num_iupac == "0"
+            assert iridanext_metadata.sample2.num_masked == "9"
             assert iridanext_metadata.sample2.genome_length == "15678"
             assert iridanext_metadata.sample2.divisible_by_6 == "PASS"
             assert iridanext_metadata.sample2.N450_completeness == "100.0"
@@ -1207,7 +1207,7 @@ nextflow_pipeline {
             assert iridanext_metadata.sample1.median_sequencing_depth == "260.0"
             assert iridanext_metadata.sample1.total_variants == "262"
             assert iridanext_metadata.sample1.num_snps == "262"
-            assert iridanext_metadata.sample1.num_iupac == "0"
+            assert iridanext_metadata.sample1.num_masked == "2"
             assert iridanext_metadata.sample1.genome_length == "15894"
             assert iridanext_metadata.sample1.divisible_by_6 == "PASS"
             assert iridanext_metadata.sample1.N450_completeness == "100.0"
@@ -1227,6 +1227,7 @@ nextflow_pipeline {
         tag "nanopore"
         tag "amplicon"
         tag "prediction"
+        tag "here"
 
         when {
             params {
@@ -1238,7 +1239,7 @@ nextflow_pipeline {
                 min_depth   = 30
                 min_variant_qual_c3 = 18
                 ont_min_read_length = 400
-                normalise_ont = 2000
+                normalise_ont = 0
             }
         }
         then {
@@ -1367,7 +1368,7 @@ nextflow_pipeline {
             assert iridanext_metadata.sample1.median_sequencing_depth == "260.0"
             assert iridanext_metadata.sample1.total_variants == "262"
             assert iridanext_metadata.sample1.num_snps == "262"
-            assert iridanext_metadata.sample1.num_iupac == "0"
+            assert iridanext_metadata.sample1.num_masked == "2"
             assert iridanext_metadata.sample1.genome_length == "15894"
             assert iridanext_metadata.sample1.divisible_by_6 == "PASS"
             assert iridanext_metadata.sample1.N450_completeness == "100.0"
@@ -1386,7 +1387,7 @@ nextflow_pipeline {
             assert iridanext_metadata.sample2.median_sequencing_depth == "0.0"
             assert iridanext_metadata.sample2.total_variants == "4"
             assert iridanext_metadata.sample2.num_snps == "4"
-            assert iridanext_metadata.sample2.num_iupac == "0"
+            assert iridanext_metadata.sample2.num_masked == "42"
             assert iridanext_metadata.sample2.genome_length == "15678"
             assert iridanext_metadata.sample2.divisible_by_6 == "PASS"
             assert iridanext_metadata.sample2.N450_completeness == "0.0"

@@ -332,6 +332,7 @@ workflow NANOPORE_CONSENSUS {
     //
     VCF_TO_TSV(
         BCFTOOLS_NORM.out.vcf
+            .join(ch_fail_vcf, by: [0])
     )
 
     emit:

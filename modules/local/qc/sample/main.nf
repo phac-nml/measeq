@@ -12,7 +12,8 @@ process MAKE_SAMPLE_QC_CSV {
 
     input:
     tuple val(meta), path(bam), path(bai), path(consensus), path(consensus_n450), path(depth_bed),
-            path(nextclade_n450), path(nextclade_full), path(vcf), path(tbi), path(read_json), val(genotype), path(primer_bed)
+            path(nextclade_n450), path(nextclade_full), path(vcf), path(tbi), path(read_json),
+            path(consensus_tsv), val(genotype), path(primer_bed)
     path dsid
 
     output:
@@ -36,6 +37,7 @@ process MAKE_SAMPLE_QC_CSV {
     //  if it differs from the sample column
     """
     sample_qc.py \\
+        --platform ${params.platform} \\
         --bam $bam \\
         --consensus $consensus \\
         --consensus_n450 $consensus_n450 \\
@@ -45,6 +47,7 @@ process MAKE_SAMPLE_QC_CSV {
         --genotype $genotype \\
         --vcf $vcf \\
         --matched_dsid $dsid \\
+        --consensus_tsv $consensus_tsv \\
         $readJsonArg \\
         $seqPrimerArg \\
         --sample $meta.id \\
