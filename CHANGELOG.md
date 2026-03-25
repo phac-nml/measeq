@@ -13,6 +13,7 @@ Update focusing on fixing small inconsistencies between final reports and output
 - Depth calculations adjusted so that calculations between depth mask and samtools depth match in final report [PR #33](https://github.com/phac-nml/measeq/pull/33)
 - Some nanopore variants were missed at the end of the genome [PR #33](https://github.com/phac-nml/measeq/pull/33)
   - Artic version in subcommands bumped to `v1.8.5` to solve this
+  - Added a wrapper around `align_trim` to set that random seed at 42 [PR #35](https://github.com/phac-nml/measeq/pull/35)
 
 ### `Adjusted`
 
