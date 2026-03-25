@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 A wrapper around artic align_trim 1.7.4 that adds in a set seed for consistency
