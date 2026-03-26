@@ -36,6 +36,7 @@ process MAKE_CUSTOM_REPORT {
 
     script:
     def threshold = params.platform == "illumina" ? "${params.max_ambiguity_threshold}" : "${params.min_allele_freq_c3}"
+    def platform = params.platform
     """
     # Organize a bit
     mkdir -p positional_depth
@@ -63,6 +64,7 @@ process MAKE_CUSTOM_REPORT {
             revision = '$revision',
             nf_version = '$nf_version',
             variant_threshold = $threshold,
+            platform = '$platform',
             name = '$name',
             email = '$email',
             phone = '$phone',

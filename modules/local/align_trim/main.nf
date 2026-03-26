@@ -35,7 +35,7 @@ process ALIGN_TRIM {
     """
     awk -F'\t' 'BEGIN{OFS=FS} {if (NF==6) print \$0, "NA"; else print \$0}' "${primer_bed}" > tmp.bed && mv tmp.bed "${primer_bed}"
 
-    align_trim \\
+    align_trim_seeded.py \\
         $argsConfig \\
         --report ${meta.id}.alignreport-${mode}.csv \\
         --amp-depth-report ${meta.id}.amplicon_depths.tsv \\

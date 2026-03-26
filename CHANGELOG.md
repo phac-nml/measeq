@@ -3,7 +3,7 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v1.1.0] - 2026-03-13
+## [v1.1.0] - 2026-03-25
 
 Update focusing on fixing small inconsistencies between final reports and output consensus sequences along with a few small bugfixes and exposing some more parameter options available to the user
 
@@ -13,6 +13,7 @@ Update focusing on fixing small inconsistencies between final reports and output
 - Depth calculations adjusted so that calculations between depth mask and samtools depth match in final report [PR #33](https://github.com/phac-nml/measeq/pull/33)
 - Some nanopore variants were missed at the end of the genome [PR #33](https://github.com/phac-nml/measeq/pull/33)
   - Artic version in subcommands bumped to `v1.8.5` to solve this
+  - Added a wrapper around `align_trim` to set that random seed at 42 [PR #35](https://github.com/phac-nml/measeq/pull/35)
 
 ### `Adjusted`
 
@@ -23,9 +24,13 @@ Update focusing on fixing small inconsistencies between final reports and output
   - Parameter added called `min_site_threshold_c3` to handle this
   - LowQual sites ignored from masking
 
-- Nanopore variant filter parameter `min_allele_freq_c3` added to allow more control to users
+- Nanopore variant filter parameter `min_allele_freq_c3` added to allow more control to users [PR #33](https://github.com/phac-nml/measeq/pull/33)
 
 - Multi-allelic illumina variants are labelled as such if they are lower depth and have been split up [PR #33](https://github.com/phac-nml/measeq/pull/33)
+
+- New column for Nanopore data called `num_masked` which replaces `num_iupac` [PR #35](https://github.com/phac-nml/measeq/pull/35)
+  - This was done we are not calling mixed sites as IUPAC bases in ONT data
+  - It can be seen in the final CSV file, excel file, and final report
 
 ### `Added`
 
