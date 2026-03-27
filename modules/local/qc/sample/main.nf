@@ -7,12 +7,13 @@ process MAKE_SAMPLE_QC_CSV {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/artic:1.7.4--pyhdfd78af_0' :
-        'biocontainers/artic:1.7.4--pyhdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/artic:1.8.5--pyhdfd78af_0' :
+        'biocontainers/artic:1.8.5--pyhdfd78af_0' }"
 
     input:
     tuple val(meta), path(bam), path(bai), path(consensus), path(consensus_n450), path(depth_bed),
-            path(nextclade_n450), path(nextclade_full), path(vcf), path(tbi), path(read_json), val(genotype), path(primer_bed)
+            path(nextclade_n450), path(nextclade_full), path(vcf), path(tbi), path(read_json),
+            path(consensus_tsv), val(genotype), path(primer_bed)
     path dsid
 
     output:
@@ -36,6 +37,7 @@ process MAKE_SAMPLE_QC_CSV {
     //  if it differs from the sample column
     """
     sample_qc.py \\
+        --platform ${params.platform} \\
         --bam $bam \\
         --consensus $consensus \\
         --consensus_n450 $consensus_n450 \\
@@ -45,6 +47,7 @@ process MAKE_SAMPLE_QC_CSV {
         --genotype $genotype \\
         --vcf $vcf \\
         --matched_dsid $dsid \\
+        --consensus_tsv $consensus_tsv \\
         $readJsonArg \\
         $seqPrimerArg \\
         --sample $meta.id \\

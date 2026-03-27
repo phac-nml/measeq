@@ -169,7 +169,7 @@ workflow MEASEQ {
     //
     // MODULE: get the sequencing depth of each sample
     SAMTOOLS_DEPTH(
-        ch_bam_bai.map{ meta, bam, bai -> tuple(meta, bam) },
+        ch_bam_bai.map{ meta, bam, _bai -> tuple(meta, bam) },
         [[:], []] // Empty as we want to run whole depth
     )
     ch_versions = ch_versions.mix(SAMTOOLS_DEPTH.out.versions.first())
@@ -200,14 +200,15 @@ workflow MEASEQ {
         .join(NEXTCLADE_RUN_CUSTOM.out.csv.map { meta, nextclade_full -> tuple(meta.id, nextclade_full)}, by: [0])
         .join(ch_vcf.map { meta, vcf, tbi -> tuple(meta.id, vcf, tbi)}, by: [0])
         .join(ch_read_json.map { meta, read_json -> tuple(meta.id, read_json)}, by: [0])
-        .map { _meta_id, meta, bam, bai, con_fasta, n450_fasta, depth_bed, nextclade_n450, nextclade_full, vcf, tbi, read_json ->
-            tuple(meta.ref_id, meta, bam, bai, con_fasta, n450_fasta, depth_bed, nextclade_n450, nextclade_full, vcf, tbi, read_json)
+        .join(ch_variants_tsv.map { meta, tsv -> tuple(meta.id, tsv)}, by: [0])
+        .map { _meta_id, meta, bam, bai, con_fasta, n450_fasta, depth_bed, nextclade_n450, nextclade_full, vcf, tbi, read_json, var_tsv ->
+            tuple(meta.ref_id, meta, bam, bai, con_fasta, n450_fasta, depth_bed, nextclade_n450, nextclade_full, vcf, tbi, read_json, var_tsv)
         }
 
     // Prepare primers file and join with genotype if available or just output genotype
     if ( params.amplicon || params.primer_bed ) {
         ch_overall_ref = ch_reference
-            .map{ meta_ref, fasta -> tuple(meta_ref.id, meta_ref.genotype) }
+            .map{ meta_ref, _fasta -> tuple(meta_ref.id, meta_ref.genotype) }
             .join(ch_primer_bed.map { meta_ref, bed -> tuple(meta_ref.id, bed)}, by: [0])
             .map { ref_id, ref_genotype, bed ->
                 tuple(ref_id, ref_genotype, bed)
@@ -215,14 +216,14 @@ workflow MEASEQ {
             .unique { it[0] }
     } else {
         ch_overall_ref = ch_reference
-            .map{ meta_ref, fasta -> tuple(meta_ref.id, meta_ref.genotype, []) }
+            .map{ meta_ref, _fasta -> tuple(meta_ref.id, meta_ref.genotype, []) }
     }
 
     // Combine genotype/primers with their corresponding samples according to ref_id
     ch_sample_qc_input = ch_overall_sample
         .combine(ch_overall_ref, by: 0)
-        .map { _ref_id, meta, bam, bai, con_fasta, n450_fasta, depth_bed, nextclade_n450, nextclade_full, vcf, tbi, read_json, genotype, bed ->
-            tuple(meta, bam, bai, con_fasta, n450_fasta, depth_bed, nextclade_n450, nextclade_full, vcf, tbi, read_json, genotype, bed)
+        .map { _ref_id, meta, bam, bai, con_fasta, n450_fasta, depth_bed, nextclade_n450, nextclade_full, vcf, tbi, read_json, var_tsv, genotype, bed ->
+            tuple(meta, bam, bai, con_fasta, n450_fasta, depth_bed, nextclade_n450, nextclade_full, vcf, tbi, read_json, var_tsv, genotype, bed)
         }
 
     // Run Module

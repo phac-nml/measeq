@@ -8,6 +8,7 @@
   - [Illumina](#illumina)
   - [Nanopore](#nanopore)
     - [Clair3 Models](#clair3-models)
+    - [Variant Quality Filtering and Masking Mixed Sites](#variant-quality-filtering-and-masking-mixed-sites)
   - [Reference Assignment](#reference-assignment)
   - [Amplicon and Primer Files](#amplicon-and-primer-files)
   - [DSIds](#dsids)
@@ -26,9 +27,9 @@
 
 ## Current Updates
 
-### _2026-02-04_ Summary
+### _2026-03-27_ Summary
 
-Full release version 1.0.0! Pipeline supports equivalent Illumina and Nanopore workflows allowing whole genome or amplicon sequencing analysis. The MeaSeq workflow generates whole genome consensus sequences, N450 sequences and reporting information, DSId hashing and assigning, and a final QC report. It can be run with a single reference or with the genotyping predictions.
+Full release version 1.1.0! Pipeline supports equivalent Illumina and Nanopore workflows allowing whole genome or amplicon sequencing analysis. The MeaSeq workflow generates whole genome consensus sequences, N450 sequences and reporting information, DSId hashing and assigning, and a final QC report. It can be run with a single reference or with the genotyping predictions and a config setup containing a users preferred references.
 
 #### Genotype Predictions
 
@@ -40,7 +41,11 @@ Full release version 1.0.0! Pipeline supports equivalent Illumina and Nanopore w
   - [References Config](conf/reference.config)
   - More total information available in the [References and Predictions section](#reference-assignment)
 
-### Future Direction
+#### Future Direction and Support
+
+- Updating the final report and maintaining best practices/tool updates as they are released
+
+- Writing a quick summary paper of the process and uses for reporting
 
 - For IRIDA-Next, we're hoping to evaluate generic viral pipeline options (or create one) and merge in virus specific post-processing stages
   - So measeq post-processing would end up included there
@@ -53,7 +58,7 @@ Full release version 1.0.0! Pipeline supports equivalent Illumina and Nanopore w
 
 This project aims to implement an open-source, easy to run, MeV Whole Genome Sequence analysis pipeline that works on both Illumina and Nanopore data. The end goal of this project is to deploy a standardized pipeline focused on final reporting metrics and plots for rapid detection and response to MeV outbreaks in Canada and abroad.
 
-The basis of the pipeline come from three other pipelines. The Illumina side from nf-cores' [Viralrecon pipeline](https://github.com/nf-core/viralrecon) along with Jared Simpson's [SARS-CoV-2 pipeline](https://github.com/jts/ncov2019-artic-nf/tree/master) (specficially Freebayes and VCF parsing) and for Nanopore the [artic pipeline](https://github.com/artic-network/fieldbioinformatics) with some slight modifications to different aspects of their variant calling. Most additions were added for measles-specific QC and reporting based on lab needs at the NML.
+The basis of the pipeline come from three other pipelines. The Illumina side from nf-cores' [Viralrecon pipeline](https://github.com/nf-core/viralrecon) along with Jared Simpson's [SARS-CoV-2 pipeline](https://github.com/jts/ncov2019-artic-nf/tree/master) (specficially Freebayes and VCF parsing) and for Nanopore the [artic pipeline](https://github.com/artic-network/fieldbioinformatics) with some slight modifications to different aspects of their variant calling and filtering. Most additions were added for measles-specific QC and reporting based on lab needs at the NML.
 
 ## Installation
 
@@ -149,6 +154,12 @@ Some models are built into clair3 and some need to be downloaded. The [pre-train
 
 Additional or local models can also be used, you just have to provide a path to them and use the `--local_model <PATH>` parameter instead
 
+#### Variant Quality Filtering and Masking Mixed Sites
+
+In addition to calling variants with Clair3, the Nanopore pipeline will mask sites that are of lower quality (Default: 2 < QUAL < 7) or have an allele frequency below 60% with an N in the final consensus. These masked sites can be found in the final HTML report or under the `results/vcf/artic/<sample>.fail.vcf` file.
+
+To adjust this behaviour, you can set the `--min_variant_qual_c3` and `--min_allele_freq_c3` parameters. Setting them both to 0 will essentially turn of variant filtering other than for indels and low depth sites
+
 ### Reference Assignment
 
 With [MeaSeq v0.5.0](https://github.com/phac-nml/measeq/releases/tag/0.5.0) and later, the `--reference` parameter is no longer required. Instead, the pipeline now runs on a per-sample reference assignment based on predicting the input sample's most likely genotype. In doing so, we have preset 3 reference files based on three measles virus genotypes (B3, D8, A). If a sample is predicted to be one of these genotypes, then the pipeline processes the sample using the corresponding reference FASTA file. If the sample's most likely genotype doesn't correspond to one of these genotypes, then the pipeline defaults to the set `--default_ref` reference FASTA file which matches the D8 reference genome by default.
@@ -192,7 +203,7 @@ _Note_: The first line in the example file is just to display what each line exp
 
 While 24 MeV genotypes were initially identified, only 2 have been detected since 2021: B3 and D8. Due to this, the Distinct Sequence Identifier (DSId) system was created to designate a unique 4-digit identifier based on the precise N450 sequence as a sub-genotype nomenclature. The [Measles Nucleotide Surveillance database](https://who-gmrln.org/means2) (MeaNS) is the global resource for these measles virus genetic sequences that is maintained by the WHO. N450 sequences can be submitted to the database to generate a distinct sequence identifier (DSId) for each unique sequence.
 
-There is no way to query the current database so a multifasta file with DSId calls is required to match them up locally. If a match is found, the matching DSId is assigned! If no match is found, the distinct sequence is given a `Novel-<MD5 HASH>` (first 7 characters for now) identifier so that it can be submitted to the database. To do this, use the parameter `--dsid_fasta <FASTA>`. The fasta file would look as such:
+There is no way to query the current database so a multifasta file with DSId calls is required to match them up locally. If a match is found, the matching DSId is assigned! If no match is found, the distinct sequence is given a `Novel-<MD5 HASH>` (first 7 characters) identifier so that it can be submitted to the database. To do this, use the parameter `--dsid_fasta <FASTA>` with the fasta file structured to look as such:
 
 **dsid_fasta**
 
@@ -205,7 +216,7 @@ GTCAGTTCCACATTGGCATCAGAACTCG
 GTCAGTTCCACAGTGGCATCTGAACTCG
 ```
 
-If this parameter is not given, the DSIds will still be generated as hashes to group up samples in the dsid.tsv and in the final report.
+If no DSId FASTA file is given, the DSIds will still be generated as hashes to group up samples in the dsid.tsv file and in the final report.
 
 ### Contact Information
 

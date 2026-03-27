@@ -22,7 +22,7 @@ process FREEBAYES {
         -f $reference \\
         -p 1 \\
         -C 1 \\
-        -F ${params.min_alt_fraction_freeabyes} \\
+        -F ${params.min_alt_fraction_freebayes} \\
         --pooled-continuous \\
         --min-coverage 5 \\
         --standard-filters \\

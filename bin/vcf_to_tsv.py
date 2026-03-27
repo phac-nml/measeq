@@ -24,7 +24,13 @@ def init_parser() -> argparse.ArgumentParser:
         '--vcf',
         required=True,
         type=str,
-        help='Path to clair3 VCF file'
+        help='Path to artic Passing VCF file'
+    )
+    parser.add_argument(
+        '-f',
+        '--fail_vcf',
+        type=str,
+        help='Path to artic Failing VCF'
     )
     parser.add_argument(
         '-o',
@@ -42,7 +48,7 @@ def init_parser() -> argparse.ArgumentParser:
     )
     return parser
 
-def process_variants_details(var, annotated: bool, variants_analyzed=[]) -> dict:
+def process_variants_details(var, annotated: bool, variant_type: str, variants_analyzed=[]) -> dict:
     """
     Process variant and create dictionary for entry
     Remove duplicated variants
@@ -53,9 +59,9 @@ def process_variants_details(var, annotated: bool, variants_analyzed=[]) -> dict
         return {}
     variants_analyzed.append(variant_str)
 
-    info = 'F'
+    info = 'Full Alignment'
     if 'P' in var.INFO:
-        info = 'P'
+        info = 'Pileup'
 
     # Non-annotated we just need the info in TSV format
     # Tag is for final report, moreso for illumina but needed here
@@ -69,7 +75,7 @@ def process_variants_details(var, annotated: bool, variants_analyzed=[]) -> dict
             'info': info,
             'depth': int(var.samples[0].data.DP),
             'vaf': round(var.samples[0].data.AF[0], 4),
-            'tag': 'Consensus'
+            'tag': variant_type
         }
         return out
 
@@ -88,7 +94,7 @@ def process_variants_details(var, annotated: bool, variants_analyzed=[]) -> dict
             'info': info,
             'depth': int(var.samples[0].data.DP),
             'vaf': round(var.samples[0].data.AF[0]),
-            'tag': 'Consensus'
+            'tag': variant_type
         }
         return out
     ann_list = var_ann[0].split('|')
@@ -113,18 +119,34 @@ def process_variants_details(var, annotated: bool, variants_analyzed=[]) -> dict
         'info': info,
         'depth': int(var.samples[0].data.DP),
         'vaf': round(var.samples[0].data.AF[0]),
-        'tag': 'Consensus'
+        'tag': variant_type
     }
     return out
+
+def process_variant_file(vcfin: str, annotated: bool, var_type: str) -> list:
+    """Parse given VCF to return a list of variant dicts"""
+    vcf_reader = vcf.Reader(filename=vcfin)
+    variants = []
+
+    # To fix out of range issue from pyvcf on empty files
+    try:
+        for var in vcf_reader:
+            var_dict = process_variants_details(var, annotated, var_type)
+            if var_dict != {}:
+                variants.append(var_dict)
+    except IndexError:
+        pass
+    return variants
 
 def write_outfile(outfile: str, variants: list) -> None:
     """Write output file to given location"""
     columns = variants[0].keys()
     header = '\t'.join(columns)
+    sorted_variants = sorted(variants, key=lambda x: x['pos'])
     with open(outfile, 'w') as f:
         f.write(header)
         f.write('\n')
-        for var_dict in variants:
+        for var_dict in sorted_variants:
             f.write('\t'.join([str(var_dict[col]) for col in columns]))
             f.write('\n')
 
@@ -135,26 +157,37 @@ def main() -> None:
     args = parser.parse_args()
 
     # Load in VCF and parse
-    vcf_reader = vcf.Reader(filename=args.vcf)
-    variants = []
-    # To fix out of range issue from pyvcf on empty files
-    try:
-        for var in vcf_reader:
-            var_dict = process_variants_details(var, args.annotated)
-            if var_dict != {}:
-                variants.append(var_dict)
-    except IndexError:
-        pass
+    variants = process_variant_file(args.vcf, args.annotated, 'Consensus')
+    failing_variants = process_variant_file(args.fail_vcf, args.annotated, 'Masked')
+
+    variants.extend(failing_variants)
 
     # Write outfile
     outfile = f'{args.sample}.consensus.tsv'
     if args.outfile:
         outfile = args.outfile
 
-    if variants != []:
-        write_outfile(outfile, variants)
-    else:
-        print("No Variants")
+    # Create empty file with correct headers if no variants
+    if variants == []:
+        base_cols = [
+            'chrom',
+            'pos',
+            'variant',
+            'consequence',
+            'ref',
+            'alt',
+            'qual',
+            'info',
+            'depth',
+            'vaf',
+            'tag',
+        ]
+        if not args.annotated:
+            base_cols = [col for col in base_cols if col not in ['variant', 'consequence']]
+
+        variants = [{key: '' for key in base_cols}]
+
+    write_outfile(outfile, variants)
 
 if __name__ == '__main__':
     main()

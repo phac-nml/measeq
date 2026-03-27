@@ -3,12 +3,33 @@
 Filter VCF Variants originally from https://github.com/artic-network/fieldbioinformatics/blob/master/artic/vcf_filter.py
 
 Notable Changes:
-  - Added a custom parameter to adjust the QUAL threshold with it set at 8 by default.
-  - Added a filter for RefCall bases.
+  - Added a custom parameter to adjust the QUAL threshold with it set at 8 by default
+  - Added a filter for RefCall bases
+  - Added a filter for LowQual sites
+  - Depth based kick out for overlapping areas where there is a variant that doesn't make sense
 '''
 
 from cyvcf2 import VCF, Writer
 from collections import defaultdict
+import subprocess
+
+def create_depth_map(bam):
+    """
+    Creating a depth map with samtools structured based on Genomic position as {Pos: Depth}
+    """
+    depth_map = {}
+    with subprocess.Popen(
+        ['samtools', 'depth', '-a', bam],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        text=True,
+        bufsize=1
+    ) as process:
+        for line in process.stdout:
+            # chrom - pos - depth
+            pos_data = line.strip().split('\t')
+            depth_map[int(pos_data[1])] = int(pos_data[2])
+    return depth_map
 
 def in_frame(v):
     if len(v.ALT) > 1:
@@ -24,12 +45,12 @@ def in_frame(v):
     return False
 
 class Clair3Filter:
-    def __init__(self, no_frameshifts, min_depth, min_variant_quality):
+    def __init__(self, no_frameshifts, min_depth, min_variant_quality, min_allele_frequency):
         self.no_frameshifts = no_frameshifts
         self.min_depth = min_depth
         self.min_variant_quality = min_variant_quality
         self.min_frameshift_quality = 30
-        self.min_allele_frequency = 0.60
+        self.min_allele_frequency = min_allele_frequency
 
     def check_filter(self, v):
         qual = v.QUAL
@@ -73,7 +94,9 @@ def go(args):
     vcf_writer.write_header()
     vcf_writer_filtered = Writer(args.output_fail_vcf, vcf_reader, "w")
     vcf_writer_filtered.write_header()
-    filter = Clair3Filter(args.no_frameshifts, args.min_depth, args.min_qual)
+    filter = Clair3Filter(args.no_frameshifts, args.min_depth, args.min_qual, args.min_allele_freq)
+
+    depth_map = create_depth_map(args.inputbam)
 
     variants = [v for v in vcf_reader]
 
@@ -84,10 +107,17 @@ def go(args):
 
     for v in variants:
 
-        # quick pre-filter to remove rubbish that we don't want adding to the mask
+        # Quick pre-filter to remove rubbish that we don't want adding to the mask
         try:
-            if v.INFO["DP"] <= 1:
+            if v.format("DP")[0][0] <= 1:
                 print(f"Suppress variant {v.POS} due to low depth")
+                continue
+
+            # If there is a massive depth difference in an amplicon overlap area ignore
+            #  We'd expect ~50/50 for an overlap with normalization so 5% would be very low
+            #  And a real variant would be in both pools so if one was lower than the other that'd add to it here
+            if v.format("DP")[0][0] < args.min_threshold_depth * depth_map[v.POS]:
+                print(f"Supress variant at {v.POS} due to depth difference of {v.format('DP')[0][0]} to overall site depth {depth_map[v.POS]}")
                 continue
 
         except KeyError:
@@ -95,7 +125,13 @@ def go(args):
 
         # Completely skip RefCalls
         if v.ALT == []:
-            print(f"skipping RefCall at {v.POS}")
+            print(f"Skipping RefCall at {v.POS}")
+            continue
+        # Completely skip LowQual (sub 2 quality)
+        #  As usually there is no evidence that these are mixed sites
+        #  which is what masking is for
+        if v.QUAL < 2:
+            print(f"Skipping LowQual of {v.QUAL} at {v.POS}")
             continue
 
         # now apply the filter to send variants to PASS or FAIL file
@@ -114,7 +150,7 @@ def go(args):
                 vcf_writer_filtered.write_record(v)
 
             else:
-                print("Suppress variant %s\n" % (v.POS))
+                print("Suppress variant %s" % (v.POS))
 
 
 def main():
@@ -123,8 +159,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--no-frameshifts", action="store_true")
     parser.add_argument("--min-depth", type=int)
-    parser.add_argument('--min-qual', type=int, default=8)
+    parser.add_argument("--min-qual", type=int, default=8)
+    parser.add_argument("--min-allele-freq", type=float, default=0.60)
+    parser.add_argument("--min-threshold-depth", type=float, default=0.05)
     parser.add_argument("inputvcf")
+    parser.add_argument("inputbam")
     parser.add_argument("output_pass_vcf")
     parser.add_argument("output_fail_vcf")
 

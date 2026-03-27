@@ -254,10 +254,10 @@ workflow NANOPORE_CONSENSUS {
     }
 
     //
-    // MODULE: Filter VCF based on input parameters
+    // MODULE: Filter VCF variants based on input parameters
     //
     CUSTOM_VCF_FILTER(
-        ch_vcf
+        ch_vcf.join(ch_bam, by:0)
     )
     ch_versions = ch_versions.mix(CUSTOM_VCF_FILTER.out.versions.first())
     ch_fail_vcf = CUSTOM_VCF_FILTER.out.fail_vcf
@@ -332,6 +332,7 @@ workflow NANOPORE_CONSENSUS {
     //
     VCF_TO_TSV(
         BCFTOOLS_NORM.out.vcf
+            .join(ch_fail_vcf, by: [0])
     )
 
     emit:

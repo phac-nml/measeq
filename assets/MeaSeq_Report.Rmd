@@ -18,6 +18,8 @@ params:
   revision: ""
   nf_version: ""
   overall_qc: ""
+  variant_threshold: 0.75
+  platform: ""
   name: ""
   email: ""
   phone: ""
@@ -252,6 +254,14 @@ failed_samples <- summary_df %>%
 # Determine if we have DSIds to summarize
 run_dsid <- any(!is.na(summary_df$matched_dsid) & nzchar(summary_df$matched_dsid))
 
+# Based on platform set IUPAC or Masked sites column
+iupac_final_col <- "# IUPACs"
+iupac_initial_col <- "num_iupac"
+if (params$platform == 'nanopore') {
+  iupac_final_col <- "# Masked"
+  iupac_initial_col <- "num_masked"
+}
+
 # Rename wanted final columns
 #  Select them later for different tables
 summary_df <- summary_df %>%
@@ -268,7 +278,7 @@ summary_df <- summary_df %>%
     "Median Depth" = median_sequencing_depth,
     "Total Variants" = total_variants,
     "# SNPs" = num_snps,
-    "# IUPACs" = num_iupac,
+    !!iupac_final_col := all_of(iupac_initial_col),
     "# Deletions" = num_deletions,
     "# Deletion Sites" = num_deletion_sites,
     "# Insertions" = num_insertions,
@@ -472,6 +482,7 @@ metrics_df <- select(summary_df,
   `Mean Depth`,
   `Median Depth`,
   `Total Variants`,
+  !!iupac_final_col,
   `Genome Completeness (%)`,
   `Genome Length`,
   `N450 Status`,
@@ -574,6 +585,7 @@ for ( sample_v in samples ) {
   assign("sample_df", sample_df, subpage_env)
   assign("sample", sample_v, subpage_env)
   assign("params", params, subpage_env)
+  assign("iupac_final_col", iupac_final_col, subpage_env)
 
   # Knit sample subpage using the subpage_env and add result to out vector
   subpages = c(subpages, knitr::knit_child('subpage_sample.Rmd', envir = subpage_env))

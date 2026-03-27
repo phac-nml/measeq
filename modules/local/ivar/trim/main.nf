@@ -22,9 +22,11 @@ process IVAR_TRIM {
     task.ext.when == null || task.ext.when
 
     script:
+    def args = task.ext.args ?: ""
     """
     ivar trim \\
-        -q 20 \\
+        $args \\
+        -q 25 \\
         -e \\
         -m ${params.ivar_trim_min_read_length} \\
         -i $bam \\
