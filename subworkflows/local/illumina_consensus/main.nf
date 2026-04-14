@@ -14,6 +14,8 @@ include { IVAR_TRIM                 } from '../../../modules/local/ivar/trim/mai
 // Variant Calling and Consensus Generation
 include { BWAMEM2_INDEX             } from '../../../modules/nf-core/bwamem2/index/main'
 include { BWAMEM2_MEM               } from '../../../modules/nf-core/bwamem2/mem/main'
+include { BOWTIE2_BUILD             } from '../../../modules/nf-core/bowtie2/build/main'
+include { BOWTIE2_ALIGN             } from '../../../modules/nf-core/bowtie2/align/main'
 include { SAMTOOLS_SORT             } from '../../../modules/nf-core/samtools/sort/main'
 include { BAM_MARKDUPLICATES_PICARD } from '../../../subworkflows/nf-core/bam_markduplicates_picard/main'
 include { BAM_STATS_SAMTOOLS        } from '../../../subworkflows/nf-core/bam_stats_samtools/main'
@@ -54,15 +56,26 @@ workflow ILLUMINA_CONSENSUS {
     ch_versions = ch_versions.mix(FASTP.out.versions)
 
     //
-    // MODULE: Create BWAMEM index of reference
+    // MODULE: Create index of reference
     //
-    BWAMEM2_INDEX(
-        ch_reference
-    )
-    ch_versions = ch_versions.mix(BWAMEM2_INDEX.out.versions)
+    if (params.align_bowtie2) {
+        // Run BOWTIE2 Module
+        BOWTIE2_BUILD(
+            ch_reference
+        )
+        ch_index = BOWTIE2_BUILD.out.index
+        ch_versions = ch_versions.mix(BOWTIE2_BUILD.out.versions)
+    } else {
+        // Run BWAMEM2 Module
+        BWAMEM2_INDEX(
+            ch_reference
+        )
+        ch_index = BWAMEM2_INDEX.out.index
+        ch_versions = ch_versions.mix(BWAMEM2_INDEX.out.versions)
+    }
 
     //
-    // MODULE: Run BWAMEM to map to reference
+    // MODULE: Run BWAMEM/BOWTIE2 to map to reference
     //  Using modules.config to filter reads with view
     //
     // Prepare Input
@@ -73,37 +86,49 @@ workflow ILLUMINA_CONSENSUS {
     ch_ref_with_index = ch_reference
         .map { meta_ref, fasta -> tuple(meta_ref.id, meta_ref, fasta) }
         .join(
-            BWAMEM2_INDEX.out.index.map { meta_ref, index_dir -> tuple(meta_ref.id, index_dir) }
+            ch_index.map { meta_ref, index_dir -> tuple(meta_ref.id, index_dir) }
         )
         .map { ref_id, meta_ref, fasta, index_dir ->
             tuple(ref_id, meta_ref, fasta, index_dir)
         }
 
-    // Create BWAMEM2 expected input
-    ch_bwa_mem_inputs = ch_reads_by_ref
+    // Create expected input
+    ch_aligner_inputs = ch_reads_by_ref
         .combine(ch_ref_with_index, by: 0)
-        .multiMap { ref_id, meta, reads, meta_ref, fasta, index_dir ->
+        .multiMap { _ref_id, meta, reads, meta_ref, fasta, index_dir ->
             reads: tuple(meta, reads)
             index: tuple(meta_ref, index_dir)
             reference: tuple(meta_ref, fasta)
-            mode : ''
         }
 
-
-    // Run Module
-    BWAMEM2_MEM(
-        ch_bwa_mem_inputs.reads,
-        ch_bwa_mem_inputs.index,
-        ch_bwa_mem_inputs.reference,
-        ch_bwa_mem_inputs.mode
-    )
-    ch_versions = ch_versions.mix(BWAMEM2_MEM.out.versions)
+    if (params.align_bowtie2){
+        // Run Module
+        BOWTIE2_ALIGN(
+            ch_aligner_inputs.reads,
+            ch_aligner_inputs.index,
+            ch_aligner_inputs.reference,
+            params.save_unaligned,
+            params.sort_bam
+        )
+        ch_aligned_bam = BOWTIE2_ALIGN.out.bam
+        ch_versions = ch_versions.mix(BOWTIE2_ALIGN.out.versions)
+    } else {
+        // Run Module
+        BWAMEM2_MEM(
+            ch_aligner_inputs.reads,
+            ch_aligner_inputs.index,
+            ch_aligner_inputs.reference,
+            params.sort_bam
+        )
+        ch_aligned_bam = BWAMEM2_MEM.out.bam
+        ch_versions = ch_versions.mix(BWAMEM2_MEM.out.versions)
+    }
 
     //
-    // MODULE: Sort and index output bam file from BWA
+    // MODULE: Sort and index output bam file from BWA/BOWTIE2
     //
     // Prepare Inputs
-    ch_samtools_sort_input = BWAMEM2_MEM.out.bam
+    ch_samtools_sort_input = ch_aligned_bam
         .map { meta, bam -> tuple(meta.ref_id, meta, bam) }
         .combine(
             ch_reference.map { meta_ref, fasta -> tuple(meta_ref.id, meta_ref, fasta) }, by: [0]
