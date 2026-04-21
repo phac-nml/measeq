@@ -141,18 +141,6 @@
                     "type": "boolean",
                     "description": "Run illumina subworkflow with bowtie2 aligner",
                     "default": false
-                },
-                "save_unaligned": {
-                    "type": "boolean",
-                    "description": "Save unaligned reads in FastQ format from Bowtie 2 to the results directory",
-                    "default": false,
-                    "hidden": true
-                },
-                "sort_bam": {
-                    "type": "boolean",
-                    "description": "Use sort instead of view for the samtools after the alignment",
-                    "default": false,
-                    "hidden": true
                 }
             }
         },

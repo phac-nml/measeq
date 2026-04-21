@@ -107,8 +107,8 @@ workflow ILLUMINA_CONSENSUS {
             ch_aligner_inputs.reads,
             ch_aligner_inputs.index,
             ch_aligner_inputs.reference,
-            params.save_unaligned,
-            params.sort_bam
+            '',
+            ''
         )
         ch_aligned_bam = BOWTIE2_ALIGN.out.bam
         ch_versions = ch_versions.mix(BOWTIE2_ALIGN.out.versions)
@@ -118,7 +118,7 @@ workflow ILLUMINA_CONSENSUS {
             ch_aligner_inputs.reads,
             ch_aligner_inputs.index,
             ch_aligner_inputs.reference,
-            params.sort_bam
+            ''
         )
         ch_aligned_bam = BWAMEM2_MEM.out.bam
         ch_versions = ch_versions.mix(BWAMEM2_MEM.out.versions)
