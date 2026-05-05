@@ -3,6 +3,24 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.2.0] - 2026-05-06
+
+Update to enable users to map reads with Bowtie 2 instead of BWAMem as an optional parameter and use Artic primers as default.
+
+### `Added`
+
+- Illumina reads mapping with Bowtie 2 as an option in response to (#37). [PR #39](https://github.com/phac-nml/measeq/pull/39)
+
+  - `align_bowtie2` added as an optional parameter to map illumina data with Bowtie 2 instead of BWAMem2.
+
+- Artic primers (https://doi.org/10.1101/2024.12.20.629611) for MeV were added as a profile. [PR #39](https://github.com/phac-nml/measeq/pull/39)
+
+  - This allows running the pipeline with mapped Artic primers without having to specify them (#38).
+  - To run the pipeline with this profile, use `nextflow run phac-nml/measeq -profile artic_primers,<docker/singularity>` with the other normal parameters you would use.
+
+> [!NOTE]
+> If you use `-profile artic_primers`, then there is no need to use `--amplicon` as it is automatically passed.
+
 ## [v1.1.0] - 2026-03-27
 
 Update focusing on fixing small inconsistencies between final reports and output consensus sequences along with a few small bugfixes and exposing some more parameter options available to the user
@@ -285,6 +303,7 @@ Small addition of Picard MarkDuplicates workflow along with some new tests
 
 - MeaSeq pipeline created and initial code added
 
+[v1.2.0]: https://github.com/phac-nml/measeq/releases/tag/1.2.0
 [v1.1.0]: https://github.com/phac-nml/measeq/releases/tag/1.1.0
 [v1.0.1]: https://github.com/phac-nml/measeq/releases/tag/1.0.1
 [v1.0.0]: https://github.com/phac-nml/measeq/releases/tag/1.0.0
