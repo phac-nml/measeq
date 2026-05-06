@@ -9,13 +9,13 @@ Update to enable users to map reads with Bowtie 2 instead of BWAMem as an option
 
 ### `Added`
 
-- Illumina reads mapping with Bowtie 2 as an option in response to [issue #37](https://github.com/phac-nml/measeq/issues/37). [PR #39](https://github.com/phac-nml/measeq/pull/39)
+- Illumina reads mapping with Bowtie 2 as an alterative (instead of BWAMem 2) in response to [issue #37](https://github.com/phac-nml/measeq/issues/37). [PR #39](https://github.com/phac-nml/measeq/pull/39)
 
   - `align_bowtie2` added as an optional parameter to map illumina data with Bowtie 2 instead of BWAMem2.
 
 - [Artic primers](https://doi.org/10.1101/2024.12.20.629611) for MeV were added as a profile. [PR #39](https://github.com/phac-nml/measeq/pull/39)
 
-  - This allows running the pipeline with mapped Artic primers without having to specify them [issue #38](https://github.com/phac-nml/measeq/issues/38).
+  - This allows running the pipeline with the Artic primers mapped to the pipeline's preset references (D8, B3, and A genotypes) [issue #38](https://github.com/phac-nml/measeq/issues/38).
   - To run the pipeline with this profile, use `nextflow run phac-nml/measeq -profile artic_primers,<docker/singularity>` with the other normal parameters you would use.
 
 > [!NOTE]
