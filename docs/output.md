@@ -28,6 +28,7 @@ The pipeline is built using Nextflow and processes data using the following step
   - [FastQC](#fastqc) - Untrimmed read QC plots
   - [Fastp](#fastp) - Trim paired-end illumina reads
   - [BWAMem2](#bwamem2) - Map to the provided measles reference
+  - [Bowtie 2](#bowtie2) - Optional: Align reads with Bowtie 2 instead of BWAMem2
   - [iVar Trim](#ivar-trim) - Amplicon only: Trim the BAM file by primer position
   - [Picard MarkDuplicates](#picard-markduplicates) - Optional: Remove optical duplicate reads from BAM file
   - [Freebayes](#freebayes) - Call candidate variants from the BAM file
@@ -173,12 +174,26 @@ Using the N450 dataset, the input reference is typed so that the N450 region can
 
 - `bam/bwamem/`
   - `<SAMPLE>.sorted.bam`: Coordinate sorted BAM file containing read alignment information.
-  - `<SAMPLE>.sorted.bam.bai`: Index of Coordinate sorted BAM file containing read alignment information.
+  - `<SAMPLE>.sorted.bam.bai`: Index of coordinate sorted BAM file containing read alignment information.
 - `reference/bwamem2/`: Directory containing the index files for the reference genome
 
 </details>
 
 [BWA-Mem2](https://github.com/bwa-mem2/bwa-mem2) is a tool used to align the input fastq reads to the reference sequence. The output alignments are sorted and indexed with samtools to be used for downstream variant calling and other QC information.
+
+#### Bowtie 2
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `bam/bowtie2/`
+  - `<SAMPLE>.sorted.bam`: Coordinate sorted BAM file containing read alignment information.
+  - `<SAMPLE>.sorted.bam.bai`: Index of coordinate sorted BAM file containing read alignment information.
+- `reference/bowtie2/`: Directory containing the index files for the reference genome
+
+</details>
+
+[Bowtie 2](https://github.com/BenLangmead/bowtie2) is a tool used to align the input fastq reads to the reference sequence. The output alignments are sorted and indexed with samtools to be used for downstream variant calling and other QC information.
 
 #### iVar Trim
 

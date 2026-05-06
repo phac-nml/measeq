@@ -13,6 +13,7 @@ null/
 # Builds
 build/
 *.egg-info/
+!modules/**/build/
 
 # Pesky vscode
 .vscode/

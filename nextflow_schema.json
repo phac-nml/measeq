@@ -1,10 +1,10 @@
 {
-    "$schema": "https://json-schema.org/draft-07/schema",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://raw.githubusercontent.com/phac-nml/measeq/main/nextflow_schema.json",
     "title": "phac-nml/measeq pipeline parameters",
     "description": "Measles sequencing and analysis",
     "type": "object",
-    "definitions": {
+    "$defs": {
         "input_output_options": {
             "title": "Input/output options",
             "type": "object",
@@ -136,6 +136,11 @@
                     "default": 20,
                     "minimum": 0,
                     "fa_icon": "far fa-minus-square"
+                },
+                "align_bowtie2": {
+                    "type": "boolean",
+                    "description": "Run illumina subworkflow with bowtie2 aligner instead of the default bwamem2 aligner",
+                    "default": false
                 }
             }
         },
@@ -774,34 +779,34 @@
     },
     "allOf": [
         {
-            "$ref": "#/definitions/input_output_options"
+            "$ref": "#/$defs/input_output_options"
         },
         {
-            "$ref": "#/definitions/required_options"
+            "$ref": "#/$defs/required_options"
         },
         {
-            "$ref": "#/definitions/amplicon_options"
+            "$ref": "#/$defs/amplicon_options"
         },
         {
-            "$ref": "#/definitions/illumina_options"
+            "$ref": "#/$defs/illumina_options"
         },
         {
-            "$ref": "#/definitions/nanopore_options"
+            "$ref": "#/$defs/nanopore_options"
         },
         {
-            "$ref": "#/definitions/analysis_options"
+            "$ref": "#/$defs/analysis_options"
         },
         {
-            "$ref": "#/definitions/nextclade_options"
+            "$ref": "#/$defs/nextclade_options"
         },
         {
-            "$ref": "#/definitions/generic_options"
+            "$ref": "#/$defs/generic_options"
         },
         {
-            "$ref": "#/definitions/contact_options"
+            "$ref": "#/$defs/contact_options"
         },
         {
-            "$ref": "#/definitions/reference_options"
+            "$ref": "#/$defs/reference_options"
         }
     ]
 }
