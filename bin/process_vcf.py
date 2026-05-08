@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # Written by @jts from https://github.com/jts/ncov2019-artic-nf/blob/be26baedcc6876a798a599071bb25e0973261861/bin/process_gvcf.py
 
-# Adjustments made such that were focused on just the mutations and not the GVCF info
-#  Along with that, added in genotype to allow new versions of bcftools consensus to work
-#  And adjusting how Del+Snp complex sites are handled
+# Adjustments made such that were focused on just the mutations and not the GVCF info (that caused a rare error in the measles genome)
+#  Along with that, added in genotype to allow new versions of bcftools consensus to work, adjusted to work on multiple
+#  Alt alleles above the minimum threshold and adjusting how Del+Snp complex sites are handled
 
 import argparse
 import pysam
@@ -152,7 +152,7 @@ def get_base_code(base_dict, upper_ambiguity):
         return significant_bases.pop()
 
     # Look up the IUPAC code for the set of significant bases
-    return iupac_map.get(frozenset(significant_bases), 'N')
+    return iupac_map.get(frozenset(significant_bases), 'N'), frozenset(significant_bases)
 
 def main():
     '''Main entry point'''
@@ -160,31 +160,31 @@ def main():
     parser = argparse.ArgumentParser(description=description)
 
     parser.add_argument('-v', '--variants-output', required=True,
-            help=f"The output file name for variants (VCF records)\n")
+            help="The output file name for variants (VCF records)\n")
 
     parser.add_argument('-c', '--consensus-sites-output', required=True,
-            help=f"The output file name for variants that will be applied to generate the consensus sequence\n")
+            help="The output file name for variants that will be applied to generate the consensus sequence\n")
 
     parser.add_argument('-t', '--tsv-sites-output', required=True,
-            help=f"The output file name for consensus variants that is formatted as a TSV file for reporting later\n")
+            help="The output file name for consensus variants that is formatted as a TSV file for reporting later\n")
 
     parser.add_argument('-d', '--min-depth', type=int, default=10,
-            help=f"Minimum depth to call a variant")
+            help="Minimum depth to call a variant")
 
     parser.add_argument('-l', '--lower-ambiguity-frequency', type=float, default=0.25,
-            help=f"Variants with frequency less than -l will be discarded")
+            help="Variants with frequency less than -l will be discarded")
 
     parser.add_argument('-u', '--upper-ambiguity-frequency', type=float, default=0.75,
-            help=f"Substitution variants with frequency less than -u will be encoded with IUPAC ambiguity codes")
+            help="Substitution variants with frequency less than -u will be encoded with IUPAC ambiguity codes")
 
     parser.add_argument('-m', '--minimum-indel-threshold', type=float, default=0.60,
-            help=f"Indel variants with frequency less than the -m threshold will be skipped")
+            help="Indel variants with frequency less than the -m threshold will be skipped")
 
     parser.add_argument('-q', '--min-quality', type=int, default=20,
-            help=f"Minimum quality to call a variant")
+            help="Minimum quality to call a variant")
 
     parser.add_argument('-n', '--no-frameshifts', action="store_true",
-            help=f"Skip indel mutations that are not divisible by 3")
+            help="Skip indel mutations that are not divisible by 3")
 
     parser.add_argument('file', action='store', nargs=1)
 
@@ -300,11 +300,21 @@ def main():
                     tsv_tag = "Passing Indel"
             else:
                 # To capture IUPACs in reports easier have a separate column
-                iupac_base = get_base_code(out_tuple[1], args.upper_ambiguity_frequency)
+                iupac_base, fzset = get_base_code(out_tuple[1], args.upper_ambiguity_frequency)
 
                 # Genotype needs to be mixed to get an iupac if that is what the base should be
                 if iupac_base not in ['A', 'T', 'G', 'C']:
-                    genotype = (0,1)
+                    # Need to check if were a mix of the Ref/Alt or of two Alt's
+                    if out_r.ref in fzset:
+                        genotype = (0,1)
+                    else:
+                        genotype = (1,2) # Sets the correct IUPAC
+
+                        # For tracking only really - it makes the ambiguous vcf not properly made
+                        out_r.alts = fzset
+                        vaf = sum([v for k, v in out_tuple[1].items() if k in fzset])
+                        consensus_base = ", ".join(fzset)
+
                     # Record ambiguous SNPs in the consensus sequence with IUPAC codes
                     consensus_tag = "ambiguous"
                     tsv_tag = f"Ambiguous Base - {iupac_base}"
