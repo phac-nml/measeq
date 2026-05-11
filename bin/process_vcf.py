@@ -149,7 +149,7 @@ def get_base_code(base_dict, upper_ambiguity):
 
     # Consensus
     if len(significant_bases) == 1:
-        return significant_bases.pop()
+        return significant_bases.pop(), frozenset(significant_bases)
 
     # Look up the IUPAC code for the set of significant bases
     return iupac_map.get(frozenset(significant_bases), 'N'), frozenset(significant_bases)
