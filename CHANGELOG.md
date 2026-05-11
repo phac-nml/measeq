@@ -21,6 +21,10 @@ Update to enable users to map reads with Bowtie 2 instead of BWAMem as an option
 > [!NOTE]
 > If you use `-profile artic_primers`, then there is no need to use `--amplicon` as it is automatically passed.
 
+### `Fixes`
+
+- Ambiguous regions that don't include the Ref base are properly tracked now in the report and include both alts [PR #41](https://github.com/phac-nml/measeq/pull/41)
+
 ## [v1.1.0] - 2026-03-27
 
 Update focusing on fixing small inconsistencies between final reports and output consensus sequences along with a few small bugfixes and exposing some more parameter options available to the user
