@@ -11,6 +11,10 @@ import csv
 
 # Set for iupac assignment
 iupac_map = {
+    frozenset(['A']): 'A',
+    frozenset(['T']): 'T',
+    frozenset(['C']): 'C',
+    frozenset(['G']): 'G',
     frozenset(['A', 'C']): 'M',
     frozenset(['A', 'G']): 'R',
     frozenset(['A', 'T']): 'W',
@@ -147,11 +151,7 @@ def get_base_code(base_dict, upper_ambiguity):
     threshold = 1 - upper_ambiguity
     significant_bases = {k for k, v in base_dict.items() if v >= threshold}
 
-    # Consensus
-    if len(significant_bases) == 1:
-        return significant_bases.pop(), frozenset(significant_bases)
-
-    # Look up the IUPAC code for the set of significant bases
+    # Look up the Consensus or IUPAC code for the set of significant bases
     return iupac_map.get(frozenset(significant_bases), 'N'), frozenset(significant_bases)
 
 def main():
