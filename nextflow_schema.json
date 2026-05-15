@@ -199,6 +199,13 @@
                     "maximum": 1,
                     "description": "Minimum alt allele frequency to pass a clair3 variant"
                 },
+                "min_mask_freq_c3": {
+                    "type": "number",
+                    "default": 0.3,
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Minimum alt allele frequency to mask a variant as an N in the final consensus sequence"
+                },
                 "min_site_threshold_c3": {
                     "type": "number",
                     "default": 0.05,

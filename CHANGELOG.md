@@ -3,7 +3,7 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v1.2.0] - 2026-05-12
+## [v1.2.0] - 2026-05-15
 
 Update to enable users to map reads with Bowtie 2 instead of BWAMem as an optional parameter and use Artic primers as default.
 
@@ -17,6 +17,11 @@ Update to enable users to map reads with Bowtie 2 instead of BWAMem as an option
 
   - This allows running the pipeline with the Artic primers mapped to the pipeline's preset references (D8, B3, and A genotypes) [issue #38](https://github.com/phac-nml/measeq/issues/38).
   - To run the pipeline with this profile, use `nextflow run phac-nml/measeq -profile artic_primers,<docker/singularity>` with the other normal parameters you would use.
+
+- New `min_mask_freq_c3` parameter for nanopore data to help better control when sites are masked as Ns in more noisy regions/datasets [PR #42](https://github.com/phac-nml/measeq/pull/42)
+  - Default is `0.30`
+  - To help allow adjustments to the acceptable amount of site variation before an N is used to mask it
+    - So now by default a call with `0.15` alt frequeny and a quality score of 3 would NOT be N masked when before it was
 
 > [!NOTE]
 > If you use `-profile artic_primers`, then there is no need to use `--amplicon` as it is automatically passed.
