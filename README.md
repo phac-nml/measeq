@@ -22,16 +22,24 @@
 - [Troubleshooting](#troubleshooting)
 - [Credits](#credits)
 - [Citations](#citations)
-- [Contributing](#legal)
+- [Contributing](#contributing)
 - [Legal](#legal)
 
 ## Current Updates
 
-### _2026-05-12_ Summary
+### _2026-05-20_ Summary
 
 Full release version 1.2.0! Pipeline supports equivalent Illumina and Nanopore workflows allowing whole genome or amplicon sequencing analysis. The MeaSeq workflow generates whole genome consensus sequences, N450 sequences and reporting information, DSId hashing and assigning, and a final QC report. It can be run with a single reference or with the genotyping predictions and a config setup containing a users preferred references.
 
 Changes in `v1.2.0` include the addition of [Bowtie 2](https://github.com/BenLangmead/bowtie2) as an alterative read mapping tool (instead of BWAMem 2) and support for the [Artic primers](https://www.biorxiv.org/content/10.1101/2024.12.20.629611v1) mapped to the pipeline's preset references (D8, B3, and A genotypes).
+
+#### Preprint
+
+If you find this pipeline useful, please cite our preprint as:
+
+> Evaluation of MeaSeq: comprehensive analysis and reporting of measles virus whole genome sequences.
+> Darian T Hole, Ahmed Abdalla, Vanessa Zubach, Molly Pratt, Stephanie Van Driel, Samar Ashfaq, Joanne Hiebert, Ana T Duggan
+> bioRxiv 2026.05.12.724559; doi: https://doi.org/10.64898/2026.05.12.724559
 
 #### Genotype Predictions
 
@@ -46,8 +54,6 @@ Changes in `v1.2.0` include the addition of [Bowtie 2](https://github.com/BenLan
 #### Future Direction and Support
 
 - Updating the final report and maintaining best practices/tool updates as they are released
-
-- Writing a quick summary paper of the process and uses for reporting
 
 - For IRIDA-Next, we're hoping to evaluate generic viral pipeline options (or create one) and merge in virus specific post-processing stages
   - So measeq post-processing would end up included there
@@ -158,9 +164,9 @@ Additional or local models can also be used, you just have to provide a path to 
 
 #### Variant Quality Filtering and Masking Mixed Sites
 
-In addition to calling variants with Clair3, the Nanopore pipeline will mask sites that are of lower quality (Default: 2 < QUAL < 7) or have an allele frequency below 60% with an N in the final consensus. These masked sites can be found in the final HTML report or under the `results/vcf/artic/<sample>.fail.vcf` file.
+In addition to calling variants with Clair3, the Nanopore pipeline will mask sites that are of lower quality (Default: 2 < QUAL < 7) or have a non-consensus level allele frequency (Default: 30% < AF < 60%) with an N in the final consensus. These masked sites can be found in the final HTML report or under the `results/vcf/artic/<sample>.fail.vcf` file.
 
-To adjust this behaviour, you can set the `--min_variant_qual_c3` and `--min_allele_freq_c3` parameters. Setting them both to 0 will essentially turn of variant filtering other than for indels and low depth sites
+To adjust this behaviour, you can set the `--min_variant_qual_c3`, `--min_allele_freq_c3`, and `--min_mask_freq_c3` parameters. Setting them all to 0 will essentially turn off variant filtering other than for indels and low depth sites and will then instead rely solely on clair3's calls.
 
 ### Reference Assignment
 

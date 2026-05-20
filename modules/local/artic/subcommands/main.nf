@@ -97,6 +97,7 @@ process CUSTOM_VCF_FILTER {
         --min-depth ${params.min_depth} \\
         --min-qual ${params.min_variant_qual_c3} \\
         --min-allele-freq ${params.min_allele_freq_c3} \\
+        --min-mask-freq ${params.min_mask_freq_c3} \\
         --min-threshold-depth ${params.min_site_threshold_c3} \\
         $vcf \\
         $bam \\

@@ -1576,7 +1576,7 @@ nextflow_pipeline {
             assert iridanext_metadata.sample2.median_sequencing_depth == "0.0"
             assert iridanext_metadata.sample2.total_variants == "4"
             assert iridanext_metadata.sample2.num_snps == "4"
-            assert iridanext_metadata.sample2.num_masked == "42"
+            assert iridanext_metadata.sample2.num_masked == "31"
             assert iridanext_metadata.sample2.genome_length == "15678"
             assert iridanext_metadata.sample2.divisible_by_6 == "PASS"
             assert iridanext_metadata.sample2.N450_completeness == "0.0"
