@@ -27,7 +27,7 @@
 
 ## Current Updates
 
-### _2026-05-15_ Summary
+### _2026-05-20_ Summary
 
 Full release version 1.2.0! Pipeline supports equivalent Illumina and Nanopore workflows allowing whole genome or amplicon sequencing analysis. The MeaSeq workflow generates whole genome consensus sequences, N450 sequences and reporting information, DSId hashing and assigning, and a final QC report. It can be run with a single reference or with the genotyping predictions and a config setup containing a users preferred references.
 

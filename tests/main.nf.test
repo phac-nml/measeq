@@ -1417,7 +1417,6 @@ nextflow_pipeline {
         tag "nanopore"
         tag "amplicon"
         tag "prediction"
-        tag "here"
 
         when {
             params {
