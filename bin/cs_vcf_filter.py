@@ -133,6 +133,11 @@ def go(args):
         if v.QUAL < 2:
             print(f"Skipping LowQual of {v.QUAL} at {v.POS}")
             continue
+        # Skip really low AF to help not get a lot of Ns with noisy data
+        allele_freq = v.format("AF")[0][0]
+        if allele_freq < args.min_mask_freq:
+            print(f"Skipping LowAF of {allele_freq} at {v.POS}")
+            continue
 
         # now apply the filter to send variants to PASS or FAIL file
         if filter.check_filter(v):
@@ -161,6 +166,7 @@ def main():
     parser.add_argument("--min-depth", type=int)
     parser.add_argument("--min-qual", type=int, default=8)
     parser.add_argument("--min-allele-freq", type=float, default=0.60)
+    parser.add_argument("--min-mask-freq", type=float, default=0.30)
     parser.add_argument("--min-threshold-depth", type=float, default=0.05)
     parser.add_argument("inputvcf")
     parser.add_argument("inputbam")

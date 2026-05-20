@@ -7,7 +7,7 @@
     IMPORT FUNCTIONS / MODULES / SUBWORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { validateParameters; paramsHelp; paramsSummaryLog; fromSamplesheet } from 'plugin/nf-validation'
+include { validateParameters; paramsSummaryLog; samplesheetToList } from 'plugin/nf-schema'
 include { completionSummary         } from '../../nf-core/utils_nfcore_pipeline'
 include { UTILS_NFCORE_PIPELINE     } from '../../nf-core/utils_nfcore_pipeline'
 include { UTILS_NEXTFLOW_PIPELINE   } from '../../nf-core/utils_nextflow_pipeline'
@@ -42,14 +42,6 @@ workflow PIPELINE_INITIALISATION {
     )
 
     //
-    // Help
-    //
-    if (params.help) {
-        log.info paramsHelp("nextflow run phac-nml/measeq -profile <profile> --input samplesheet.csv --platform <illumina|nanopore> --outdir <outdir>")
-        exit 0
-    }
-
-    //
     // Check config provided to the pipeline
     //
     UTILS_NFCORE_PIPELINE (
@@ -69,7 +61,7 @@ workflow PIPELINE_INITIALISATION {
     //
     def processedIDs = [] as Set
     ch_samplesheet = Channel
-        .fromSamplesheet("input")
+        .fromList(samplesheetToList(params.input, "assets/schema_input.json"))
         .map {
             meta, fastq_1, fastq_2 ->
                 // Meta ID assignment
