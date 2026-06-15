@@ -20,11 +20,11 @@ include { SAMTOOLS_SORT             } from '../../../modules/nf-core/samtools/so
 include { BAM_MARKDUPLICATES_PICARD } from '../../../subworkflows/nf-core/bam_markduplicates_picard/main'
 include { BAM_STATS_SAMTOOLS        } from '../../../subworkflows/nf-core/bam_stats_samtools/main'
 include { FREEBAYES                 } from '../../../modules/local/freebayes/main'
-include { PROCESS_VCF               } from '../../../modules/local/process_vcf/main'
-include { CUSTOM_MAKE_DEPTH_MASK    } from '../../../modules/local/artic/subcommands/main'
+include { PROCESS_ILLUMINA_VCF      } from '../../../modules/local/process_illumina_vcf/main'
+include { CUSTOM_MAKE_DEPTH_MASK    } from '../../../modules/local/artic/make_depth_mask/main'
 include { BCFTOOLS_CONSENSUS as BCFTOOLS_CONSENSUS_AMBIGUOUS } from '../../../modules/nf-core/bcftools/consensus/main'
 include { BCFTOOLS_CONSENSUS as BCFTOOLS_CONSENSUS_FINAL     } from '../../../modules/nf-core/bcftools/consensus/main'
-include { ADJUST_FASTA_HEADER       } from '../../../modules/local/artic/subcommands/main'
+include { ADJUST_FASTA_HEADER       } from '../../../modules/local/adjust_fasta_header/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -250,11 +250,11 @@ workflow ILLUMINA_CONSENSUS {
             }
 
     // Run Module
-    PROCESS_VCF(
+    PROCESS_ILLUMINA_VCF(
         ch_process_vcf_input.vcf,
         ch_process_vcf_input.reference
     )
-    ch_versions = ch_versions.mix(PROCESS_VCF.out.versions)
+    ch_versions = ch_versions.mix(PROCESS_ILLUMINA_VCF.out.versions)
 
     //
     // MODULE: Make a depth mask based on the minimum depth required to call a position
@@ -269,7 +269,7 @@ workflow ILLUMINA_CONSENSUS {
     // MODULE: Create intermediate fasta file with IUPACs for ambiguous positions from freebayes
     //
     // Prepare Input
-    ch_ambiguous_vcf_restructured = PROCESS_VCF.out.ambiguous_vcf
+    ch_ambiguous_vcf_restructured = PROCESS_ILLUMINA_VCF.out.ambiguous_vcf
             .map {meta, vcf_gz, tbi -> tuple(meta.ref_id, meta, vcf_gz, tbi) }
             .combine(ch_reference.map { meta_ref, fasta -> tuple(meta_ref.id, meta_ref, fasta) }, by: 0)
             .map { _ref_id, meta, vcf_gz, tbi, _meta_ref, fasta ->
@@ -286,7 +286,7 @@ workflow ILLUMINA_CONSENSUS {
     // MODULE: Create final consensus sequence with all variants
     //
     BCFTOOLS_CONSENSUS_FINAL(
-        PROCESS_VCF.out.consensus_vcf
+        PROCESS_ILLUMINA_VCF.out.consensus_vcf
             .join(BCFTOOLS_CONSENSUS_AMBIGUOUS.out.fasta, by: [0])
             .join(CUSTOM_MAKE_DEPTH_MASK.out.coverage_mask, by: [0])
     )
@@ -314,10 +314,10 @@ workflow ILLUMINA_CONSENSUS {
     ch_versions = ch_versions.mix(ADJUST_FASTA_HEADER.out.versions)
 
     emit:
-    fastp_json   = FASTP.out.json                       // channel: [ meta, *.json]
-    bam_bai      = ch_bam_bai                           // channel: [ meta, bam, bai ]
-    consensus    = ADJUST_FASTA_HEADER.out.consensus    // channel: [ meta, fasta ]
-    vcf          = PROCESS_VCF.out.total_vcf            // channel: [ meta, vcf, tbi ]
-    variants_tsv = PROCESS_VCF.out.variants_tsv         // channel: [ meta, *.tsv ]
-    versions     = ch_versions                          // channel: [ path(versions.yml) ]
+    fastp_json   = FASTP.out.json                        // channel: [ meta, *.json]
+    bam_bai      = ch_bam_bai                            // channel: [ meta, bam, bai ]
+    consensus    = ADJUST_FASTA_HEADER.out.consensus     // channel: [ meta, fasta ]
+    vcf          = PROCESS_ILLUMINA_VCF.out.total_vcf    // channel: [ meta, vcf, tbi ]
+    variants_tsv = PROCESS_ILLUMINA_VCF.out.variants_tsv // channel: [ meta, *.tsv ]
+    versions     = ch_versions                           // channel: [ path(versions.yml) ]
 }

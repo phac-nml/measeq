@@ -1,9 +1,11 @@
 #!/usr/bin/env python
-# Written by @jts from https://github.com/jts/ncov2019-artic-nf/blob/be26baedcc6876a798a599071bb25e0973261861/bin/process_gvcf.py
+'''
+Written by @jts from https://github.com/jts/ncov2019-artic-nf/blob/be26baedcc6876a798a599071bb25e0973261861/bin/process_gvcf.py
 
-# Adjustments made such that were focused on just the mutations and not the GVCF info (that caused a rare error in the measles genome)
-#  Along with that, added in genotype to allow new versions of bcftools consensus to work, adjusted to work on multiple
-#  Alt alleles above the minimum threshold and adjusting how Del+Snp complex sites are handled
+Adjustments made such that were focused on just the mutations and not the GVCF info (that caused a rare error in the measles genome)
+  Along with that, added in genotype to allow new versions of bcftools consensus to work, adjusted to work on multiple
+  Alt alleles above the minimum threshold and adjusting how Del+Snp complex sites are handled
+'''
 
 import argparse
 import pysam

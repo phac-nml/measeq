@@ -1,4 +1,4 @@
-process PROCESS_VCF {
+process PROCESS_ILLUMINA_VCF {
     label 'process_single'
     tag "${meta.id}"
 
@@ -8,8 +8,8 @@ process PROCESS_VCF {
     //  Notably adding in the genotype format as 1 for variants to work with newer bcftools, a slight qual filter, and tsv output to table later
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/artic:1.8.5--pyhdfd78af_0' :
-        'biocontainers/artic:1.8.5--pyhdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/artic:1.10.3--pyhdfd78af_0' :
+        'biocontainers/artic:1.10.3--pyhdfd78af_0' }"
 
     input:
     tuple val(meta), path(vcf)
@@ -29,7 +29,7 @@ process PROCESS_VCF {
     }
     """
     # Process the VCF
-    process_vcf.py \\
+    process_illumina_vcf.py \\
         -d ${params.min_depth} \\
         -l ${params.min_ambiguity_threshold} \\
         -u ${params.max_ambiguity_threshold} \\
@@ -64,7 +64,7 @@ process PROCESS_VCF {
     "${task.process}":
         bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
         python: \$(python --version | sed 's/Python //g')
-        process_vcf: 0.2.0
+        process_illumina_vcf: 0.3.0
     END_VERSIONS
     """
 
@@ -88,7 +88,7 @@ process PROCESS_VCF {
     "${task.process}":
         bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
         python: \$(python --version | sed 's/Python //g')
-        process_vcf: 0.2.0
+        process_illumina_vcf: 0.3.0
     END_VERSIONS
     """
 }

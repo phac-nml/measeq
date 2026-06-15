@@ -12,19 +12,19 @@ include { ARTIC_GET_MODELS        } from '../../../modules/local/artic/get_model
 include { NANOQ                   } from '../../../modules/nf-core/nanoq/main'
 include { MINIMAP2_ALIGN          } from '../../../modules/local/minimap2/main'
 // Amplicon Variant Calling
-include { ALIGN_TRIM              } from '../../../modules/local/align_trim/main'
+include { ALIGN_TRIM              } from '../../../modules/local/artic/align_trim/main'
 include { CLAIR3_POOL             } from '../../../modules/local/clair3/main'
-include { ARTIC_VCF_MERGE         } from '../../../modules/local/artic/subcommands/main'
-include { ARTIC_MAKE_DEPTH_MASK   } from '../../../modules/local/artic/subcommands/main'
+include { ARTIC_VCF_MERGE         } from '../../../modules/local/artic/vcf_merge/main'
+include { ARTIC_MAKE_DEPTH_MASK   } from '../../../modules/local/artic/make_depth_mask/main'
 // Non-Amplicon Variant Calling
 include { CLAIR3_NO_POOL          } from '../../../modules/local/clair3/main'
-include { CUSTOM_MAKE_DEPTH_MASK  } from '../../../modules/local/artic/subcommands/main'
+include { CUSTOM_MAKE_DEPTH_MASK  } from '../../../modules/local/artic/make_depth_mask/main'
 // Both Post Variant Calling
-include { CUSTOM_VCF_FILTER       } from '../../../modules/local/artic/subcommands/main'
-include { ARTIC_MASK              } from '../../../modules/local/artic/subcommands/main'
+include { PROCESS_NANOPORE_VCF    } from '../../../modules/local/artic/process_nanopore_vcf/main'
+include { ARTIC_MASK              } from '../../../modules/local/artic/mask/main'
 include { BCFTOOLS_NORM           } from '../../../modules/local/bcftools/norm/main'
 include { BCFTOOLS_CONSENSUS      } from '../../../modules/nf-core/bcftools/consensus/main'
-include { ADJUST_FASTA_HEADER     } from '../../../modules/local/artic/subcommands/main'
+include { ADJUST_FASTA_HEADER     } from '../../../modules/local/adjust_fasta_header/main'
 // For Final Reporting Only
 include { VCF_TO_TSV              } from '../../../modules/local/custom/vcf_to_tsv/main'
 
@@ -256,11 +256,11 @@ workflow NANOPORE_CONSENSUS {
     //
     // MODULE: Filter VCF variants based on input parameters
     //
-    CUSTOM_VCF_FILTER(
+    PROCESS_NANOPORE_VCF(
         ch_vcf.join(ch_bam, by:0)
     )
-    ch_versions = ch_versions.mix(CUSTOM_VCF_FILTER.out.versions.first())
-    ch_fail_vcf = CUSTOM_VCF_FILTER.out.fail_vcf
+    ch_versions = ch_versions.mix(PROCESS_NANOPORE_VCF.out.versions.first())
+    ch_fail_vcf = PROCESS_NANOPORE_VCF.out.fail_vcf
 
     //
     // MODULE: Mask failing regions
@@ -292,7 +292,7 @@ workflow NANOPORE_CONSENSUS {
     //
     BCFTOOLS_NORM(
         ARTIC_MASK.out.preconsensus
-            .join(CUSTOM_VCF_FILTER.out.pass_vcf, by: [0])
+            .join(PROCESS_NANOPORE_VCF.out.pass_vcf, by: [0])
     )
     ch_versions = ch_versions.mix(BCFTOOLS_NORM.out.versions.first())
 

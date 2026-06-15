@@ -3,6 +3,26 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.3.0] - 2026-06-xx
+
+Code cleanup, exposed nanopore frameshift quality parameter, artic version bump to `v1.10.3`, and clair3 version bump from `v1.2.0` to `v2.0.1`.
+
+Biggest note is that Clair3 `v1.2.0` models have to be converted to the new format. The update to `artic` will pull these new versions by default if you are providing a `--model <model name>` name on the command line. If you are using a local model you'll have to grab the new version. More info is available in [clair3's docs](https://github.com/HKU-BAL/clair3#pre-trained-models). No consensus variant output changes noted in the test datasets with this update.
+
+### `Added`
+
+- `` arg to adjust the minimum cutoff for a frameshift variant to be called for nanopore data
+
+### `Adjusted`
+
+- Renamed the VCF parsing scripts to make them easier to distinguish [PR #43](https://github.com/phac-nml/measeq/pull/43)
+  - process_nanopore_vcf.py
+  - process_illumina_vcf.py
+
+- Split out the `artic` subcommands into their own folders to better match the nextflow best practices
+- Artic updated to `v1.10.3` in all spots that were `v1.8.5`
+- Clair3 updated to `v2.0.1`
+
 ## [v1.2.0] - 2026-05-20
 
 Update to enable users to map reads with Bowtie 2 instead of BWAMem as an optional parameter and use Artic primers as default. Add in parameter to better control ONT variant masking

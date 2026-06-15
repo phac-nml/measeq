@@ -7,8 +7,8 @@ process MAKE_SAMPLE_QC_CSV {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/artic:1.8.5--pyhdfd78af_0' :
-        'biocontainers/artic:1.8.5--pyhdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/artic:1.10.3--pyhdfd78af_0' :
+        'biocontainers/artic:1.10.3--pyhdfd78af_0' }"
 
     input:
     tuple val(meta), path(bam), path(bai), path(consensus), path(consensus_n450), path(depth_bed),
