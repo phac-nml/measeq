@@ -192,6 +192,12 @@
                     "minimum": 0,
                     "description": "Minimum variant quality to pass clair3 filters"
                 },
+                "min_frameshift_qual_c3": {
+                    "type": "integer",
+                    "default": 30,
+                    "minimum": 0,
+                    "description": "Minimum variant quality to pass clair3 filters"
+                },
                 "min_allele_freq_c3": {
                     "type": "number",
                     "default": 0.6,

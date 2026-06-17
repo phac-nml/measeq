@@ -11,17 +11,29 @@ Biggest note is that Clair3 `v1.2.0` models have to be converted to the new form
 
 ### `Added`
 
-- `` arg to adjust the minimum cutoff for a frameshift variant to be called for nanopore data
+- `--min_frameshift_qual_c3` arg to adjust the minimum cutoff for a frameshift variant to be called for nanopore data [PR #43](https://github.com/phac-nml/measeq/pull/43)
+  - Default is the same at `30`
 
 ### `Adjusted`
 
 - Renamed the VCF parsing scripts to make them easier to distinguish [PR #43](https://github.com/phac-nml/measeq/pull/43)
+
   - process_nanopore_vcf.py
   - process_illumina_vcf.py
 
-- Split out the `artic` subcommands into their own folders to better match the nextflow best practices
-- Artic updated to `v1.10.3` in all spots that were `v1.8.5`
-- Clair3 updated to `v2.0.1`
+- Illumina VCF parsing adjusted to better handle complex sites where an INDEL and a SNP are called with the SNP being the final call [PR #43](https://github.com/phac-nml/measeq/pull/43)
+  - No consensus output differences
+  - Adjusts the calculation for mixed sites so it rem
+  - Adjusts the need to split ambiguous sites from consensus sites in VCF outputs for downstream processing
+
+- Split out the `artic` subcommands into their own folders to better match the nextflow best practices [PR #43](https://github.com/phac-nml/measeq/pull/43)
+- Artic updated to `v1.10.3` in all spots that were `v1.8.5` [PR #43](https://github.com/phac-nml/measeq/pull/43)
+- Clair3 updated to `v2.0.1` [PR #43](https://github.com/phac-nml/measeq/pull/43)
+
+## Removed
+
+- Intermediate BCFTools consensus step in illumina workflow that applied ambiguous sites [PR #43](https://github.com/phac-nml/measeq/pull/43)
+  - Ambiguous sites now have correct genotypes associated and can just run the command once
 
 ## [v1.2.0] - 2026-05-20
 

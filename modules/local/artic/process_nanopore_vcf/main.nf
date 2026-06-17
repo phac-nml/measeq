@@ -1,4 +1,4 @@
-/* 
+/*
     Custom previously to add in command line args for users to adjust in the pipeline
         Slight changes from artic where we've added:
             - A total depth check for each variant
@@ -33,6 +33,7 @@ process PROCESS_NANOPORE_VCF {
         $frameshiftArg \\
         --min-depth ${params.min_depth} \\
         --min-qual ${params.min_variant_qual_c3} \\
+        --min-frameshift-qual ${params.min_frameshift_qual_c3} \\
         --min-allele-freq ${params.min_allele_freq_c3} \\
         --min-mask-freq ${params.min_mask_freq_c3} \\
         --min-threshold-depth ${params.min_site_threshold_c3} \\

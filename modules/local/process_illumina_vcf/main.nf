@@ -17,8 +17,6 @@ process PROCESS_ILLUMINA_VCF {
 
     output:
     tuple val(meta), path("${meta.id}.consensus.norm.vcf.gz"), path("${meta.id}.consensus.norm.vcf.gz.tbi"), emit: consensus_vcf
-    tuple val(meta), path("${meta.id}.ambiguous.norm.vcf.gz"), path("${meta.id}.ambiguous.norm.vcf.gz.tbi"), emit: ambiguous_vcf
-    tuple val(meta), path("${meta.id}.processed.norm.vcf.gz"), path("${meta.id}.processed.norm.vcf.gz.tbi"), emit: total_vcf
     tuple val(meta), path("${meta.id}.consensus.tsv"), emit: variants_tsv
     path "versions.yml", emit: versions
 
@@ -35,7 +33,7 @@ process PROCESS_ILLUMINA_VCF {
         -u ${params.max_ambiguity_threshold} \\
         -m ${params.min_indel_threshold} \\
         -q ${params.min_variant_qual_freebayes} \\
-        -c ${meta.id}.processed.vcf \\
+        -c ${meta.id}.consensus.vcf \\
         -v ${meta.id}.variants.vcf \\
         -t ${meta.id}.consensus.tsv \\
         $frameshiftArg \\
@@ -44,20 +42,12 @@ process PROCESS_ILLUMINA_VCF {
     # Normalize variant records into canonical VCF representation
     bcftools norm \\
         -f $reference \\
-        ${meta.id}.processed.vcf \\
-        > ${meta.id}.processed.norm.vcf
-
-    for vt in "ambiguous" "consensus"; do
-        cat ${meta.id}.processed.norm.vcf \\
-            | awk -v vartag=ConsensusTag=\$vt '\$0 ~ /^#/ || \$0 ~ vartag' > ${meta.id}.\$vt.norm.vcf
-
-        bgzip -f ${meta.id}.\$vt.norm.vcf
-        tabix -p vcf ${meta.id}.\$vt.norm.vcf.gz
-    done
+        ${meta.id}.consensus.vcf \\
+        > ${meta.id}.consensus.norm.vcf
 
     # Final combined VCF for reporting
-    bgzip -f ${meta.id}.processed.norm.vcf
-    tabix -p vcf ${meta.id}.processed.norm.vcf.gz
+    bgzip -f ${meta.id}.consensus.norm.vcf
+    tabix -p vcf ${meta.id}.consensus.norm.vcf.gz
 
     # Versions #
     cat <<-END_VERSIONS > versions.yml

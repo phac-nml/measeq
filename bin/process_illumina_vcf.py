@@ -1,15 +1,22 @@
 #!/usr/bin/env python
 '''
-Written by @jts from https://github.com/jts/ncov2019-artic-nf/blob/be26baedcc6876a798a599071bb25e0973261861/bin/process_gvcf.py
+Originally written by @jts from https://github.com/jts/ncov2019-artic-nf/blob/be26baedcc6876a798a599071bb25e0973261861/bin/process_gvcf.py
 
-Adjustments made such that were focused on just the mutations and not the GVCF info (that caused a rare error in the measles genome)
-  Along with that, added in genotype to allow new versions of bcftools consensus to work, adjusted to work on multiple
-  Alt alleles above the minimum threshold and adjusting how Del+Snp complex sites are handled
+Adjustments made such to focus just on the variants and not the GVCF output due to a rare error in the gVCF that was seen when running measles genomes
+    Full adjustments:
+        - Added in genotype adjustments to more easily call IUPACs without splitting the output consensus VCF
+        - Remvoed depth filtering here and just marking lower depth sites due to how freebayes handles reads and depth that
+            differs from bcftools/samtools and causes some inconsistencies when masking low depth regions
+        - Adjusting how Del+Snp complex sites are handled
+        - TSV output for easier downstream visualiazation and reporting
+        - Code adjustments and comments for why decisions were made and keeping track of variables better
 '''
 
 import argparse
 import pysam
 import csv
+import re
+from typing import Optional, Tuple, Generator
 
 # Set for iupac assignment
 iupac_map = {
@@ -30,8 +37,44 @@ iupac_map = {
     frozenset(['A', 'C', 'G', 'T']): 'N'
 }
 
-def calculate_vafs(record):
-    '''Calculate the variant allele fraction for each alt allele using freebayes' read/alt observation tags'''
+
+def yield_alt_base(cigar: str, alt: str) -> Generator:
+    """Expand CIGAR string and alt to yield alt the alt base for each reference position (handling indels)
+
+    Params
+    ------
+        cigar (str): Variant CIGAR string
+        alt (str): Alt allele string
+
+    Returns
+    -------
+        Generator: alt base for each ref position
+    """
+    parts = re.findall(r'(\d+)([MXID])', cigar)
+    expanded_cigar = ''.join(int(n) * op for n, op in parts)
+
+    alt_pos = 0
+    for cigar_str in expanded_cigar:
+        if cigar_str == 'I':
+            alt_pos += 1
+        elif cigar_str == 'D':
+            yield '-'
+        else:
+            yield alt[alt_pos]
+            alt_pos += 1
+
+
+def calculate_vafs(record: pysam.VariantRecord) -> list:
+    """Calculate the variant allele fraction for each alt allele using freebayes' read/alt observation tags
+
+    Params
+    ------
+        record (VariantRecord): Single variant record to parse
+
+    Returns
+    -------
+        list: Containing VAFs for each alt allele
+    """
     vafs = list()
     for i in range(0, len(record.alts)):
         alt_reads = int(record.info["AO"][i])
@@ -39,9 +82,25 @@ def calculate_vafs(record):
         vafs.append(vaf)
     return vafs
 
-def make_simple_record(vcf_header, parent_record, position, ref, alt, vaf):
-    '''Make a simple VCF record with the minimal information needed to make the consensus sequence'''
-    r = vcf_header.new_record()
+
+def make_simple_record(vcf_header: pysam.VariantHeader, parent_record: pysam.VariantRecord,
+                       position: int, ref: str, alt: str, vaf: float) -> pysam.VariantRecord:
+    """Make a simple VCF record with the minimal information needed for the consensus vcf output
+
+    Params
+    ------
+        vcf_header (VariantHeader): Simple VCF header for consensus generation
+        parent_record (VariantRecord): Detailed parent record
+        position (int): Genome position
+        ref (str): Reference base
+        alt (str): Alt base
+        vaf (float): Variant allele fraction calculated
+
+    Returns
+    -------
+        VariantRecord: Simple positional variant record for consensus vcf output
+    """
+    r = vcf_header.new_record() # blank header
     r.chrom = parent_record.chrom
     r.pos = position
     r.ref = ref
@@ -51,133 +110,171 @@ def make_simple_record(vcf_header, parent_record, position, ref, alt, vaf):
     r.info["VAF"] = vaf
     return r
 
-def base_max(vaf_by_base, skip=None):
-    '''
-    Return the base with the highest value in vaf_by_base
-    Optionally skipping a character (eg. the reference base)
-    '''
+
+def base_max(vaf_by_base: dict, skip=None) -> Optional[str]:
+    """Return the base with the highest value in VAF that is not skipped with optional skip param
+
+    Params
+    ------
+        vaf_by_base (dict): Dict containing bases (keys) and their VAF for the position
+        skip (str): Optional Bases to skip the check for, default None
+
+    Returns
+    -------
+        str: The base with the highest VAF, defaults to None if there weren't any
+    """
     max_vaf = 0.0
     max_b = None
-    for b in "ACGT":
+    for b in ["A", "T", "G", "C"]:
         if b != skip and vaf_by_base[b] > max_vaf:
             max_vaf = vaf_by_base[b]
             max_b = b
     return max_b
 
-def handle_sub(vcf_header, record):
-    '''
-    Process substitution variants found by freebayes into a variant that can be applied to the
-    final consensus sequence
-    '''
+
+def handle_sub(vcf_header: pysam.VariantHeader, record: pysam.VariantRecord) -> list:
+    """Process *substitution* variants found by freebayes into a variant that
+    can be applied to the final consensus sequence
+
+    Params
+    ------
+        vcf_header (VariantHeader): Simple VCF header for consensus generation
+        record (VariantRecord): Position variant record containing all needed information
+
+    Returns
+    -------
+        list: List of tuples containing the final VariantRecords for the position and dict of their base_frequencies
+    """
     output = list()
 
-    # this code is general enough to handle multi-allelic MNPs
-    # and the typical case of a biallelic SNP
+    # This can handle multi-allelic MNPs and the typical case of a biallelic SNP
     sub_length = len(record.ref)
-
     vafs = calculate_vafs(record)
 
-    # calculate the VAF of each base at each position of the MNP
+    # Calculate the VAF of each base at each position of the MNP
     base_frequency = list()
-    indel_vafs = 0
     for i in range(0, sub_length):
-        base_frequency.append({ "A":0.0, "C":0.0, "G":0.0, "T":0.0 })
+        base_frequency.append({ "A": 0.0, "C": 0.0, "G": 0.0, "T": 0.0})
 
-    for alt, vaf in zip(record.alts, vafs):
-        # For rare case when a SNP is the most prevalent but there is also an indel
-        if len(alt) != sub_length:
-            indel_vafs += vaf
-            continue
-        for i,b in enumerate(alt):
-            base_frequency[i][b] += vaf
+    for alt, vaf, cigar in zip(record.alts, vafs, record.info['CIGAR']):
+        for i, base in enumerate(yield_alt_base(cigar, alt)):
+            if base == '-':
+                continue
+            base_frequency[i][base] += vaf
 
-    # construct output records
+    # Construct output records
     for i in range(0, sub_length):
-
-        # choose base with highest frequency, skipping the reference
+        # Choose base with highest frequency, skipping the reference
+        #  That way we can identify mixed sites where the reference is the most represented base
+        #  and that are above our minimum frequency
         max_b = base_max(base_frequency[i], record.ref[i])
         if max_b is None:
             continue
         r = make_simple_record(vcf_header, record, record.pos + i, record.ref[i], max_b, base_frequency[i][max_b])
 
-        # add Reference % post record for IUPAC tracking
-        alt_freq_sum = sum(base_frequency[i].values()) + indel_vafs
-        if alt_freq_sum < 1:
-            ref_freq = round(1 - alt_freq_sum, 4)
-            base_frequency[i][record.ref[i]] += ref_freq # For if it doesn't add to 1, don't want to overwrite the ref
+        # Make sure the reference base is accounted for if we need to assign an IUPAC for the site
+        total_vafs = sum(vafs)
+        if total_vafs < 1:
+            ref_freq = round(1 - total_vafs, 4)
+            base_frequency[i][record.ref[i]] += ref_freq
 
         output.append((r, base_frequency[i]))
+
     return output
 
-def handle_indel(vcf_header, record, min_indel_threshold):
-    '''
-    Process indel variants found by freebayes into a variant that should be
-    applied to the consensus sequence
-    '''
+
+def handle_indel(vcf_header: pysam.VariantHeader, record: pysam.VariantRecord, min_indel_threshold: float) -> list:
+    """Process *indel* variants found by freebayes into a variant that can be applied to the final consensus sequence
+
+    Params
+    ------
+        vcf_header (VariantHeader): Simple VCF header for consensus generation
+        record (VariantRecord): Position variant record containing all needed information
+
+    Returns
+    -------
+        list: List of tuples containing the final VariantRecords for the position and a blank dict to match the handle_snp output
+    """
     output = list()
     vafs = calculate_vafs(record)
 
-    # special case, if we have evidence for multiple possible indels (eg CTTT -> C, CTTT -> CT)
-    # we decide whether to apply an indel based on the summed VAF across all alt alleles, then
-    # apply the most frequent ALT. This is because there is evidence for /an/ indel but it is
-    # ambiguous which one. We can't represent ambiguous indels in a consensus fasta so this
-    # is the best we can do.
+    # Special case, if we have evidence for multiple possible indels (eg CTTT -> C, CTTT -> CT)
+    #  we decide whether to apply an indel based on the summed VAF across all alt alleles, then
+    #  apply the most frequent ALT. This is because there is evidence for /an/ indel but it is
+    #  ambiguous which one. We can't represent ambiguous indels in a consensus fasta so this
+    #  is the best we can do.
+    # Also note that we can get indels called below the threshold if there is an alt allele SNP and an indel at the same point
+    #  Probably better as if we just went with reference base we'd be completely inaccurate
+    #  But it may be a revisit to mask the site
     if sum(vafs) <= min_indel_threshold:
         return output
 
-    # argmax without bringing in numpy
-    max_idx = None
+    # Argmax without bringing in numpy
+    best_vaf_idx = None
     max_vaf = 0.0
     for idx, value in enumerate(vafs):
         if value > max_vaf:
             max_vaf = value
-            max_idx = idx
+            best_vaf_idx = idx
 
     # Have to add the sub evaluation if the prevalent mutation is a SNP instead of an indel
     #  Otherwise we have incorrect results
-    if len(record.ref) == len(record.alts[max_idx]):
+    if len(record.ref) == len(record.alts[best_vaf_idx]):
         output = handle_sub(vcf_header, record)
     else:
-        r = make_simple_record(vcf_header, record, record.pos, record.ref, record.alts[max_idx], [ max_vaf ])
+        r = make_simple_record(vcf_header, record, record.pos, record.ref, record.alts[best_vaf_idx], [ max_vaf ])
 
-        # Have to add in atleast the Genotype for bcftools 1.20 to apply the variant
-        #  So as were only filtering to 1 genotype use that
-        #  SNPS slightly different to account for iupac codes
+        # Have to add in the Genotype for bcftools 1.20 to apply the variant
+        #  So as were only filtering to 1 indel genotype use that
+        #  SNPS end up slightly different to account for iupac codes
         r.samples[0]['GT'] = (1,)
 
         output.append((r, {}))
     return output
 
-def get_base_code(base_dict, upper_ambiguity):
-    # Filter bases with value above 1 - threshold
-    threshold = 1 - upper_ambiguity
-    significant_bases = {k for k, v in base_dict.items() if v >= threshold}
+
+def get_base_code(base_frequencies: dict, consensus_ambiguity_threshold: float) -> Tuple[str, frozenset]:
+    """Determine which base(s) are above the 1 - consensus ambiguity threshold and return single IUPAC code
+
+    Params
+    ------
+        base_frequencies (dict): Dict containing the float frequencies of each base for the position
+        ambiguity_threshold (float): Ambiguity threshold to include base as significant for position
+
+    Returns
+    -------
+        Tuple: String IUPAC code along with the frozenset of significant bases identified
+    """
+    # Find bases with frequencies above consensus ambiguity threshold
+    threshold = 1 - consensus_ambiguity_threshold
+    significant_bases = {k for k, v in base_frequencies.items() if v >= threshold}
 
     # Look up the Consensus or IUPAC code for the set of significant bases
     return iupac_map.get(frozenset(significant_bases), 'N'), frozenset(significant_bases)
 
-def main():
-    '''Main entry point'''
-    description = 'Process a .gvcf file to create a file of consensus variants, low-frequency variants and a coverage mask'
+
+def init_parser() -> argparse.ArgumentParser:
+    """Init Parser and parse CL args"""
+    description = 'Process an output freebayes .vcf file to create summary VCF and TSV files'
     parser = argparse.ArgumentParser(description=description)
 
     parser.add_argument('-v', '--variants-output', required=True,
-            help="The output file name for variants (VCF records)\n")
+            help="The output file name for the filtered variants with no MNP splitting and added VAF calculations (VCF)")
 
     parser.add_argument('-c', '--consensus-sites-output', required=True,
-            help="The output file name for variants that will be applied to generate the consensus sequence\n")
+            help="The output file name for split MNP variants and IUPAC variants that will be applied to generate the consensus sequence (VCF)")
 
     parser.add_argument('-t', '--tsv-sites-output', required=True,
-            help="The output file name for consensus variants that is formatted as a TSV file for reporting later\n")
+            help="The output file name for consensus variants ormatted as a TSV file for later reporting")
 
-    parser.add_argument('-d', '--min-depth', type=int, default=10,
-            help="Minimum depth to call a variant")
+    parser.add_argument('-d', '--mark-depth', type=int, default=10,
+            help="Minimum depth to mark a variant as low depth. Depth filtering should be done with the Freebayes argument")
 
     parser.add_argument('-l', '--lower-ambiguity-frequency', type=float, default=0.25,
-            help="Variants with frequency less than -l will be discarded")
+            help="Variants with frequency less than -l will be discarded entirely")
 
     parser.add_argument('-u', '--upper-ambiguity-frequency', type=float, default=0.75,
-            help="Substitution variants with frequency less than -u will be encoded with IUPAC ambiguity codes")
+            help="Substitution variants with frequency less than -u will be encoded with IUPAC ambiguity codes based on underlying variation")
 
     parser.add_argument('-m', '--minimum-indel-threshold', type=float, default=0.60,
             help="Indel variants with frequency less than the -m threshold will be skipped")
@@ -188,170 +285,148 @@ def main():
     parser.add_argument('-n', '--no-frameshifts', action="store_true",
             help="Skip indel mutations that are not divisible by 3")
 
-    parser.add_argument('file', action='store', nargs=1)
+    parser.add_argument('invcf', action='store', nargs=1)
 
+    return parser
+
+
+def main() -> None:
+    """Main entry point"""
+    parser = init_parser()
     args = parser.parse_args()
 
-    # Load VCF
-    vcf = pysam.VariantFile(open(args.file[0],'r'))
-
+    # Load input VCF file and get header info
+    vcf = pysam.VariantFile(open(args.invcf[0], 'r'))
     out_header = vcf.header
 
-    # Open the output file with the filtered variant sites
+    # Open the filtered only output VCF file to write unmodified accepted variants along with the addition of their VAFs
     out_header.info.add("VAF", number="A", type='Float', description="Variant allele fraction, called from observed reference/alt reads")
-    variants_out = pysam.VariantFile(args.variants_output, 'w', header=out_header)
+    filtered_variants_out = pysam.VariantFile(args.variants_output, 'w', header=out_header)
 
-    # Open the output file with the changes to apply to the consensus fasta
-    # This includes an additional 2 headers in the VCF file
-    out_header.info.add("ConsensusTag", number=1, type='String', description="The type of base to be included in the consensus sequence (ambiguous or consensus)")
-    # Set it to 1 as the Multi-allelic sites should be resolved
-    out_header.info.add("ConsensusBase", number=1, type='String', description="The base included in the consensus sequence (to track IUPACs mostly)")
-    consensus_sites_out = pysam.VariantFile(args.consensus_sites_output, 'w', header=out_header)
+    # Open the consensus VCF that will have split sites, add the genotypes to call IUPACs and contain minimal information for the consensus sequence generation
+    #  This includes an additional 2 headers in the VCF file
+    out_header.info.add("ConsensusTag", number=1, type='String', description="The type of base included in the consensus sequence (ambiguous/consensus/indel)")
+    out_header.info.add("ConsensusBase", number=1, type='String', description="The base included in the consensus sequence (ATGC or IUPAC)")
+    consensus_variants_out = pysam.VariantFile(args.consensus_sites_output, 'w', header=out_header)
 
-    # Setup TSV data list for later reporting
+    # Setup list of dicts for later TSV creation and reporting
     tsv_data_list = []
 
-    for record in vcf:
-
-        # Determine if any allele in the variant is an indel
+    # Parsing VCF records to assign final consensus variants and filter out poor variant calls for the filtered VCF
+    for base_record in vcf:
+        # Determine if any allele in the variant is an indel to handle it properly
         has_indel = False
-        for i in range(0, len(record.alts)):
-            has_indel = has_indel or len(record.ref) != len(record.alts[i])
+        for i in range(0, len(base_record.alts)):
+            has_indel = has_indel or len(base_record.ref) != len(base_record.alts[i])
 
-        # Get the variant depth
-        depth = record.info["DP"]
+        # Get the variant depth just to mark if it is lower than our threshold
+        #  The pipeline freebayes minimum depth is set to match the other minimum depth parts
+        #  Freebayes calculates depth in a way that isn't easy to reproduce so we are going to flag
+        #  these sites but not drop them here and instead mask them downstream if they do have too few reads
+        # And then the True/False is for tracking
+        depth = base_record.info["DP"]
         low_depth = False
-
-        # Ignore records that don't meet our minimum depth other than for multi-allelic sites
-        if depth < args.min_depth:
-            # For multi-allelic variants only, the freebayes depth may not be exactly positional
-            #  So let them pass and mask them later if the variant position is below the given minimum depth
-            #  This helps resolve on the cut-off depths especially in the MF-NCR
-            if not any([x for x in record.alts if len(x) > 1]):
-                continue
+        if depth < args.mark_depth:
             low_depth = True
 
-        # process the input variant record to handle multi-allelic variants and MNPs
+        # Process the input variant record to handle multi-allelic variants and MNPs
         out_records = list()
         if has_indel:
-            # indels need to be handle specially as we can't apply ambiguity codes
-            out_records = handle_indel(out_header, record, args.minimum_indel_threshold)
+            # indels need to be handled specially as we can't apply ambiguity codes to them
+            out_records = handle_indel(out_header, base_record, args.minimum_indel_threshold)
         else:
-            out_records = handle_sub(out_header, record)
+            out_records = handle_sub(out_header, base_record)
 
-        # Just for final report
-        split_multiallelic = False
-        if len(out_records) > 1:
-            split_multiallelic = True
-
-        # Classify variants using VAF cutoffs for IUPAC ambiguity codes, etc
-        #  For out_tuple, its record, base_frequency dict (for IUPAC)
+        # Classify variants using VAF cutoffs for IUPAC ambiguity codes, quality cutoffs, etc.
+        #  For out_tuple, its formatted as: ( record, base_frequency dict )
         accept_variant = False
         for out_tuple in out_records:
-            out_r = out_tuple[0]
-            # at this point we should have resolved multi-allelic variants
-            assert(len(out_r.alts) == 1)
+            final_record = out_tuple[0]
 
-            # Add final VAF
-            vaf = round(out_r.info["VAF"][0], 4)
-            is_indel = len(out_r.ref) != len(out_r.alts[0])
+            # Should have resolved MNP sites to just be 1
+            assert(len(final_record.alts) == 1)
+            is_indel = len(final_record.ref) != len(final_record.alts[0])
 
-            # Recheck that an indel is not low-depth if the site was multi-allelic initially
-            #  This should help avoid errant indels in the MF-NCR
-            if (is_indel) and (depth < args.min_depth):
-                continue
+            ### Filters for Poor Variants ###
+            # Add final VAF value
+            vaf = round(final_record.info["VAF"][0], 4)
 
-            # Discard low frequency variants
+            # Discard low frequency variants lower than our minimum ambiguity threshold
             if vaf < args.lower_ambiguity_frequency:
                 continue
 
             # Discard fs indels if provided the arg
-            if is_indel and len(out_r.alts[0]) % 3 != 0 and args.no_frameshifts:
+            if is_indel and len(final_record.alts[0]) % 3 != 0 and args.no_frameshifts:
                 continue
 
             # Discard low quality sites as recommended by freebayes
-            #  Based on the data nothing really lower than the default min_qual unless it is low low quality
-            if record.qual < args.min_quality:
-                # Tracking for TSV only
-                tsv_data_list.append([
-                out_r.chrom,
-                out_r.pos,
-                out_r.ref,
-                out_r.alts[0],
-                int(out_r.qual),
-                depth,
-                vaf,
-                'Fail'
-                ])
+            if base_record.qual < args.min_quality:
                 continue
 
-            # Write a tag describing what to do with the variant
+            ### Setup basic TSV/VCF output requirements ###
+            tsv_tag = "PASS"
             consensus_tag = "None"
-            consensus_base = out_r.alts[0]
+            consensus_base = final_record.alts[0]
             genotype = (1,)
 
             # High-frequency subs and indels are always applied without ambiguity
-            # we don't have to do an indel VAF check here as it is dealt with in handle_indel
+            #  We don't have to do an indel VAF check here as it is dealt with in handle_indel
             if vaf > args.upper_ambiguity_frequency or is_indel:
-                # always apply these to the consensus
                 consensus_tag = "consensus"
-                tsv_tag = "Passing Alt Allele Fraction"
-                if vaf >= 0.90:
-                    tsv_tag = "High Alt Allele Fraction"
-                elif is_indel:
-                    tsv_tag = "Passing Indel"
+                if is_indel:
+                    consensus_tag = "indel"
+            # Otherwise data is between the upper and lower frequency so setup and apply IUPAC
             else:
-                # To capture IUPACs in reports easier have a separate column
+                tsv_tag = "AMBIGUOUS"
+                consensus_tag = "ambiguous"
                 iupac_base, fzset = get_base_code(out_tuple[1], args.upper_ambiguity_frequency)
 
-                # Genotype needs to be mixed to get an iupac if that is what the base should be
-                if iupac_base not in ['A', 'T', 'G', 'C']:
-                    # Need to check if were a mix of the Ref/Alt or of two Alt's
-                    if out_r.ref in fzset:
-                        genotype = (0,1)
-                    else:
-                        genotype = (1,2) # Sets the correct IUPAC
-
-                        # For tracking only really - it makes the ambiguous vcf not properly made
-                        out_r.alts = fzset
-                        vaf = sum([v for k, v in out_tuple[1].items() if k in fzset])
-                        consensus_base = ", ".join(fzset)
-
-                    # Record ambiguous SNPs in the consensus sequence with IUPAC codes
-                    consensus_tag = "ambiguous"
-                    tsv_tag = f"Ambiguous Base - {iupac_base}"
+                # Set genotype for bcftools with the `-I` arg to properly use
+                #  `-I` will apply an IUPAC based on the given genotype (ex. (0,1) will give an IUPAC based on the ref and alt)
+                if final_record.ref in fzset:
+                    genotype = tuple(range(0, len(fzset)))
+                    # Can't manip fzset inplace so rewrite
+                    #  Need to take the reference out as we add the fzset bases back into the alt
+                    tmp_set = fzset - {final_record.ref}
+                    fzset = tmp_set
                 else:
-                    # Will keep the consensus tag
-                    tsv_tag = "Passing Low Alt Allele Fraction"
-                    if split_multiallelic:
-                        tsv_tag = "Passing Split Multi-Allelic Site"
+                    genotype = tuple(range(1, len(fzset) + 1))
+
+                # Setting up to write to the consensus VCF file and to track what the base is
+                final_record.alts = fzset
+                vaf = sum([v for k, v in out_tuple[1].items() if k in fzset])
+                consensus_base = iupac_base
+
 
             # Output for consensus generation and reporting
-            out_r.info["ConsensusTag"] = consensus_tag
-            out_r.info["ConsensusBase"] = consensus_base
-            out_r.samples[0]['GT'] = genotype
-            consensus_sites_out.write(out_r)
+            final_record.info["ConsensusTag"] = consensus_tag
+            final_record.info["ConsensusBase"] = consensus_base
+            final_record.samples[0]['GT'] = genotype
+            consensus_variants_out.write(final_record)
 
             # Setting up for TSV output for later reporting
             #  Format: chrom, pos, ref, alt, qual, depth, vaf, tag
             if low_depth:
-                tsv_tag = "Low Depth"
+                tsv_tag = "LOWDEPTH"
             tsv_data_list.append([
-                out_r.chrom,
-                out_r.pos,
-                out_r.ref,
-                consensus_base,
-                int(out_r.qual),
+                final_record.chrom,
+                final_record.pos,
+                final_record.ref,
+                ','.join(final_record.alts),
+                int(final_record.qual),
                 depth,
                 vaf,
                 tsv_tag
             ])
 
+            # Only 1 has to be accepted to add the full original variant to the final filtered VCF
+            #  But only that 1 good variant will be in the consensus
             accept_variant = True
 
+        # Write the base record with the added VAF calculation to the final filtered VCF file
         if accept_variant:
-            record.info["VAF"] = calculate_vafs(record)
-            variants_out.write(record)
+            base_record.info["VAF"] = calculate_vafs(base_record)
+            filtered_variants_out.write(base_record)
 
     # Write to TSV at the end
     headers = ['chrom', 'pos', 'ref', 'alt', 'qual', 'depth', 'vaf', 'tag']
