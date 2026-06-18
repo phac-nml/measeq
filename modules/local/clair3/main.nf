@@ -11,7 +11,7 @@ process CLAIR3_POOL {
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/clair3:2.0.1--py311hbc58adc_0' :
-        'biocontainers/artic:1.10.3--pyhdfd78af_0' }" // Wasn't working with the docker container as for some reason it wasn't able to find the fai file
+        'biocontainers/clair3:2.0.1--py311hbc58adc_0' }"
 
     input:
     tuple val(meta), path(bam), path(bai), val(pool), path(pool_bed)
@@ -31,11 +31,13 @@ process CLAIR3_POOL {
     samtools view -b -r $pool $bam -o ${pool}.sorted.bam
     samtools index ${pool}.sorted.bam
 
+    full_ref_path=\$(readlink -f $reference)
+
     # Run clair3 after
     run_clair3.sh \\
-        --bam_fn=${pool}.sorted.bam \\
-        --bed_fn=$pool_bed \\
-        --ref_fn=$reference \\
+        --bam_fn="${pool}.sorted.bam" \\
+        --bed_fn="$pool_bed" \\
+        --ref_fn="\$full_ref_path" \\
         --threads=${task.cpus} \\
         --platform='ont' \\
         --model_path="$model" \\

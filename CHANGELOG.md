@@ -22,9 +22,11 @@ Biggest note is that Clair3 `v1.2.0` models have to be converted to the new form
   - process_illumina_vcf.py
 
 - Illumina VCF parsing adjusted to better handle complex sites where an INDEL and a SNP are called with the SNP being the final call [PR #43](https://github.com/phac-nml/measeq/pull/43)
+
   - No consensus output differences
   - Adjusts the calculation for mixed sites so it rem
   - Adjusts the need to split ambiguous sites from consensus sites in VCF outputs for downstream processing
+    - New filename for the consensus variants file --
 
 - Split out the `artic` subcommands into their own folders to better match the nextflow best practices [PR #43](https://github.com/phac-nml/measeq/pull/43)
 - Artic updated to `v1.10.3` in all spots that were `v1.8.5` [PR #43](https://github.com/phac-nml/measeq/pull/43)

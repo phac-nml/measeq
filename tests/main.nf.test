@@ -206,14 +206,14 @@ nextflow_pipeline {
             assert iridanext_samples.add_sample1.findAll { it.path == "bam/ivar/sample1.primertrimmed.sorted.bam" }.size() == 1
             assert iridanext_samples.add_sample1.findAll { it.path == "consensus/sample1.N450.fasta" }.size() == 1
             assert iridanext_samples.add_sample1.findAll { it.path == "consensus/sample1.consensus.fasta" }.size() == 1
-            assert iridanext_samples.add_sample1.findAll { it.path == "vcf/processed_vcf/sample1.processed.norm.vcf.gz" }.size() == 1
+            assert iridanext_samples.add_sample1.findAll { it.path == "vcf/processed_vcf/sample1.consensus.norm.vcf.gz" }.size() == 1
             assert iridanext_samples.add_sample2.findAll { it.path == "bam/ivar/sample2.primertrimmed.sorted.bam" }.size() == 1
             assert iridanext_samples.add_sample2.findAll { it.path == "consensus/sample2.N450.fasta" }.size() == 1
             assert iridanext_samples.add_sample2.findAll { it.path == "consensus/sample2.consensus.fasta" }.size() == 1
-            assert iridanext_samples.add_sample2.findAll { it.path == "vcf/processed_vcf/sample2.processed.norm.vcf.gz" }.size() == 1
+            assert iridanext_samples.add_sample2.findAll { it.path == "vcf/processed_vcf/sample2.consensus.norm.vcf.gz" }.size() == 1
             assert iridanext_samples.add_empty.findAll { it.path == "consensus/empty.N450.fasta" }.size() == 1
             assert iridanext_samples.add_empty.findAll { it.path == "consensus/empty.consensus.fasta" }.size() == 1
-            assert iridanext_samples.add_empty.findAll { it.path == "vcf/processed_vcf/empty.processed.norm.vcf.gz" }.size() == 1
+            assert iridanext_samples.add_empty.findAll { it.path == "vcf/processed_vcf/empty.consensus.norm.vcf.gz" }.size() == 1
 
             // Sample Name: empty
             assert iridanext_metadata.add_empty.genotype == "NA"
@@ -396,14 +396,14 @@ nextflow_pipeline {
             assert iridanext_samples.add_sample1.findAll { it.path == "bam/ivar/sample1.primertrimmed.sorted.bam" }.size() == 1
             assert iridanext_samples.add_sample1.findAll { it.path == "consensus/sample1.N450.fasta" }.size() == 1
             assert iridanext_samples.add_sample1.findAll { it.path == "consensus/sample1.consensus.fasta" }.size() == 1
-            assert iridanext_samples.add_sample1.findAll { it.path == "vcf/processed_vcf/sample1.processed.norm.vcf.gz" }.size() == 1
+            assert iridanext_samples.add_sample1.findAll { it.path == "vcf/processed_vcf/sample1.consensus.norm.vcf.gz" }.size() == 1
             assert iridanext_samples.add_sample2.findAll { it.path == "bam/ivar/sample2.primertrimmed.sorted.bam" }.size() == 1
             assert iridanext_samples.add_sample2.findAll { it.path == "consensus/sample2.N450.fasta" }.size() == 1
             assert iridanext_samples.add_sample2.findAll { it.path == "consensus/sample2.consensus.fasta" }.size() == 1
-            assert iridanext_samples.add_sample2.findAll { it.path == "vcf/processed_vcf/sample2.processed.norm.vcf.gz" }.size() == 1
+            assert iridanext_samples.add_sample2.findAll { it.path == "vcf/processed_vcf/sample2.consensus.norm.vcf.gz" }.size() == 1
             assert iridanext_samples.add_empty.findAll { it.path == "consensus/empty.N450.fasta" }.size() == 1
             assert iridanext_samples.add_empty.findAll { it.path == "consensus/empty.consensus.fasta" }.size() == 1
-            assert iridanext_samples.add_empty.findAll { it.path == "vcf/processed_vcf/empty.processed.norm.vcf.gz" }.size() == 1
+            assert iridanext_samples.add_empty.findAll { it.path == "vcf/processed_vcf/empty.consensus.norm.vcf.gz" }.size() == 1
 
             // Sample Name: empty
             assert iridanext_metadata.add_empty.genotype == "NA"
@@ -567,13 +567,13 @@ nextflow_pipeline {
 
             assert iridanext_samples.add_sample1.findAll { it.path == "consensus/sample1.N450.fasta" }.size() == 1
             assert iridanext_samples.add_sample1.findAll { it.path == "consensus/sample1.consensus.fasta" }.size() == 1
-            assert iridanext_samples.add_sample1.findAll { it.path == "vcf/processed_vcf/sample1.processed.norm.vcf.gz" }.size() == 1
+            assert iridanext_samples.add_sample1.findAll { it.path == "vcf/processed_vcf/sample1.consensus.norm.vcf.gz" }.size() == 1
             assert iridanext_samples.add_sample2.findAll { it.path == "consensus/sample2.N450.fasta" }.size() == 1
             assert iridanext_samples.add_sample2.findAll { it.path == "consensus/sample2.consensus.fasta" }.size() == 1
-            assert iridanext_samples.add_sample2.findAll { it.path == "vcf/processed_vcf/sample2.processed.norm.vcf.gz" }.size() == 1
+            assert iridanext_samples.add_sample2.findAll { it.path == "vcf/processed_vcf/sample2.consensus.norm.vcf.gz" }.size() == 1
             assert iridanext_samples.add_empty.findAll { it.path == "consensus/empty.N450.fasta" }.size() == 1
             assert iridanext_samples.add_empty.findAll { it.path == "consensus/empty.consensus.fasta" }.size() == 1
-            assert iridanext_samples.add_empty.findAll { it.path == "vcf/processed_vcf/empty.processed.norm.vcf.gz" }.size() == 1
+            assert iridanext_samples.add_empty.findAll { it.path == "vcf/processed_vcf/empty.consensus.norm.vcf.gz" }.size() == 1
 
             // Sample Name: empty
             assert iridanext_metadata.add_empty.genotype == "NA"
@@ -741,13 +741,13 @@ nextflow_pipeline {
 
             assert iridanext_samples.add_sample1.findAll { it.path == "consensus/sample1.N450.fasta" }.size() == 1
             assert iridanext_samples.add_sample1.findAll { it.path == "consensus/sample1.consensus.fasta" }.size() == 1
-            assert iridanext_samples.add_sample1.findAll { it.path == "vcf/processed_vcf/sample1.processed.norm.vcf.gz" }.size() == 1
+            assert iridanext_samples.add_sample1.findAll { it.path == "vcf/processed_vcf/sample1.consensus.norm.vcf.gz" }.size() == 1
             assert iridanext_samples.add_sample2.findAll { it.path == "consensus/sample2.N450.fasta" }.size() == 1
             assert iridanext_samples.add_sample2.findAll { it.path == "consensus/sample2.consensus.fasta" }.size() == 1
-            assert iridanext_samples.add_sample2.findAll { it.path == "vcf/processed_vcf/sample2.processed.norm.vcf.gz" }.size() == 1
+            assert iridanext_samples.add_sample2.findAll { it.path == "vcf/processed_vcf/sample2.consensus.norm.vcf.gz" }.size() == 1
             assert iridanext_samples.add_empty.findAll { it.path == "consensus/empty.N450.fasta" }.size() == 1
             assert iridanext_samples.add_empty.findAll { it.path == "consensus/empty.consensus.fasta" }.size() == 1
-            assert iridanext_samples.add_empty.findAll { it.path == "vcf/processed_vcf/empty.processed.norm.vcf.gz" }.size() == 1
+            assert iridanext_samples.add_empty.findAll { it.path == "vcf/processed_vcf/empty.consensus.norm.vcf.gz" }.size() == 1
 
             // Sample Name: empty
             assert iridanext_metadata.add_empty.genotype == "NA"
@@ -931,14 +931,14 @@ nextflow_pipeline {
             assert iridanext_samples.add_sample1.findAll { it.path == "bam/ivar/sample1.primertrimmed.sorted.bam" }.size() == 1
             assert iridanext_samples.add_sample1.findAll { it.path == "consensus/sample1.N450.fasta" }.size() == 1
             assert iridanext_samples.add_sample1.findAll { it.path == "consensus/sample1.consensus.fasta" }.size() == 1
-            assert iridanext_samples.add_sample1.findAll { it.path == "vcf/processed_vcf/sample1.processed.norm.vcf.gz" }.size() == 1
+            assert iridanext_samples.add_sample1.findAll { it.path == "vcf/processed_vcf/sample1.consensus.norm.vcf.gz" }.size() == 1
             assert iridanext_samples.add_sample2.findAll { it.path == "bam/ivar/sample2.primertrimmed.sorted.bam" }.size() == 1
             assert iridanext_samples.add_sample2.findAll { it.path == "consensus/sample2.N450.fasta" }.size() == 1
             assert iridanext_samples.add_sample2.findAll { it.path == "consensus/sample2.consensus.fasta" }.size() == 1
-            assert iridanext_samples.add_sample2.findAll { it.path == "vcf/processed_vcf/sample2.processed.norm.vcf.gz" }.size() == 1
+            assert iridanext_samples.add_sample2.findAll { it.path == "vcf/processed_vcf/sample2.consensus.norm.vcf.gz" }.size() == 1
             assert iridanext_samples.add_empty.findAll { it.path == "consensus/empty.N450.fasta" }.size() == 1
             assert iridanext_samples.add_empty.findAll { it.path == "consensus/empty.consensus.fasta" }.size() == 1
-            assert iridanext_samples.add_empty.findAll { it.path == "vcf/processed_vcf/empty.processed.norm.vcf.gz" }.size() == 1
+            assert iridanext_samples.add_empty.findAll { it.path == "vcf/processed_vcf/empty.consensus.norm.vcf.gz" }.size() == 1
 
             // Sample Name: empty
             assert iridanext_metadata.add_empty.genotype == "NA"
