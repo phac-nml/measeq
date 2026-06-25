@@ -52,7 +52,7 @@ nextflow_workflow {
                 outdir = "results"
                 platform = "nanopore"
                 primer_bed = "$baseDir/test_data/primer.bed"
-                model = "r1041_e82_400bps_sup_v410"
+                local_model = "$baseDir/test_data/r1041_e82_400bps_sup_v410"
                 min_depth = 30
                 ont_min_read_length = 400
                 normalise_ont = 0

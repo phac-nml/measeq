@@ -5,9 +5,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [v1.3.0] - 2026-06-xx
 
-Code cleanup, exposed nanopore frameshift quality parameter, artic version bump to `v1.10.3`, and clair3 version bump from `v1.2.0` to `v2.0.1`.
+Code cleanup, exposed nanopore frameshift quality parameter, added excess ambiguity warning, artic version bump to `v1.10.3`, and clair3 version bump from `v1.2.0` to `v2.0.1`.
 
-Biggest note is that Clair3 `v1.2.0` models have to be converted to the new format. The update to `artic` will pull these new versions by default if you are providing a `--model <model name>` name on the command line. If you are using a local model you'll have to grab the new version. More info is available in [clair3's docs](https://github.com/HKU-BAL/clair3#pre-trained-models). No consensus variant output changes noted in the test datasets with this update.
+Big Note: The Clair3 `v1.2.0` models have to be converted to the new format. The update to `artic` will pull these new versions by default if you are providing a `--model <model name>` name on the command line. If you are using a local model you'll have to grab the new version. More info is available in [clair3's docs](https://github.com/HKU-BAL/clair3#pre-trained-models). No consensus variant output changes noted in the test datasets with this update.
 
 ### `Added`
 
@@ -26,11 +26,15 @@ Biggest note is that Clair3 `v1.2.0` models have to be converted to the new form
   - No consensus output differences
   - Adjusts the calculation for mixed sites so it rem
   - Adjusts the need to split ambiguous sites from consensus sites in VCF outputs for downstream processing
-    - New filename for the consensus variants file --
+    - New filename for the consensus variants file ---
 
 - Split out the `artic` subcommands into their own folders to better match the nextflow best practices [PR #43](https://github.com/phac-nml/measeq/pull/43)
 - Artic updated to `v1.10.3` in all spots that were `v1.8.5` [PR #43](https://github.com/phac-nml/measeq/pull/43)
 - Clair3 updated to `v2.0.1` [PR #43](https://github.com/phac-nml/measeq/pull/43)
+
+- Added an excess ambiguity warning [PR #43](https://github.com/phac-nml/measeq/pull/43)
+  - `>5` sites for Illumina
+  - `>10` sites for Nanopore
 
 ## Removed
 

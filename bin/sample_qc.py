@@ -593,8 +593,10 @@ def check_consensus_tsv_masked(tsv: Path) -> int:
     return failed_sites
 
 
-def grade_qc(completeness: float, mean_dep: float, median_dep: float, divisible: str,
-             frameshift: bool, nonsense_mutation: bool, stop_mutation: bool, genotype_match: bool) -> str:
+def grade_qc(platform: str, completeness: float, mean_dep: float, median_dep:float,
+             iupac_count: int, divisible: str, frameshift: bool, nonsense_mutation: bool,
+             stop_mutation: bool, genotype_match: bool
+            ) -> str:
     '''
     Purpose:
     --------
@@ -602,12 +604,16 @@ def grade_qc(completeness: float, mean_dep: float, median_dep: float, divisible:
 
     Parameters:
     -----------
+    platform - str
+        illumina or nanopore
     completeness - float
         Genome completeness
     mean_dep - float
         Mean sequencing depth
     median_dep - float
         Median sequencing depth
+    iupac_count - int
+        Number of IUPACs in illumina data
     divisible - str
         If sample is divisible by 6 = PASS
     frameshift - bool
@@ -632,9 +638,18 @@ def grade_qc(completeness: float, mean_dep: float, median_dep: float, divisible:
             return 'INCOMPLETE_GENOME'
         else:
             qc_status.append('PARTIAL_GENOME')
+
     # Overall Coverage Depth
     if (mean_dep < 20) or (median_dep < 20):
         qc_status.append('LOW_SEQ_DEPTH')
+
+    # Masked sites / IUPACs
+    ambiguous_threshold = 5
+    if platform == 'nanopore':
+        ambiguous_threshold = 10
+    if iupac_count > ambiguous_threshold:
+        qc_status.append('EXCESS_AMBIGUITY')
+
     # Divisible by 6
     if divisible == "FAIL":
         qc_status.append('NOT_DIVISIBLE')
@@ -693,15 +708,6 @@ def main() -> None:
         n450_mean_depth, n450_median_depth = parse_depth_bed(args.depth, n450_range)
     n450_status = grade_n450(matched_dsid, n450_mean_depth, n450_completeness)
 
-    # Grade qc
-    frameshift_status = (frameshift != '')
-    nonsense_status = (nonsense != '')
-    stop_mutation_status = (stop_mutation != '')
-    genotype_match = (args.genotype == genotype)
-    qc_status = grade_qc(completeness, mean_dep, median_dep, divisible,
-                         frameshift_status, nonsense_status, stop_mutation_status,
-                         genotype_match)
-
     # N450 seq for inclusion in final excel output ONLY
     #  If empty file, get value error and then put in 450 Ns
     try:
@@ -716,6 +722,15 @@ def main() -> None:
     if args.platform == 'nanopore':
         iupac_key = 'num_masked'
         iupac_val = check_consensus_tsv_masked(args.consensus_tsv)
+
+    # Grade qc
+    frameshift_status = (frameshift != '')
+    nonsense_status = (nonsense != '')
+    stop_mutation_status = (stop_mutation != '')
+    genotype_match = (args.genotype == genotype)
+    qc_status = grade_qc(args.platform, completeness, mean_dep, median_dep,
+                         iupac_val, divisible, frameshift_status, nonsense_status,
+                         stop_mutation_status, genotype_match)
 
     # Output
     final = {

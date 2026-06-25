@@ -31,13 +31,11 @@ process CLAIR3_POOL {
     samtools view -b -r $pool $bam -o ${pool}.sorted.bam
     samtools index ${pool}.sorted.bam
 
-    full_ref_path=\$(readlink -f $reference)
-
     # Run clair3 after
     run_clair3.sh \\
         --bam_fn="${pool}.sorted.bam" \\
-        --bed_fn="$pool_bed" \\
-        --ref_fn="\$full_ref_path" \\
+        --bed_fn=$pool_bed \\
+        --ref_fn="\$PWD/$reference" \\
         --threads=${task.cpus} \\
         --platform='ont' \\
         --model_path="$model" \\
@@ -97,7 +95,7 @@ process CLAIR3_NO_POOL {
     """
     run_clair3.sh \\
         --bam_fn=$bam \\
-        --ref_fn=$reference \\
+        --ref_fn="\$PWD/$reference" \\
         --threads=${task.cpus} \\
         --platform='ont' \\
         --model_path="$model" \\

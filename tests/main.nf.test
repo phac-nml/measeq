@@ -1022,7 +1022,7 @@ nextflow_pipeline {
                 outdir      = "results"
                 reference   = "${projectDir}/assets/reference/D8/MH356245.1.reference.fasta"
                 platform    = "nanopore"
-                model       = "r1041_e82_400bps_sup_v410"
+                local_model = "$baseDir/test_data/r1041_e82_400bps_sup_v410"
             }
         }
         then {
@@ -1134,7 +1134,7 @@ nextflow_pipeline {
                 input       = "${projectDir}/test_data/nanopore_predict_samplesheet.csv"
                 outdir      = "results"
                 platform    = "nanopore"
-                model       = "r1041_e82_400bps_sup_v410"
+                local_model = "$baseDir/test_data/r1041_e82_400bps_sup_v410"
                 min_depth   = 30
                 min_variant_qual_c3 = 18
             }
@@ -1294,7 +1294,7 @@ nextflow_pipeline {
                 outdir      = "results"
                 reference   = "${projectDir}/assets/reference/D8/MH356245.1.reference.fasta"
                 platform    = "nanopore"
-                model       = "r1041_e82_400bps_sup_v410"
+                local_model = "$baseDir/test_data/r1041_e82_400bps_sup_v410"
                 primer_bed  = "${projectDir}/assets/reference/D8/primers.bed"
                 min_depth   = 30
                 min_variant_qual_c3 = 10
@@ -1423,7 +1423,7 @@ nextflow_pipeline {
                 input       = "${projectDir}/test_data/nanopore_predict_samplesheet.csv"
                 outdir      = "results"
                 platform    = "nanopore"
-                model       = "r1041_e82_400bps_sup_v410"
+                local_model = "$baseDir/test_data/r1041_e82_400bps_sup_v410"
                 amplicon    = true
                 min_depth   = 30
                 min_variant_qual_c3 = 18

@@ -139,7 +139,7 @@ workflow NANOPORE_CONSENSUS {
 
         // Combine input with reference data
         ch_clair3_inputs = ch_trimmed_bams_w_pool
-            .map {meta, bam, bai, pool, pool_bed -> tuple(meta.ref_id, meta, bam, bai, pool, pool_bed) }
+            .map { meta, bam, bai, pool, pool_bed -> tuple(meta.ref_id, meta, bam, bai, pool, pool_bed) }
             .combine(ch_ref_with_fai, by: 0)
             .multiMap { _ref_id, meta, bam, bai, pool, pool_bed, meta_ref, fasta, fai ->
                 bam_pool: tuple(meta, bam, bai, pool, pool_bed)
