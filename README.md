@@ -39,7 +39,7 @@ Major change in version 1.3.0 is the update of [Clair3](https://github.com/HKU-B
 
 - Sample references are set based on the predicted genotype with a default fallback for non-supplied genotypes or unknown/mixed samples.
   - Included in the repo are genotypes: A, B3, D8
-   - Includes primer files for artic (run with `-profile artic_primers`) and, by default, the local PHAC scheme.
+  - Includes primer files for artic (run with `-profile artic_primers`) and, by default, the local PHAC scheme.
   - _Recommended_ users set their own references and primers
   - Users can supply their own references for other genotypes or update the current genotype ones based on their needs
   - Users can set their own whole run reference (no predictions or genotype specific analysis) with `--reference <REF>` (and `--primer_bed <BED>` for amplicon).
@@ -324,6 +324,7 @@ For questions please contact either:
 ## Citations
 
 ### Preprint
+
 If you find this pipeline useful, please cite our preprint as:
 
 > Evaluation of MeaSeq: comprehensive analysis and reporting of measles virus whole genome sequences.
