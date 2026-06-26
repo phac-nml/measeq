@@ -10,8 +10,8 @@ process CLAIR3_POOL {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/clair3:2.0.1--py311hbc58adc_0' :
-        'biocontainers/clair3:2.0.1--py311hbc58adc_0' }"
+        'https://depot.galaxyproject.org/singularity/clair3:2.0.2--py311hbc58adc_0' :
+        'biocontainers/clair3:2.0.2--py311hbc58adc_0' }"
 
     input:
     tuple val(meta), path(bam), path(bai), val(pool), path(pool_bed)
@@ -78,8 +78,8 @@ process CLAIR3_NO_POOL {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/clair3:2.0.1--py311hbc58adc_0' :
-        'biocontainers/clair3:2.0.1--py311hbc58adc_0' }"
+        'https://depot.galaxyproject.org/singularity/clair3:2.0.2--py311hbc58adc_0' :
+        'biocontainers/clair3:2.0.2--py311hbc58adc_0' }"
 
     input:
     tuple val(meta), path(bam), path(bai)

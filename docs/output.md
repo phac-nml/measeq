@@ -241,8 +241,7 @@ Using the N450 dataset, the input reference is typed so that the N450 region can
 
 - `vcf/processed_vcf/`
   - `<SAMPLE>.consensus.norm.vcf.gz`: Consensus BCFTools normalized variants to be applied to the consensus sequence
-  - `<SAMPLE>.ambiguous.norm.vcf.gz`: Intermediate BCFTools normalized variants to be applied as IUPAC bases to the consensus sequence
-  - `<SAMPLE>.processed.norm.vcf.gz`: All filter-passing variants tagged with what type of variant they are
+  - `<SAMPLE>.variants.norm.vcf.gz`: All filter-passing variants tagged with what type of variant they are
   - `<SAMPLE>.consensus.tsv`: All filter-passing variants in TSV format for use in final reporting script
 
 </details>

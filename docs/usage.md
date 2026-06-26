@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This pipeline is written in nextflow and intended to be run specifically on measles virus (MeV) paired-end Illumina or single-end Nanopore sequencing data. This pipeline is intended for rapid deployment in outbreak situations in Canada and abroad.
+This pipeline is written in nextflow and intended to be run specifically on measles virus (MeV) paired-end Illumina or single-end Nanopore sequencing data. This pipeline is intended for rapid deployment in outbreak situations in Canada and abroad. It generates MeV consensus sequences using MeV specific QC parameters and creates a set of final summary information and reports.
 
 ## Index
 
@@ -57,7 +57,9 @@ PosCtrl01,/PATH/TO/inputread2.fastq.gz,
 Sample3,/PATH/TO/inputread3.fastq.gz,
 ```
 
-Input Parameter:
+*Nanopore only needs 2 columns, `sample`, and `fastq_1` but having `fastq_2` as well works with no issues if its just empty.
+
+### Input Parameter
 
 ```bash
 --input '</PATH/TO/samplesheet.csv>'
@@ -68,7 +70,7 @@ Input Parameter:
 | Column    | Description                                                                                                                                                                            |
 | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `sample`  | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
-| `fastq_1` | Full path to FastQ file for Illumina short reads 1. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
+| `fastq_1` | Full path to FastQ file for Illumina short reads 1 or Nanopore long reads file. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
 | `fastq_2` | Full path to FastQ file for Illumina short reads 2. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
 
 An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
@@ -83,7 +85,7 @@ The typical base command for running the illumina pipeline path is as follows:
 nextflow run phac-nml/measeq --input ./samplesheet.csv --outdir results --platform illumina -profile docker
 ```
 
-This will launch the pipeline with the `docker` configuration profile for `illumina` input data. This uses a custom prediction script to assign a sample's most likely genotype to map the reads to. More information about genotype assignment [is found here](#--reference). See [All Parameters](#all-parameters) for more information about all parameters available.
+This will launch the pipeline with the `docker` configuration profile for `illumina` input data. This uses a custom prediction script to assign a sample's most likely genotype to map the reads to. More information about genotype assignment [is found in the README](../README.md#reference-assignment). See [All Parameters](#all-parameters) for more information about all parameters available in the pipeline.
 
 ### Nanopore Required
 
@@ -93,7 +95,7 @@ The typical base command for running the nanopore pipeline path is as follows:
 nextflow run phac-nml/measeq --input ./samplesheet.csv --outdir results --platform nanopore --model 'r941_prom_sup_g5014' -profile docker
 ```
 
-This will launch the pipeline with the `docker` configuration profile. For `nanopore` input data, we've also set the model for clair3 to be `r941_prom_sup_g5014`. This uses a custom prediction script to assign a sample's most likely genotype to map the reads to. More information about genotype assignment [is found here](#--reference). See [All Parameters](#all-parameters) for more information about all parameters available.
+This will launch the pipeline with the `docker` configuration profile. For `nanopore` input data, you also must set the model for clair3 (in this example: `r941_prom_sup_g5014`). This uses a custom prediction script to assign a sample's most likely genotype to map the reads to. More information about genotype assignment [is found in the README](../README.md#reference-assignment). See [All Parameters](#all-parameters) for more information about all parameters available in the pipeline.
 
 ### Expanded Parameter Options
 
@@ -217,6 +219,8 @@ A table containing all of the parameter descriptions. You can also do `nextflow 
 | --normalise_ont              | Normalise each amplicon barcode to set depth                                                                                                             | False         | Int     | 2000             | Nanopore only                                                                                                                    |
 | --ont_keep_incorrect_primers | Keep reads that don't correctly match to their proper primer pair                                                                                        | False         | Boolean | False            | Nanopore only                                                                                                                    |
 | --min_variant_qual_c3        | Minimum variant quality to pass clair3 filters                                                                                                           | False         | Int     | 7                | Nanopore only                                                                                                                    |
+min_frameshift_qual_c3
+| --min_frameshift_qual_c3        | Minimum frameshift variant quality to pass clair3 filters                                                                                                           | False         | Int     | 30                | Nanopore only                                                                                                                    |
 | --min_allele_freq_c3         | Minimum alt allele frequency to pass a clair3 variant                                                                                                    | False         | Number  | 0.60             | Nanopore only                                                                                                                    |
 | --min_mask_freq_c3           | Minimum alt allele frequency to mask a variant as an N in the final consensus sequence                                                                   | False         | Number  | 0.30             | Nanopore only, alows the user to control how much site discordance is allowed before a site is masked over calling the reference |
 | --min_site_threshold_c3      | Minimum overall site depth threshold for a variant to be included. So default 0.05 = a minimum of 5% of the positions depth for a variant to be included | False         | Number  | 0.05             | Nanopore only, only should affect amplicon overlap regions                                                                       |
