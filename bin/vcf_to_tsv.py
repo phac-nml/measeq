@@ -157,8 +157,8 @@ def main() -> None:
     args = parser.parse_args()
 
     # Load in VCF and parse
-    variants = process_variant_file(args.vcf, args.annotated, 'Consensus')
-    failing_variants = process_variant_file(args.fail_vcf, args.annotated, 'Masked')
+    variants = process_variant_file(args.vcf, args.annotated, 'PASS')
+    failing_variants = process_variant_file(args.fail_vcf, args.annotated, 'MASKED')
 
     variants.extend(failing_variants)
 

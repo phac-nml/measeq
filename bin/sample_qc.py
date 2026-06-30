@@ -590,14 +590,14 @@ def grade_n450(dsid: str, n450_mean_depth: float, n450_completeness: float) -> s
     return 'PASS'
 
 
-def check_consensus_tsv_masked(tsv: Path) -> int:
-    '''Check for masked sites in consensus TSV'''
-    failed_sites = 0
+def check_tsv_for_masked(tsv: Path) -> int:
+    '''Check for masked sites in nanopore consensus variants TSV'''
+    masked_sites = 0
     with open(tsv, 'r') as f:
         for line in f:
-            if 'Masked' in line.strip('\n').split('\t'):
-                failed_sites += 1
-    return failed_sites
+            if 'MASKED' in line.strip('\n').split('\t'):
+                masked_sites += 1
+    return masked_sites
 
 
 def grade_qc(completeness: float, mean_dep: float, median_dep:float,
@@ -722,7 +722,7 @@ def main() -> None:
     iupac_val = var_count_dict['num_iupac']
     if args.platform == 'nanopore':
         iupac_key = 'num_masked'
-        iupac_val = check_consensus_tsv_masked(args.consensus_tsv)
+        iupac_val = check_tsv_for_masked(args.consensus_tsv)
 
     # Grade qc
     ambiguous_status = (iupac_val >= args.ambiguous_warn_threshold)
