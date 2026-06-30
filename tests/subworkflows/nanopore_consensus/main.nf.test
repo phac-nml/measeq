@@ -63,6 +63,13 @@ nextflow_workflow {
                 { assert workflow.success }
             )
 
+            // Channels
+            def meta = {}
+            meta = workflow.out.consensus.get(0)[0]
+            assert meta.id == "SRR31023694.downsampled"
+            assert meta.ref_id == "MH356245.1"
+            assert path(workflow.out.consensus.get(0)[1]).exists()
+
             // Files exist
             // Nanoq
             assert path("${launchDir}/results/nanoq/SRR31023694.downsampled_filtered.fastq").exists()

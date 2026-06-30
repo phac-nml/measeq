@@ -13,15 +13,15 @@ nextflow_workflow {
                 """
                 input[0] = 'nextstrain/measles/N450/WHO-2012'
                 input[1] = '2025-03-26--11-47-13Z'
-
                 """
             }
         }
     }
 
 
-    test("Reference Setup Workflow with Optional") {
+    test("Reference Setup Workflow with Amplicons") {
         tag "success"
+        tag "amplicon"
         when {
             workflow {
                 """
@@ -47,15 +47,83 @@ nextflow_workflow {
                 { assert workflow.success }
             )
 
+            // Channels
+            def meta = {}
+            meta = workflow.out.samples.get(0)[0]
+            assert meta.id == "SRR7517490"
+            assert meta.ref_id == "MH356245.1"
+
+            meta = workflow.out.reference.get(0)[0]
+            assert meta.id == "MH356245.1"
+            assert meta.genotype == "D8"
+
+            assert workflow.out.split_amp_pools_bed.size() == 6
+
             // Files exist
             // Reference Intermediates
             assert path("${launchDir}/results/reference/MH356245.1.genome.bed").exists()
-            assert path("${launchDir}/results/reference/MH356245.1.amplicon.bed").exists()
             assert path("${launchDir}/results/reference/MH356245.1.refstats.txt").exists()
             assert path("${launchDir}/results/reference/MH356245.1.reference.fasta.fai").exists()
+            assert path("${launchDir}/results/reference/MH356245.1.amplicon.bed").exists()
             // Amplicon Regions
             assert path("${launchDir}/results/reference/amplicon_regions/1.MH356245.1.bed").exists()
             assert path("${launchDir}/results/reference/amplicon_regions/2.MH356245.1.bed").exists()
+            // Prediction
+            def lines = []
+            assert path("${launchDir}/results/predictions.csv")
+            lines = path("${launchDir}/results/predictions.csv").readLines()
+            assert lines.size() == 2
+        }
+    }
+
+    test("Reference Setup Workflow without Amplicons") {
+        tag "success"
+        when {
+            workflow {
+                """
+                input[0] = Channel.of(
+                    [
+                        [id: "SRR7517490", single_end: false],
+                        [
+                            file("$baseDir/test_data/illumina_fastqs/SRR7517490_R1.fastq.gz"),
+                            file("$baseDir/test_data/illumina_fastqs/SRR7517490_R2.fastq.gz")
+                        ]
+                    ]
+                )
+                input[1] = NEXTCLADE_DATASETGET.out.dataset
+                """
+            }
+            params {
+                outdir = "results"
+                amplicon = false
+            }
+        }
+        then {
+            assertAll(
+                { assert workflow.success }
+            )
+
+            // Channels
+            def meta = {}
+            meta = workflow.out.samples.get(0)[0]
+            assert meta.id == "SRR7517490"
+            assert meta.ref_id == "MH356245.1"
+
+            meta = workflow.out.reference.get(0)[0]
+            assert meta.id == "MH356245.1"
+            assert meta.genotype == "D8"
+
+            assert workflow.out.split_amp_pools_bed.size() == 0
+
+            // Files exist
+            // Reference Intermediates
+            assert path("${launchDir}/results/reference/MH356245.1.genome.bed").exists()
+            assert path("${launchDir}/results/reference/MH356245.1.refstats.txt").exists()
+            assert path("${launchDir}/results/reference/MH356245.1.reference.fasta.fai").exists()
+            assert !path("${launchDir}/results/reference/MH356245.1.amplicon.bed").exists()
+            // Amplicon Regions don't exist
+            assert !path("${launchDir}/results/reference/amplicon_regions/1.MH356245.1.bed").exists()
+            assert !path("${launchDir}/results/reference/amplicon_regions/2.MH356245.1.bed").exists()
         }
     }
 }

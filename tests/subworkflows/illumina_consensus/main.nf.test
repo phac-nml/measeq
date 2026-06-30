@@ -53,6 +53,13 @@ nextflow_workflow {
                 { assert workflow.success }
             )
 
+            // Channels
+            def meta = {}
+            meta = workflow.out.consensus.get(0)[0]
+            assert meta.id == "SRR7517490"
+            assert meta.ref_id == "MH356245.1"
+            assert path(workflow.out.consensus.get(0)[1]).exists()
+
             // Files exist
             // Fastp
             assert path("${launchDir}/results/fastp/SRR7517490.fastp.json").exists()
