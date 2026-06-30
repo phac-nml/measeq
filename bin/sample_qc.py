@@ -137,6 +137,13 @@ def init_parser() -> argparse.ArgumentParser:
         type=str,
         help='Name of Reference used'
     )
+    parser.add_argument(
+        '--ambiguous_warn_threshold',
+        required=False,
+        default=5,
+        type=int,
+        help="Number of ambiguous sites before triggering ambiguous warning"
+    )
     return parser
 
 
@@ -593,9 +600,9 @@ def check_consensus_tsv_masked(tsv: Path) -> int:
     return failed_sites
 
 
-def grade_qc(platform: str, completeness: float, mean_dep: float, median_dep:float,
-             iupac_count: int, divisible: str, frameshift: bool, nonsense_mutation: bool,
-             stop_mutation: bool, genotype_match: bool
+def grade_qc(completeness: float, mean_dep: float, median_dep:float,
+             ambiguous_status: bool, divisible: str, frameshift: bool,
+             nonsense_mutation: bool, stop_mutation: bool, genotype_match: bool
             ) -> str:
     '''
     Purpose:
@@ -604,16 +611,14 @@ def grade_qc(platform: str, completeness: float, mean_dep: float, median_dep:flo
 
     Parameters:
     -----------
-    platform - str
-        illumina or nanopore
     completeness - float
         Genome completeness
     mean_dep - float
         Mean sequencing depth
     median_dep - float
         Median sequencing depth
-    iupac_count - int
-        Number of IUPACs in illumina data
+    ambiguous_status - bool
+        If sample has too many ambigous bases
     divisible - str
         If sample is divisible by 6 = PASS
     frameshift - bool
@@ -644,12 +649,8 @@ def grade_qc(platform: str, completeness: float, mean_dep: float, median_dep:flo
         qc_status.append('LOW_SEQ_DEPTH')
 
     # Masked sites / IUPACs
-    ambiguous_threshold = 5
-    if platform == 'nanopore':
-        ambiguous_threshold = 10
-    if iupac_count > ambiguous_threshold:
+    if ambiguous_status:
         qc_status.append('EXCESS_AMBIGUITY')
-
     # Divisible by 6
     if divisible == "FAIL":
         qc_status.append('NOT_DIVISIBLE')
@@ -724,13 +725,15 @@ def main() -> None:
         iupac_val = check_consensus_tsv_masked(args.consensus_tsv)
 
     # Grade qc
+    ambiguous_status = (iupac_val >= args.ambiguous_warn_threshold)
     frameshift_status = (frameshift != '')
     nonsense_status = (nonsense != '')
     stop_mutation_status = (stop_mutation != '')
     genotype_match = (args.genotype == genotype)
-    qc_status = grade_qc(args.platform, completeness, mean_dep, median_dep,
-                         iupac_val, divisible, frameshift_status, nonsense_status,
-                         stop_mutation_status, genotype_match)
+    qc_status = grade_qc(completeness, mean_dep, median_dep, ambiguous_status,
+                         divisible, frameshift_status, nonsense_status,
+                         stop_mutation_status, genotype_match
+                        )
 
     # Output
     final = {

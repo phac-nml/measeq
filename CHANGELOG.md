@@ -33,8 +33,9 @@ Big Note: The Clair3 `v1.2.0` models have to be converted to the new format. The
 - Clair3 updated to `v2.0.1` [PR #43](https://github.com/phac-nml/measeq/pull/43)
 
 - Added an excess ambiguity warning [PR #43](https://github.com/phac-nml/measeq/pull/43)
-  - `>5` sites for Illumina
-  - `>10` sites for Nanopore
+  - `>=5` sites for Illumina by default
+  - `>=10` sites for Nanopore by default
+  - Its configurable in the `modules.json` file
 
 ## Removed
 

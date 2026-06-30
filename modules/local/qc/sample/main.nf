@@ -21,6 +21,7 @@ process MAKE_SAMPLE_QC_CSV {
     path "versions.yml", emit: versions
 
     script:
+    def args = task.ext.args ?: ""
     // Add in which read filtering program was used based on the name
     def readJsonArg = ""
     if (read_json.name.contains(".fastp.")) {
@@ -52,6 +53,7 @@ process MAKE_SAMPLE_QC_CSV {
         $seqPrimerArg \\
         --sample $meta.id \\
         --irida_id $meta.irida_id \\
+        $args \\
         --ref_id $meta.ref_id
 
     cat <<-END_VERSIONS > versions.yml
