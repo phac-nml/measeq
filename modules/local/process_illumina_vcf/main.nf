@@ -1,4 +1,4 @@
-process PROCESS_VCF {
+process PROCESS_ILLUMINA_VCF {
     label 'process_single'
     tag "${meta.id}"
 
@@ -8,8 +8,8 @@ process PROCESS_VCF {
     //  Notably adding in the genotype format as 1 for variants to work with newer bcftools, a slight qual filter, and tsv output to table later
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/artic:1.8.5--pyhdfd78af_0' :
-        'biocontainers/artic:1.8.5--pyhdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/artic:1.10.3--pyhdfd78af_0' :
+        'biocontainers/artic:1.10.3--pyhdfd78af_0' }"
 
     input:
     tuple val(meta), path(vcf)
@@ -17,8 +17,6 @@ process PROCESS_VCF {
 
     output:
     tuple val(meta), path("${meta.id}.consensus.norm.vcf.gz"), path("${meta.id}.consensus.norm.vcf.gz.tbi"), emit: consensus_vcf
-    tuple val(meta), path("${meta.id}.ambiguous.norm.vcf.gz"), path("${meta.id}.ambiguous.norm.vcf.gz.tbi"), emit: ambiguous_vcf
-    tuple val(meta), path("${meta.id}.processed.norm.vcf.gz"), path("${meta.id}.processed.norm.vcf.gz.tbi"), emit: total_vcf
     tuple val(meta), path("${meta.id}.consensus.tsv"), emit: variants_tsv
     path "versions.yml", emit: versions
 
@@ -29,13 +27,13 @@ process PROCESS_VCF {
     }
     """
     # Process the VCF
-    process_vcf.py \\
+    process_illumina_vcf.py \\
         -d ${params.min_depth} \\
         -l ${params.min_ambiguity_threshold} \\
         -u ${params.max_ambiguity_threshold} \\
         -m ${params.min_indel_threshold} \\
         -q ${params.min_variant_qual_freebayes} \\
-        -c ${meta.id}.processed.vcf \\
+        -c ${meta.id}.consensus.vcf \\
         -v ${meta.id}.variants.vcf \\
         -t ${meta.id}.consensus.tsv \\
         $frameshiftArg \\
@@ -44,27 +42,19 @@ process PROCESS_VCF {
     # Normalize variant records into canonical VCF representation
     bcftools norm \\
         -f $reference \\
-        ${meta.id}.processed.vcf \\
-        > ${meta.id}.processed.norm.vcf
-
-    for vt in "ambiguous" "consensus"; do
-        cat ${meta.id}.processed.norm.vcf \\
-            | awk -v vartag=ConsensusTag=\$vt '\$0 ~ /^#/ || \$0 ~ vartag' > ${meta.id}.\$vt.norm.vcf
-
-        bgzip -f ${meta.id}.\$vt.norm.vcf
-        tabix -p vcf ${meta.id}.\$vt.norm.vcf.gz
-    done
+        ${meta.id}.consensus.vcf \\
+        > ${meta.id}.consensus.norm.vcf
 
     # Final combined VCF for reporting
-    bgzip -f ${meta.id}.processed.norm.vcf
-    tabix -p vcf ${meta.id}.processed.norm.vcf.gz
+    bgzip -f ${meta.id}.consensus.norm.vcf
+    tabix -p vcf ${meta.id}.consensus.norm.vcf.gz
 
     # Versions #
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
         python: \$(python --version | sed 's/Python //g')
-        process_vcf: 0.2.0
+        process_illumina_vcf: 0.3.0
     END_VERSIONS
     """
 
@@ -73,13 +63,7 @@ process PROCESS_VCF {
     touch ${meta.id}.consensus.norm.vcf.gz
     touch ${meta.id}.consensus.norm.vcf.gz.tbi
 
-    touch ${meta.id}.ambiguous.norm.vcf.gz
-    touch ${meta.id}.ambiguous.norm.vcf.gz.tbi
-
     touch ${meta.id}.variants.vcf
-
-    touch ${meta.id}.processed.norm.vcf.gz
-    touch ${meta.id}.processed.norm.vcf.gz.tbi
 
     touch ${meta.id}.consensus.tsv
 
@@ -88,7 +72,7 @@ process PROCESS_VCF {
     "${task.process}":
         bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
         python: \$(python --version | sed 's/Python //g')
-        process_vcf: 0.2.0
+        process_illumina_vcf: 0.3.0
     END_VERSIONS
     """
 }

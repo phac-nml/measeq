@@ -10,8 +10,8 @@ process CLAIR3_POOL {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/clair3:1.2.0--py310h779eee5_0' :
-        'biocontainers/clair3:1.2.0--py310h779eee5_0' }"
+        'https://depot.galaxyproject.org/singularity/clair3:2.0.2--py311hbc58adc_0' :
+        'biocontainers/clair3:2.0.2--py311hbc58adc_0' }"
 
     input:
     tuple val(meta), path(bam), path(bai), val(pool), path(pool_bed)
@@ -33,9 +33,9 @@ process CLAIR3_POOL {
 
     # Run clair3 after
     run_clair3.sh \\
-        --bam_fn=${pool}.sorted.bam \\
+        --bam_fn="${pool}.sorted.bam" \\
         --bed_fn=$pool_bed \\
-        --ref_fn=$reference \\
+        --ref_fn="\$PWD/$reference" \\
         --threads=${task.cpus} \\
         --platform='ont' \\
         --model_path="$model" \\
@@ -78,8 +78,8 @@ process CLAIR3_NO_POOL {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/clair3:1.2.0--py310h779eee5_0' :
-        'biocontainers/clair3:1.2.0--py310h779eee5_0' }"
+        'https://depot.galaxyproject.org/singularity/clair3:2.0.2--py311hbc58adc_0' :
+        'biocontainers/clair3:2.0.2--py311hbc58adc_0' }"
 
     input:
     tuple val(meta), path(bam), path(bai)
@@ -95,7 +95,7 @@ process CLAIR3_NO_POOL {
     """
     run_clair3.sh \\
         --bam_fn=$bam \\
-        --ref_fn=$reference \\
+        --ref_fn="\$PWD/$reference" \\
         --threads=${task.cpus} \\
         --platform='ont' \\
         --model_path="$model" \\

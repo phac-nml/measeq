@@ -10,7 +10,9 @@
     - [Clair3 Models](#clair3-models)
     - [Variant Quality Filtering and Masking Mixed Sites](#variant-quality-filtering-and-masking-mixed-sites)
   - [Reference Assignment](#reference-assignment)
-  - [Amplicon and Primer Files](#amplicon-and-primer-files)
+    - [Specifying Singular Reference](#specifying-singular-reference)
+  - [Amplicon Data and Primer Files](#amplicon-data-and-primer-files)
+    - [Changing the Preset References and Primer Files](#changing-the-preset-references-and-primer-files)
   - [DSIds](#dsids)
   - [Contact Information](#contact-information)
   - [More Run Options](#more-run-options)
@@ -22,41 +24,33 @@
 - [Troubleshooting](#troubleshooting)
 - [Credits](#credits)
 - [Citations](#citations)
+  - [Preprint](#preprint)
+  - [Additional Tools](#additional-tools)
 - [Contributing](#contributing)
 - [Legal](#legal)
 
 ## Current Updates
 
-### _2026-05-20_ Summary
+### _2026-07-06_ Summary
 
-Full release version 1.2.0! Pipeline supports equivalent Illumina and Nanopore workflows allowing whole genome or amplicon sequencing analysis. The MeaSeq workflow generates whole genome consensus sequences, N450 sequences and reporting information, DSId hashing and assigning, and a final QC report. It can be run with a single reference or with the genotyping predictions and a config setup containing a users preferred references.
+Full release version 1.3.0! Pipeline supports equivalent Illumina and Nanopore workflows allowing whole genome or amplicon sequencing analysis. The MeaSeq workflow generates whole genome consensus sequences, N450 sequences and reporting information, DSId hashing and assigning, and a final QC report. It can be run with a single reference or with the genotyping predictions and a config setup containing a users preferred references.
 
-Changes in `v1.2.0` include the addition of [Bowtie 2](https://github.com/BenLangmead/bowtie2) as an alterative read mapping tool (instead of BWAMem 2) and support for the [Artic primers](https://www.biorxiv.org/content/10.1101/2024.12.20.629611v1) mapped to the pipeline's preset references (D8, B3, and A genotypes).
-
-#### Preprint
-
-If you find this pipeline useful, please cite our preprint as:
-
-> Evaluation of MeaSeq: comprehensive analysis and reporting of measles virus whole genome sequences.
-> Darian T Hole, Ahmed Abdalla, Vanessa Zubach, Molly Pratt, Stephanie Van Driel, Samar Ashfaq, Joanne Hiebert, Ana T Duggan
-> bioRxiv 2026.05.12.724559; doi: https://doi.org/10.64898/2026.05.12.724559
+Major change in version 1.3.0 is the update of [Clair3](https://github.com/HKU-BAL/Clair3/tree/main#v200--feb-9-2026--major-release) from `1.2.0` to `2.0.1`. This should only affect users running with a `--local_model` where they'll need to download the new pytorch models locally. Specifying the model name on the command line will download the pytorch model for the run.
 
 #### Genotype Predictions
 
-- Sample references are now set based on the predicted genotype with a default fallback for non-supplied genotypes or unknown/mixed samples.
-  - Currently supported in the repo by default: A, B3, D8
+- Sample references are set based on the predicted genotype with a default fallback for non-supplied genotypes or unknown/mixed samples.
+  - Included in the repo are genotypes: A, B3, D8
+  - Includes primer files for artic (run with `-profile artic_primers`) and, by default, the local PHAC scheme.
   - _Recommended_ users set their own references and primers
   - Users can supply their own references for other genotypes or update the current genotype ones based on their needs
-  - Users can set their own whole run reference (no predictions or genotype specific analysis) with `--reference`
+  - Users can set their own whole run reference (no predictions or genotype specific analysis) with `--reference <REF>` (and `--primer_bed <BED>` for amplicon).
   - [References Config](conf/reference.config)
   - More total information available in the [References and Predictions section](#reference-assignment)
 
 #### Future Direction and Support
 
 - Updating the final report and maintaining best practices/tool updates as they are released
-
-- For IRIDA-Next, we're hoping to evaluate generic viral pipeline options (or create one) and merge in virus specific post-processing stages
-  - So measeq post-processing would end up included there
 
 ## Introduction
 
@@ -122,10 +116,10 @@ You can then run the pipeline using:
 
 ```bash
 nextflow run phac-nml/measeq \
-    -profile <docker/singularity/.../institute>
     --input <SAMPLESHEET> \
     --outdir <OUTDIR> \
     --platform illumina \
+    -profile <docker/singularity/.../institute>
 ```
 
 ### Nanopore
@@ -135,10 +129,10 @@ And as follows for nanopore data:
 **samplesheet.csv**
 
 ```csv
-sample,fastq_1,fastq_2
-MeVSample01,/PATH/TO/inputread1.fastq.gz,
-PosCtrl01,/PATH/TO/inputread2.fastq.gz,
-Sample3,/PATH/TO/inputread3.fastq.gz,
+sample,fastq_1
+MeVSample01,/PATH/TO/inputread1.fastq.gz
+PosCtrl01,/PATH/TO/inputread2.fastq.gz
+Sample3,/PATH/TO/inputread3.fastq.gz
 ```
 
 Each row represents a sample and its single-end nanopore data.
@@ -160,29 +154,25 @@ The Nanopore pipeline utilizes [Clair3](https://github.com/HKU-BAL/Clair3) to ca
 
 Some models are built into clair3 and some need to be downloaded. The [pre-trained clair3](https://github.com/HKU-BAL/Clair3?tab=readme-ov-file#pre-trained-models) models are able to be automatically downloaded when running the pipeline using [`artic get_models`](https://github.com/artic-network/fieldbioinformatics/blob/master/artic/get_models.py) and can be specified as a parameter with `--model <MODEL>`.
 
-Additional or local models can also be used, you just have to provide a path to them and use the `--local_model <PATH>` parameter instead
+Additional or local models can also be used, you just have to provide a path to them and use the `--local_model <PATH>` parameter instead.
 
 #### Variant Quality Filtering and Masking Mixed Sites
 
 In addition to calling variants with Clair3, the Nanopore pipeline will mask sites that are of lower quality (Default: 2 < QUAL < 7) or have a non-consensus level allele frequency (Default: 30% < AF < 60%) with an N in the final consensus. These masked sites can be found in the final HTML report or under the `results/vcf/artic/<sample>.fail.vcf` file.
 
-To adjust this behaviour, you can set the `--min_variant_qual_c3`, `--min_allele_freq_c3`, and `--min_mask_freq_c3` parameters. Setting them all to 0 will essentially turn off variant filtering other than for indels and low depth sites and will then instead rely solely on clair3's calls.
+To adjust this behaviour, you can set the `--min_variant_qual_c3`, `--min_frameshift_qual_c3`, `--min_allele_freq_c3`, and `--min_mask_freq_c3` parameters. Setting them all to 0 will essentially turn off variant filtering other than for low depth sites and will then instead rely solely on clair3's variant calls.
 
 ### Reference Assignment
 
-With [MeaSeq v0.5.0](https://github.com/phac-nml/measeq/releases/tag/0.5.0) and later, the `--reference` parameter is no longer required. Instead, the pipeline now runs on a per-sample reference assignment based on predicting the input sample's most likely genotype. In doing so, we have preset 3 reference files based on three measles virus genotypes (B3, D8, A). If a sample is predicted to be one of these genotypes, then the pipeline processes the sample using the corresponding reference FASTA file. If the sample's most likely genotype doesn't correspond to one of these genotypes, then the pipeline defaults to the set `--default_ref` reference FASTA file which matches the D8 reference genome by default.
+With [MeaSeq v0.5.0](https://github.com/phac-nml/measeq/releases/tag/0.5.0) and later, the `--reference` parameter is no longer required. Instead, the pipeline now runs by default on a per-sample reference assignment based on predicting the input sample's most likely genotype. Included in the pipeline are 3 reference files based on for MeV genotypes B3, D8, and A. If a sample is predicted to be one of these genotypes, then the pipeline processes the sample using the corresponding reference FASTA file. If the sample's most likely genotype doesn't correspond to one of these genotypes, then the pipeline defaults to the set `--default_ref` reference FASTA file which matches the D8 reference genome by default.
 
-It is _highly recommended_ that users evaluate and setup their own reference sequences and especially primer files when running with predictions as they may differ from what is provided by default (which are internally used references and primers). This should only need to be done once and then the setup can be used for subsequent runs. [Instructions are available](docs/usage.md#specifying-parameters-to-preset-specific-reference-fasta-and-primer-bed-files) to set this up.
+It is _highly recommended_ that users evaluate and setup their own reference sequences and especially primer files when running with predictions as they may differ from what is provided by default (PHAC specific references and primers). This should only need to be done once and then the setup can be used for subsequent runs. [Instructions are available](docs/usage.md#specifying-parameters-to-preset-specific-reference-fasta-and-primer-bed-files) to set this up.
 
 #### Specifying Singular Reference
 
 Users can turn off reference prediction and instead run all samples with their own reference genome using the `--reference <FASTA>` parameter.
 
-#### Changing the Preset References and Primer Files
-
-Evalutating and adjusting the preset reference genomes and primer bed files is recommended; especially the primers files if running with amplicon data. To make these adjustments, you can pass a `-params-file` or use the command line to specify genotype reference or primer bed files to change. More detailed information about changing the preset files is found within [the usage file](docs/usage.md#changing-preset-reference-files).
-
-### Amplicons and Primer Files
+### Amplicon Data and Primer Files
 
 _Both_ Illumina and Nanopore support running amplicon data using a primer bed file to trim primer positions with either [`iVar`](https://github.com/andersen-lab/ivar) or [`ARTIC`](https://github.com/artic-network/align_trim). To run amplicon data when running with genotype predictions, specify the `--amplicon` parameter and the primer file associated with the predicted genotype will be used to trim the reads.
 
@@ -207,24 +197,28 @@ To properly pair the primers, make sure that the names match up until the `_LEFT
 
 _Note_: The first line in the example file is just to display what each line expects and should not be included when creating a primer bed file
 
+#### Changing the Preset References and Primer Files
+
+Evalutating and adjusting the preset reference genomes and primer bed files is recommended; especially the primers files if running with amplicon data. To make these adjustments, you can pass a `-params-file` or use the command line to specify genotype reference or primer bed files to change. More detailed information about changing the preset files is found within [the usage file](docs/usage.md#changing-preset-reference-files).
+
 ### DSIds
 
 While 24 MeV genotypes were initially identified, only 2 have been detected since 2021: B3 and D8. Due to this, the Distinct Sequence Identifier (DSId) system was created to designate a unique 4-digit identifier based on the precise N450 sequence as a sub-genotype nomenclature. The [Measles Nucleotide Surveillance database](https://who-gmrln.org/means2) (MeaNS) is the global resource for these measles virus genetic sequences that is maintained by the WHO. N450 sequences can be submitted to the database to generate a distinct sequence identifier (DSId) for each unique sequence.
 
-There is no way to query the current database so a multifasta file with DSId calls is required to match them up locally. If a match is found, the matching DSId is assigned! If no match is found, the distinct sequence is given a `Novel-<MD5 HASH>` (first 7 characters) identifier so that it can be submitted to the database. To do this, use the parameter `--dsid_fasta <FASTA>` with the fasta file structured to look as such:
+There is no way to query the current database so a multifasta file with DSId calls is required to match locally match them. If a match is found, the matching DSId is assigned! If no match is found, or no DSId file is given, the distinct sequence is given a `Novel-<MD5 HASH>` (first 7 characters) identifier so that it can be submitted to the database and so that same IDs can be grouped together.
+
+To assign known DSIds locally, use the parameter `--dsid_fasta <FASTA>` with the fasta database file structured to look as such:
 
 **dsid_fasta**
 
 ```
 >1931 D8
 GTCAGTTCCACATTGGCATCTGAACTCG
-> 2001 D8
+>2001 D8
 GTCAGTTCCACATTGGCATCAGAACTCG
-> 2418 B3
+>2418 B3
 GTCAGTTCCACAGTGGCATCTGAACTCG
 ```
-
-If no DSId FASTA file is given, the DSIds will still be generated as hashes to group up samples in the dsid.tsv file and in the final report.
 
 ### Contact Information
 
@@ -249,7 +243,7 @@ nextflow run phac-nml/measeq -profile test_illumina,<docker/singularity/institut
 
 ## Outputs
 
-The main outputs of the pipeline are the `consensus sequences` (N450 and Full), the `overall.qc.csv` summary table, and the `MeaSeq_Report.html`. The final MeaSeq report gives a summary of the run including sample quality metrics, plots, and any additional information. Detailed pipeline outputs are described [within the output docs](docs/output.md)
+The main outputs of the pipeline are the `consensus sequences` (N450 and Full), the `overall.qc.csv` summary table, the `Amplicon-Summary-MultiQC-Report.html` (for amplicon data onle), and the `MeaSeq_Report.html`. The final MeaSeq report gives a summary of the run including sample quality metrics, plots, and any additional information. Detailed pipeline outputs are described [within the output docs](docs/output.md)
 
 ## Steps
 
@@ -257,11 +251,12 @@ More detailed steps are available in the [output docs](./docs/output.md)
 
 ### Illumina Steps
 
+0. Genotype samples
 1. Generate Reference and Primer Intermediates
 2. FastQC
 3. Illumina Consensus Workflow
    1. FastP
-   2. BWAMem2
+   2. BWAMem2 (or Bowtie2 if `--align_bowtie2` given)
    3. iVar Trim (Amplicon input only)
    4. Picard MarkDuplicates (if parameter given to run)
    5. Freebayes
@@ -284,6 +279,7 @@ More detailed steps are available in the [output docs](./docs/output.md)
 
 ### Nanopore Steps
 
+0. Genotype samples
 1. Generate Reference and Primer Intermediates
 2. FastQC
 3. Nanopore Consensus Workflow
@@ -304,7 +300,7 @@ More detailed steps are available in the [output docs](./docs/output.md)
 5. Samtools depth
 6. Compare DSId (Optional with `--dsid_fasta` parameter)
 7. Make sample QC
-8. Amplicon Summary Workflow (Amp only data)
+8. Amplicon Summary Workflow (Amplicon only data)
    1. Bedtools Coverage
    2. Summarize Amplicon Depth
    3. Summarize Amplicon Completeness
@@ -316,7 +312,7 @@ More detailed steps are available in the [output docs](./docs/output.md)
 
 ## Troubleshooting
 
-For troubleshooting, please open an issue or consult [the usage docs](docs/usage.md) to see if they have the information you require.
+For troubleshooting, please open an issue or consult [the usage docs](docs/usage.md) to see if they have the information you require. If not, open a ticket.
 
 ## Credits
 
@@ -329,7 +325,15 @@ For questions please contact either:
 
 ## Citations
 
-> A citation for this pipeline will be available soon.
+### Preprint
+
+If you find this pipeline useful, please cite our preprint as:
+
+> Evaluation of MeaSeq: comprehensive analysis and reporting of measles virus whole genome sequences.
+> Darian T Hole, Ahmed Abdalla, Vanessa Zubach, Molly Pratt, Stephanie Van Driel, Samar Ashfaq, Joanne Hiebert, Ana T Duggan
+> bioRxiv 2026.05.12.724559; doi: https://doi.org/10.64898/2026.05.12.724559
+
+### Additional Tools
 
 This pipeline uses code and infrastructure developed and maintained by the [nf-core](https://nf-co.re) community, reused here under the [MIT license](https://github.com/nf-core/tools/blob/master/LICENSE).
 

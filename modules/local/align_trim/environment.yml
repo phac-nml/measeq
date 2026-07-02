@@ -1,6 +1,0 @@
-name: align_trim_w_samtools
-channels:
-  - conda-forge
-  - bioconda
-dependencies:
-  - bioconda::artic=1.7.4

@@ -241,7 +241,7 @@ if (file.exists(var_f)) {
     datatable(rownames = FALSE,
       caption = htmltools::tags$caption(
         style = 'caption-side: top',
-        htmltools::strong('Table III: '), 'Consensus Variant Summary Table. VCF-based summary table of the variants found in the final consensus sequence. The "Type" column displays more information on the variant call such as if the site was masked (Nanopore) or an IUPAC base (Illumina).'
+        htmltools::strong('Table III: '), 'Consensus Variant Summary Table. VCF-based summary table of the variants found in the final consensus sequence. The "Type" column displays more information on the variant call such as if the site was masked (Nanopore) or an ambiguous base (Illumina).'
       ),
       options = list(
         pageLength = 10,

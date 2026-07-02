@@ -1,4 +1,4 @@
-process VCF_TO_TSV {
+process ARTIC_MASK {
     label 'process_single'
     tag "$meta.id"
 
@@ -8,36 +8,36 @@ process VCF_TO_TSV {
         'biocontainers/artic:1.10.3--pyhdfd78af_0' }"
 
     input:
-    tuple val(meta), path(vcf), path(tbi), path(fail_vcf)
+    tuple val(meta), path(coverage_mask), path(fail_vcf)
+    tuple val(meta2), path(reference)
 
     output:
-    tuple val(meta), path("${meta.id}.consensus.tsv"), optional: true, emit: tsv
+    tuple val(meta), path("${meta.id}.preconsensus.fasta"), emit: preconsensus
     path "versions.yml", emit: versions
 
     script:
     """
-    vcf_to_tsv.py \\
-        --sample "${meta.id}" \\
-        --vcf $vcf \\
-        --fail_vcf $fail_vcf
+    artic_mask \\
+        $reference \\
+        $coverage_mask \\
+        $fail_vcf \\
+        ${meta.id}.preconsensus.fasta
 
     # Versions #
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         artic: \$(echo \$(artic --version 2>&1) | sed 's/artic //')
-        vcf_to_tsv: 0.2.0
     END_VERSIONS
     """
 
     stub:
     """
-    ${meta.id}.consensus.tsv
+    touch ${meta.id}.preconsensus.fasta
 
     # Versions #
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         artic: \$(echo \$(artic --version 2>&1) | sed 's/artic //')
-        vcf_to_tsv: 0.2.0
     END_VERSIONS
     """
 }

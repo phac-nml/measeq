@@ -3,6 +3,49 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.3.0] - 2026-07-06
+
+Code cleanup, exposed nanopore frameshift quality parameter, added excess ambiguity warning, artic version bump to `v1.10.3`, and clair3 version bump from `v1.2.0` to `v2.0.2`.
+
+Big Note: The Clair3 `v1.2.0` models have to be converted to the new format. The update to `artic` will pull these new versions by default if you are providing a `--model <model name>` name on the command line. If you are using a local model you'll have to grab the new version. More info is available in [clair3's docs](https://github.com/HKU-BAL/clair3#pre-trained-models). No consensus variant output changes noted in the test datasets with this update.
+
+### `Added`
+
+- `--min_frameshift_qual_c3` arg to adjust the minimum cutoff for a frameshift variant to be called for nanopore data [PR #43](https://github.com/phac-nml/measeq/pull/43)
+
+  - Default is the same at `30`
+
+- Added an excess ambiguity warning [PR #43](https://github.com/phac-nml/measeq/pull/43)
+
+  - `>=5` sites for Illumina by default
+  - `>=10` sites for Nanopore by default
+  - Its configurable in the `modules.json` file
+
+- Added nextflow channel check to make sure that the input model folder has a `.pt` extension file required [PR #43](https://github.com/phac-nml/measeq/pull/43)
+
+### `Adjusted`
+
+- Renamed the VCF parsing scripts to make them easier to distinguish [PR #43](https://github.com/phac-nml/measeq/pull/43)
+
+  - process_nanopore_vcf.py
+  - process_illumina_vcf.py
+
+- Illumina VCF parsing adjusted to better handle complex sites where an INDEL and a SNP are called with the SNP being the final call [PR #43](https://github.com/phac-nml/measeq/pull/43)
+
+  - No consensus output differences
+  - Adjusts the calculation for mixed sites so it rem
+  - Adjusts the need to split ambiguous sites from consensus sites in VCF outputs for downstream processing
+    - New filename for the illumina consensus variants file `.consensus.norm.vcf.gz` instead of `.processed.norm.vcf.gz`
+
+- Split out the `artic` subcommands into their own folders to better match the nextflow best practices [PR #43](https://github.com/phac-nml/measeq/pull/43)
+- Artic updated to `v1.10.3` in all spots that were `v1.8.5` [PR #43](https://github.com/phac-nml/measeq/pull/43)
+- Clair3 updated to `v2.0.2` [PR #43](https://github.com/phac-nml/measeq/pull/43)
+
+## Removed
+
+- Intermediate BCFTools consensus step in illumina workflow that applied ambiguous sites [PR #43](https://github.com/phac-nml/measeq/pull/43)
+  - Ambiguous sites now have correct genotypes associated and can just run the command once
+
 ## [v1.2.0] - 2026-05-20
 
 Update to enable users to map reads with Bowtie 2 instead of BWAMem as an optional parameter and use Artic primers as default. Add in parameter to better control ONT variant masking
