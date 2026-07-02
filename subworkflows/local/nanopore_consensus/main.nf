@@ -59,6 +59,14 @@ workflow NANOPORE_CONSENSUS {
         ch_versions = ch_versions.mix(ARTIC_GET_MODELS.out.versions)
     }
 
+    // Check that we have the clair3 .pt file required and aren't giving an older model
+    ch_model.map { model ->
+        def pt_file = file("${model}/*.pt")
+        if (pt_file.isEmpty()) {
+            error("Missing .pt file in input model folder. Check that you are giving the path to a Clair3 v2.0.0+ pytorch model and not an older model")
+        }
+    }
+
     //
     // MODULE: Run Nanoq for input fastq quality filtering
     //

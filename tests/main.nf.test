@@ -87,6 +87,29 @@ nextflow_pipeline {
         }
     }
 
+    //--- Test ----------------------------------------------------------------------------
+    test("Missing Clair3 .pt file ") {
+        tag "fail"
+        tag "nanopore"
+
+        when {
+            params {
+                input       = "$baseDir/test_data/nanopore_samplesheet.csv"
+                platform    = "nanopore"
+                outdir      = "results"
+                reference   = "${projectDir}/assets/reference/D8/MH356245.1.reference.fasta"
+                local_model = "${baseDir}/test_data/"
+            }
+        }
+        then {
+            // Status
+            assert workflow.failed
+
+            // Message
+            assert workflow.stdout.contains("Missing .pt file in input model folder. Check that you are giving the path to a Clair3 v2.0.0+ pytorch model and not an older model")
+        }
+    }
+
     /*
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                                         Illumina Tests
