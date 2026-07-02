@@ -63,13 +63,7 @@ process PROCESS_ILLUMINA_VCF {
     touch ${meta.id}.consensus.norm.vcf.gz
     touch ${meta.id}.consensus.norm.vcf.gz.tbi
 
-    touch ${meta.id}.ambiguous.norm.vcf.gz
-    touch ${meta.id}.ambiguous.norm.vcf.gz.tbi
-
     touch ${meta.id}.variants.vcf
-
-    touch ${meta.id}.processed.norm.vcf.gz
-    touch ${meta.id}.processed.norm.vcf.gz.tbi
 
     touch ${meta.id}.consensus.tsv
 

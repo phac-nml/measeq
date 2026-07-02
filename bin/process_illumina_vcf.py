@@ -355,13 +355,15 @@ def main() -> None:
             if vaf < args.lower_ambiguity_frequency:
                 continue
 
-            # Discard fs indels if provided the arg
-            if is_indel and len(final_record.alts[0]) % 3 != 0 and args.no_frameshifts:
-                continue
-
             # Discard low quality sites as recommended by freebayes
             if base_record.qual < args.min_quality:
                 continue
+
+            # Discard fs indels if provided the arg
+            if is_indel:
+                base_change = len(final_record.alts[0]) - len(final_record.ref)
+                if base_change % 3 != 0 and args.no_frameshifts:
+                    continue
 
             ### Setup basic TSV/VCF output requirements ###
             tsv_tag = "PASS"
