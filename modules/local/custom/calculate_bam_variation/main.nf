@@ -1,6 +1,6 @@
 process CALCULATE_BAM_VARIATION {
     // High memory as not currently multi-threaded and some files are big
-    label 'process_high_memory'
+    label 'process_medium'
     tag "$meta.id"
 
     // I'm just going to use artic for now as it has updated dependencies and is used elsewhere

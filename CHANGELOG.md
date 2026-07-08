@@ -3,7 +3,7 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v1.3.0] - 2026-07-06
+## [v1.3.0] - 2026-07-08
 
 Code cleanup, exposed nanopore frameshift quality parameter, added excess ambiguity warning, artic version bump to `v1.10.3`, and clair3 version bump from `v1.2.0` to `v2.0.2`.
 
@@ -40,6 +40,13 @@ Big Note: The Clair3 `v1.2.0` models have to be converted to the new format. The
 - Split out the `artic` subcommands into their own folders to better match the nextflow best practices [PR #43](https://github.com/phac-nml/measeq/pull/43)
 - Artic updated to `v1.10.3` in all spots that were `v1.8.5` [PR #43](https://github.com/phac-nml/measeq/pull/43)
 - Clair3 updated to `v2.0.2` [PR #43](https://github.com/phac-nml/measeq/pull/43)
+
+- Resource label adjustments [PR #44](https://github.com/phac-nml/measeq/pull/44):
+  - `CALCULATE_BAM_VARIATION` moved to `process_medium` from `process_high_memory` as that isn't a standard label
+  - Moving nf-core modules from `process_high` to `process_medium` as with the measles genome they don't require as many resources as we are giving
+    - `BWAMEM2_MEM`
+    - `BOWTIE2_BUILD`
+    - `BOWTIE2_ALIGN`
 
 ## Removed
 

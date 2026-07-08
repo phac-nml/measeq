@@ -31,11 +31,11 @@
 
 ## Current Updates
 
-### _2026-07-06_ Summary
+### _2026-07-08_ Summary
 
 Full release version 1.3.0! Pipeline supports equivalent Illumina and Nanopore workflows allowing whole genome or amplicon sequencing analysis. The MeaSeq workflow generates whole genome consensus sequences, N450 sequences and reporting information, DSId hashing and assigning, and a final QC report. It can be run with a single reference or with the genotyping predictions and a config setup containing a users preferred references.
 
-Major change in version 1.3.0 is the update of [Clair3](https://github.com/HKU-BAL/Clair3/tree/main#v200--feb-9-2026--major-release) from `1.2.0` to `2.0.1`. This should only affect users running with a `--local_model` where they'll need to download the new pytorch models locally. Specifying the model name on the command line will download the pytorch model for the run.
+Major change in version 1.3.0 is the update of [Clair3](https://github.com/HKU-BAL/Clair3/tree/main#v200--feb-9-2026--major-release) from `1.2.0` to `2.0.2`. This should only affect users running with a `--local_model` where they'll need to download the new pytorch models locally. Specifying the model name on the command line will download the pytorch model for the run.
 
 #### Genotype Predictions
 
