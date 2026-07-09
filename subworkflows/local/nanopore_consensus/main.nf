@@ -62,7 +62,7 @@ workflow NANOPORE_CONSENSUS {
     // Check that we have the clair3 .pt file required and aren't giving an older model
     ch_model.map { model ->
         def pt_file = file("${model}/*.pt")
-        if (pt_file.isEmpty()) {
+        if (!pt_file.exists()) {
             error("Missing .pt file in input model folder. Check that you are giving the path to a Clair3 v2.0.0+ pytorch model and not an older model")
         }
     }
