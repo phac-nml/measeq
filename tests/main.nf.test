@@ -88,7 +88,7 @@ nextflow_pipeline {
     }
 
     //--- Test ----------------------------------------------------------------------------
-    test("Missing Clair3 .pt file ") {
+    test("Missing Clair3 .pt file") {
         tag "fail"
         tag "nanopore"
 
@@ -106,7 +106,7 @@ nextflow_pipeline {
             assert workflow.failed
 
             // Message
-            assert workflow.stdout.contains("Missing .pt file in input model folder. Check that you are giving the path to a Clair3 v2.0.0+ pytorch model and not an older model")
+            assert workflow.stdout.contains("Missing .pt file in input --local_model folder. Check that the model path is to a Clair3 v2.0.0+ pytorch model and not an older model")
         }
     }
 

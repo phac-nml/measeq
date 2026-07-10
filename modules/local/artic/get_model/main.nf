@@ -29,6 +29,12 @@ process ARTIC_GET_MODELS {
         artic_get_models --model-dir ./clair3_models --models $model
     fi
 
+    # Confirm pt file exists
+    if ! ls ./clair3_models/$model | grep -q "\\.pt" ; then
+        echo "ERROR: Missing .pt file in downloaded $model folder. Check model name, artic version, and download source to try to resolve"
+        exit 1
+    fi
+
     # Versions #
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

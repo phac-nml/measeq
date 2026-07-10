@@ -51,20 +51,16 @@ workflow NANOPORE_CONSENSUS {
     //
     if ( params.local_model ) {
         ch_model = Channel.value(file(params.local_model, type: 'dir', checkIfExists: true))
+        Channel.fromPath("${params.local_model}/*.pt", type: 'file')
+            .ifEmpty{
+                error "Missing .pt file in input --local_model folder. Check that the model path is to a Clair3 v2.0.0+ pytorch model and not an older model"
+            }
     } else {
         ARTIC_GET_MODELS(
             params.model
         )
         ch_model = ARTIC_GET_MODELS.out.model
         ch_versions = ch_versions.mix(ARTIC_GET_MODELS.out.versions)
-    }
-
-    // Check that we have the clair3 .pt file required and aren't giving an older model
-    ch_model.map { model ->
-        def potential_pt_files = file("${model}/*.pt")
-        if (!potential_pt_files.any{ pt -> pt.exists()}) {
-            error("Missing .pt file in input model folder. Check that you are giving the path to a Clair3 v2.0.0+ pytorch model and not an older model")
-        }
     }
 
     //
