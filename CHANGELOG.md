@@ -3,11 +3,11 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v1.3.0] - 2026-07-08
+## [v1.3.0] - 2026-07-13
 
 Code cleanup, exposed nanopore frameshift quality parameter, added excess ambiguity warning, artic version bump to `v1.10.3`, and clair3 version bump from `v1.2.0` to `v2.0.2`.
 
-Big Note: The Clair3 `v1.2.0` models have to be converted to the new format. The update to `artic` will pull these new versions by default if you are providing a `--model <model name>` name on the command line. If you are using a local model you'll have to grab the new version. More info is available in [clair3's docs](https://github.com/HKU-BAL/clair3#pre-trained-models). No consensus variant output changes noted in the test datasets with this update.
+Important Note: The Clair3 `v1.2.0` models have to be converted to the new format. The update to `artic` will pull these new versions by default if you are providing a `--model <model name>` name on the command line. If you are using a local model you'll have to grab the new version. More info is available in [clair3's docs](https://github.com/HKU-BAL/clair3#pre-trained-models). No consensus variant output changes noted in the test datasets with this update.
 
 ### `Added`
 
