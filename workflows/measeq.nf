@@ -7,7 +7,7 @@ include { SETUP_REFERENCE_DATA    } from '../subworkflows/local/setup_reference_
 include { NANOPORE_CONSENSUS      } from '../subworkflows/local/nanopore_consensus'
 include { ILLUMINA_CONSENSUS      } from '../subworkflows/local/illumina_consensus'
 include { FASTQC                  } from '../modules/nf-core/fastqc/main'
-include { ADJUST_FASTA_HEADER as ADJUST_N450_FASTA_HEADER } from '../modules/local/artic/subcommands/main'
+include { ADJUST_FASTA_HEADER as ADJUST_N450_FASTA_HEADER } from '../modules/local/adjust_fasta_header/main'
 include { NEXTCLADE_DATASETGET    } from '../modules/nf-core/nextclade/datasetget/main'
 include { NEXTCLADE_RUN as NEXTCLADE_RUN_N450             } from '../modules/nf-core/nextclade/run/main'
 include { NEXTCLADE_RUN as NEXTCLADE_RUN_CUSTOM           } from '../modules/nf-core/nextclade/run/main'

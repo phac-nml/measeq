@@ -137,6 +137,13 @@ def init_parser() -> argparse.ArgumentParser:
         type=str,
         help='Name of Reference used'
     )
+    parser.add_argument(
+        '--ambiguous_warn_threshold',
+        required=False,
+        default=5,
+        type=int,
+        help="Number of ambiguous sites before triggering ambiguous warning"
+    )
     return parser
 
 
@@ -583,18 +590,20 @@ def grade_n450(dsid: str, n450_mean_depth: float, n450_completeness: float) -> s
     return 'PASS'
 
 
-def check_consensus_tsv_masked(tsv: Path) -> int:
-    '''Check for masked sites in consensus TSV'''
-    failed_sites = 0
+def check_tsv_for_masked(tsv: Path) -> int:
+    '''Check for masked sites in nanopore consensus variants TSV'''
+    masked_sites = 0
     with open(tsv, 'r') as f:
         for line in f:
-            if 'Masked' in line.strip('\n').split('\t'):
-                failed_sites += 1
-    return failed_sites
+            if 'MASKED' in line.strip('\n').split('\t'):
+                masked_sites += 1
+    return masked_sites
 
 
-def grade_qc(completeness: float, mean_dep: float, median_dep: float, divisible: str,
-             frameshift: bool, nonsense_mutation: bool, stop_mutation: bool, genotype_match: bool) -> str:
+def grade_qc(completeness: float, mean_dep: float, median_dep:float,
+             ambiguous_status: bool, divisible: str, frameshift: bool,
+             nonsense_mutation: bool, stop_mutation: bool, genotype_match: bool
+            ) -> str:
     '''
     Purpose:
     --------
@@ -608,6 +617,8 @@ def grade_qc(completeness: float, mean_dep: float, median_dep: float, divisible:
         Mean sequencing depth
     median_dep - float
         Median sequencing depth
+    ambiguous_status - bool
+        If sample has too many ambigous bases
     divisible - str
         If sample is divisible by 6 = PASS
     frameshift - bool
@@ -632,9 +643,14 @@ def grade_qc(completeness: float, mean_dep: float, median_dep: float, divisible:
             return 'INCOMPLETE_GENOME'
         else:
             qc_status.append('PARTIAL_GENOME')
+
     # Overall Coverage Depth
     if (mean_dep < 20) or (median_dep < 20):
         qc_status.append('LOW_SEQ_DEPTH')
+
+    # Masked sites / IUPACs
+    if ambiguous_status:
+        qc_status.append('EXCESS_AMBIGUITY')
     # Divisible by 6
     if divisible == "FAIL":
         qc_status.append('NOT_DIVISIBLE')
@@ -693,15 +709,6 @@ def main() -> None:
         n450_mean_depth, n450_median_depth = parse_depth_bed(args.depth, n450_range)
     n450_status = grade_n450(matched_dsid, n450_mean_depth, n450_completeness)
 
-    # Grade qc
-    frameshift_status = (frameshift != '')
-    nonsense_status = (nonsense != '')
-    stop_mutation_status = (stop_mutation != '')
-    genotype_match = (args.genotype == genotype)
-    qc_status = grade_qc(completeness, mean_dep, median_dep, divisible,
-                         frameshift_status, nonsense_status, stop_mutation_status,
-                         genotype_match)
-
     # N450 seq for inclusion in final excel output ONLY
     #  If empty file, get value error and then put in 450 Ns
     try:
@@ -715,7 +722,18 @@ def main() -> None:
     iupac_val = var_count_dict['num_iupac']
     if args.platform == 'nanopore':
         iupac_key = 'num_masked'
-        iupac_val = check_consensus_tsv_masked(args.consensus_tsv)
+        iupac_val = check_tsv_for_masked(args.consensus_tsv)
+
+    # Grade qc
+    ambiguous_status = (iupac_val >= args.ambiguous_warn_threshold)
+    frameshift_status = (frameshift != '')
+    nonsense_status = (nonsense != '')
+    stop_mutation_status = (stop_mutation != '')
+    genotype_match = (args.genotype == genotype)
+    qc_status = grade_qc(completeness, mean_dep, median_dep, ambiguous_status,
+                         divisible, frameshift_status, nonsense_status,
+                         stop_mutation_status, genotype_match
+                        )
 
     # Output
     final = {

@@ -14,7 +14,7 @@ include { GENERATE_REF_INTERMEDIATES } from '../../../modules/local/input_utils/
 include { SPLIT_AMPLICON_REGION      } from '../../../modules/local/input_utils/main'
 include { GENERATE_AMPLICON_BED      } from '../../../modules/local/input_utils/main'
 include { NEXTCLADE_RUN as NEXTCLADE_RUN_REFERENCE } from '../../../modules/nf-core/nextclade/run/main'
-include { ADJUST_FASTA_HEADER        } from '../../../modules/local/artic/subcommands/main'
+include { ADJUST_FASTA_HEADER        } from '../../../modules/local/adjust_fasta_header/main'
 include { EXTRACT_GENOTYPE           } from '../../../modules/local/custom/extract_genotype/main'
 include { PREDICT_GENOTYPE           } from '../../../modules/local/predict_genotype/main.nf'
 include { STAGE_FILE_IRIDANEXT       } from '../../../modules/local/custom/stage_file_iridanext/main.nf'

@@ -1,13 +1,13 @@
 process CALCULATE_BAM_VARIATION {
     // High memory as not currently multi-threaded and some files are big
-    label 'process_high_memory'
+    label 'process_medium'
     tag "$meta.id"
 
     // I'm just going to use artic for now as it has updated dependencies and is used elsewhere
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/artic:1.8.5--pyhdfd78af_0' :
-        'biocontainers/artic:1.8.5--pyhdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/artic:1.10.3--pyhdfd78af_0' :
+        'biocontainers/artic:1.10.3--pyhdfd78af_0' }"
 
     input:
     tuple val(meta), path(bam), path(bai), path(reference)

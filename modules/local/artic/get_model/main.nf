@@ -4,8 +4,8 @@ process ARTIC_GET_MODELS {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/artic:1.8.5--pyhdfd78af_0' :
-        'biocontainers/artic:1.8.5--pyhdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/artic:1.10.3--pyhdfd78af_0' :
+        'biocontainers/artic:1.10.3--pyhdfd78af_0' }"
 
     input:
     val model
@@ -26,7 +26,13 @@ process ARTIC_GET_MODELS {
     if ls \$CLAIR_BIN_DIR/models/ | grep -q '$model' ; then
         cp -r \$CLAIR_BIN_DIR/models/$model ./clair3_models/
     else
-        artic_get_models --model-dir ./clair3_models
+        artic_get_models --model-dir ./clair3_models --models $model
+    fi
+
+    # Confirm pt file exists
+    if ! ls ./clair3_models/$model | grep -q "\\.pt" ; then
+        echo "ERROR: Missing .pt file in downloaded $model folder. Check model name, artic version, and download source to try to resolve"
+        exit 1
     fi
 
     # Versions #

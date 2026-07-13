@@ -53,6 +53,13 @@ nextflow_workflow {
                 { assert workflow.success }
             )
 
+            // Channels
+            def meta = {}
+            meta = workflow.out.consensus.get(0)[0]
+            assert meta.id == "SRR7517490"
+            assert meta.ref_id == "MH356245.1"
+            assert path(workflow.out.consensus.get(0)[1]).exists()
+
             // Files exist
             // Fastp
             assert path("${launchDir}/results/fastp/SRR7517490.fastp.json").exists()
@@ -62,10 +69,8 @@ nextflow_workflow {
             assert path("${launchDir}/results/bam/picard/SRR7517490.markduplicate.sorted.bam").exists()
             assert path("${launchDir}/results/bam/picard/SRR7517490.markduplicate.sorted.MarkDuplicates.metrics.txt").exists()
             // VCF
-            assert path("${launchDir}/results/vcf/processed_vcf/SRR7517490.ambiguous.norm.vcf.gz").exists()
             assert path("${launchDir}/results/vcf/processed_vcf/SRR7517490.consensus.norm.vcf.gz").exists()
             assert path("${launchDir}/results/vcf/processed_vcf/SRR7517490.consensus.tsv").exists()
-            assert path("${launchDir}/results/vcf/processed_vcf/SRR7517490.processed.norm.vcf.gz").exists()
 
             // Consensus md5 --> If it matches, all variants were the same so intermediate files SHOULD be ok/the same
             //  Adjustment for 0.5.0 to use different primers so slight changes
