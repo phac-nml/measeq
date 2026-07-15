@@ -3,6 +3,14 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.3.1] - 2026-07-16
+
+Allowing the `--dsid_fasta` file to be gzipped for input
+
+### `Changed`
+
+- DSId fasta file can now be gzipped if wanted
+
 ## [v1.3.0] - 2026-07-13
 
 Code cleanup, exposed nanopore frameshift quality parameter, added excess ambiguity warning, artic version bump to `v1.10.3`, and clair3 version bump from `v1.2.0` to `v2.0.2`.
@@ -33,7 +41,8 @@ Important Note: The Clair3 `v1.2.0` models have to be converted to the new forma
 - Illumina VCF parsing adjusted to better handle complex sites where an INDEL and a SNP are called with the SNP being the final call [PR #43](https://github.com/phac-nml/measeq/pull/43)
 
   - No consensus output differences
-  - Adjusts the calculation for mixed sites so it rem
+  - Adjusts the calculation for multi-SNP sites on what percentage each position is the reference or alt based on the CIGAR string of the variant
+    - For IUPAC base selection
   - Adjusts the need to split ambiguous sites from consensus sites in VCF outputs for downstream processing
     - New filename for the illumina consensus variants file `.consensus.norm.vcf.gz` instead of `.processed.norm.vcf.gz`
 

@@ -2,6 +2,7 @@
 '''Compare all sample N450 sequences to reference database and assign new ones a hash dsid'''
 import argparse
 import csv
+import gzip
 import hashlib
 from Bio import SeqIO
 from pathlib import Path
@@ -62,7 +63,9 @@ def load_dsids(dsid_fasta: Path) -> dict:
     --------
     Dict structured as {sequence: disd}
     '''
-    dsid_seqs = {str(record.seq).upper(): record.id for record in SeqIO.parse(dsid_fasta, "fasta")}
+    which_open = gzip.open if dsid_fasta.suffix == '.gz' else open
+    with which_open(dsid_fasta, 'rt') as f:
+        dsid_seqs = {str(record.seq).upper(): record.id for record in SeqIO.parse(f, "fasta")}
     return dsid_seqs
 
 
