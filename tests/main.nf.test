@@ -121,6 +121,7 @@ nextflow_pipeline {
         tag "illumina"
         tag "contact"
         tag "amplicon"
+        tag "dsid"
 
         when {
             params {
@@ -130,6 +131,7 @@ nextflow_pipeline {
                 platform        = "illumina"
                 primer_bed      = "${projectDir}/test_data/primer.bed"
                 ivar_offset     = 0
+                dsid_fasta      = "${projectDir}/assets/dsid_example.fasta"
                 contact_name    = "Dr. Evil"
                 contact_website = "https://url-test.ca/measles"
                 contact_phone   = "222-222-2222"
@@ -309,6 +311,7 @@ nextflow_pipeline {
         tag "illumina"
         tag "amplicon"
         tag "prediction"
+        tag "dsid"
 
         when {
             params {
@@ -317,6 +320,7 @@ nextflow_pipeline {
                 platform    = "illumina"
                 amplicon    = true
                 ivar_offset = 1
+                dsid_fasta  = "${projectDir}/test_data/notreal_dsids.fasta.gz"
             }
         }
         then {
