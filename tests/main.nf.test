@@ -312,7 +312,6 @@ nextflow_pipeline {
         tag "amplicon"
         tag "prediction"
         tag "dsid"
-        tag "here"
 
         when {
             params {
