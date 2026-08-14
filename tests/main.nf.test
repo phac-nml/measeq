@@ -315,12 +315,13 @@ nextflow_pipeline {
 
         when {
             params {
-                input       = "${projectDir}/assets/ci-samplesheet.csv"
-                outdir      = "results"
-                platform    = "illumina"
-                amplicon    = true
-                ivar_offset = 1
-                dsid_fasta  = "${projectDir}/test_data/notreal_dsids.fasta.gz"
+                input            = "${projectDir}/assets/ci-samplesheet.csv"
+                outdir           = "results"
+                platform         = "illumina"
+                amplicon         = true
+                ivar_offset      = 1
+                dsid_fasta       = "${projectDir}/test_data/notreal_dsids.fasta.gz"
+                default_gsp_dsid = "${projectDir}/test_data/doesntexist.fasta" // To make sure it takes the dsid_fasta over the default
             }
         }
         then {
@@ -412,7 +413,6 @@ nextflow_pipeline {
             assert iridanext_global.findAll { it.path == "pipeline_info/measeq_software_mqc_versions.yml" }.size() == 1
             assert iridanext_global.findAll { it.path == "reporting/MH356245.1-Amplicon-Summary-MultiQC-Report.html" }.size() == 1
             assert iridanext_global.findAll { it.path == "overall.xlsx" }.size() == 1
-            assert iridanext_global.findAll { it.path == "novel_dsids.tsv" }.size() == 1
             assert iridanext_global.findAll { it.path == "predictions.csv" }.size() == 1
 
             assert iridanext_samples.add_sample1.findAll { it.path == "bam/ivar/sample1.primertrimmed.sorted.bam" }.size() == 1
@@ -450,7 +450,7 @@ nextflow_pipeline {
             // Sample Name: sample1
             assert iridanext_metadata.add_sample1.genotype == "D8"
             assert iridanext_metadata.add_sample1.reference == "MH356245.1"
-            assert iridanext_metadata.add_sample1.matched_dsid == "Novel-bcb39a9"
+            assert iridanext_metadata.add_sample1.matched_dsid == "2026"
             assert iridanext_metadata.add_sample1.num_input_reads == "40476"
             assert iridanext_metadata.add_sample1.num_aligned_reads == "35649"
             assert iridanext_metadata.add_sample1.num_consensus_n == "310"
@@ -470,7 +470,7 @@ nextflow_pipeline {
             // Sample Name: sample2
             assert iridanext_metadata.add_sample2.genotype == "D8"
             assert iridanext_metadata.add_sample2.reference == "MH356245.1"
-            assert iridanext_metadata.add_sample2.matched_dsid == "Novel-bcb39a9"
+            assert iridanext_metadata.add_sample2.matched_dsid == "2026"
             assert iridanext_metadata.add_sample2.num_input_reads == "56368"
             assert iridanext_metadata.add_sample2.num_aligned_reads == "49451"
             assert iridanext_metadata.add_sample2.num_consensus_n == "287"
@@ -499,12 +499,14 @@ nextflow_pipeline {
         tag "illumina"
         tag "non_amplicon"
         tag "prediction"
+        tag "dsid"
 
         when {
             params {
-                input       = "${projectDir}/assets/ci-samplesheet.csv"
-                outdir      = "results"
-                platform    = "illumina"
+                input            = "${projectDir}/assets/ci-samplesheet.csv"
+                outdir           = "results"
+                platform         = "illumina"
+                default_gsp_dsid = "${projectDir}/test_data/notreal_dsids.fasta.gz"
             }
         }
         then {
@@ -585,7 +587,6 @@ nextflow_pipeline {
             assert iridanext_global.findAll { it.path == "MeaSeq_Report.html" }.size() == 1
             assert iridanext_global.findAll { it.path == "pipeline_info/measeq_software_mqc_versions.yml" }.size() == 1
             assert iridanext_global.findAll { it.path == "overall.xlsx" }.size() == 1
-            assert iridanext_global.findAll { it.path == "novel_dsids.tsv" }.size() == 1
             assert iridanext_global.findAll { it.path == "predictions.csv" }.size() == 1
 
             assert iridanext_samples.add_sample1.findAll { it.path == "consensus/sample1.N450.fasta" }.size() == 1
@@ -621,7 +622,7 @@ nextflow_pipeline {
             // Sample Name: sample1
             assert iridanext_metadata.add_sample1.genotype == "D8"
             assert iridanext_metadata.add_sample1.reference == "MH356245.1"
-            assert iridanext_metadata.add_sample1.matched_dsid == "Novel-bcb39a9"
+            assert iridanext_metadata.add_sample1.matched_dsid == "2026"
             assert iridanext_metadata.add_sample1.num_input_reads == "40476"
             assert iridanext_metadata.add_sample1.num_aligned_reads == "39892"
             assert iridanext_metadata.add_sample1.num_consensus_n == "214"
@@ -641,7 +642,7 @@ nextflow_pipeline {
             // Sample Name: sample2
             assert iridanext_metadata.add_sample2.genotype == "D8"
             assert iridanext_metadata.add_sample2.reference == "MH356245.1"
-            assert iridanext_metadata.add_sample2.matched_dsid == "Novel-bcb39a9"
+            assert iridanext_metadata.add_sample2.matched_dsid == "2026"
             assert iridanext_metadata.add_sample2.num_input_reads == "56368"
             assert iridanext_metadata.add_sample2.num_aligned_reads == "55680"
             assert iridanext_metadata.add_sample2.num_consensus_n == "216"
