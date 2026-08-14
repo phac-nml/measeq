@@ -3,13 +3,17 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v1.3.1] - 2026-07-16
+## [v1.3.1] - 2026-08-20
 
-Allowing the `--dsid_fasta` file to be gzipped for input
+Allowing the `--dsid_fasta` file to be gzipped for input and adding in an internal specific default DSId file
+
+### `Added`
+
+- New `--default_gsp_dsid` which is just for internal usage but it sets a fall back default file for the DSId assignment [PR #47](https://github.com/phac-nml/measeq/pull/47)
 
 ### `Changed`
 
-- DSId fasta file can now be gzipped if wanted
+- DSId fasta file can now be gzipped for input if wanted [PR #45](https://github.com/phac-nml/measeq/pull/45)
 
 ## [v1.3.0] - 2026-07-13
 

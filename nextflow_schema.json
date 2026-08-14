@@ -251,6 +251,15 @@
                     "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "fa_icon": "far fa-file-alt"
                 },
+                "default_gsp_dsid": {
+                    "type": "string",
+                    "description": "Path to a default DSID multi-fasta for GSP",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "fa_icon": "far fa-file-alt",
+                    "hidden": true
+                },
                 "min_depth": {
                     "type": "integer",
                     "default": 10,
