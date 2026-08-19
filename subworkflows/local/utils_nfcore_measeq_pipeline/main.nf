@@ -73,7 +73,7 @@ workflow PIPELINE_INITIALISATION {
 
                 // Ensure ID is unique by appending meta.irida_id if needed
                 meta.id = makeUniqueId(meta.id, meta.irida_id, processedIDs)
-                
+
                 // Add the ID to the set of processed IDs
                 processedIDs << meta.id
 
