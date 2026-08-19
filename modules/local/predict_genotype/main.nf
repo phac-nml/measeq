@@ -13,7 +13,7 @@ process PREDICT_GENOTYPE {
     path(mmi)
 
     output:
-    tuple val(meta), path(fastqs), stdout, emit: samplesheet
+    tuple val(meta), path(fastqs), env('GENOTYPE'), emit: samplesheet
     path "*.csv", emit: csv
     path "versions.yml", emit: versions
 
@@ -22,6 +22,8 @@ process PREDICT_GENOTYPE {
     def read2 = meta.single_end ? '' : "-2 ${fastqs[1]}"
     """
     predict_genotype.py -1 ${read1} ${read2} -s ${meta.id} -r ${mmi}
+
+    GENOTYPE=\$(awk -F',' 'NR==2 {print \$2}' predictions.csv)
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

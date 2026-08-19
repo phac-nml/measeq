@@ -72,10 +72,8 @@ workflow PIPELINE_INITIALISATION {
                 }
 
                 // Ensure ID is unique by appending meta.irida_id if needed
-                //  Note that nextflow does not like while loops
-                while (processedIDs.contains(meta.id)) {
-                    meta.id = "${meta.id}_${meta.irida_id}"
-                }
+                meta.id = makeUniqueId(meta.id, meta.irida_id, processedIDs)
+
                 // Add the ID to the set of processed IDs
                 processedIDs << meta.id
 
@@ -146,4 +144,14 @@ def validateInputSamplesheet(input) {
     }
 
     return [ metas[0], fastqs ]
+}
+
+//
+// Make the meta.id unique by appending meta.irida_id, if needed
+//
+def makeUniqueId(id, irida_id, processedIDs) {
+    if (processedIDs.contains(id)) {
+        return makeUniqueId("${id}_${irida_id}", irida_id, processedIDs)
+    }
+    return id
 }

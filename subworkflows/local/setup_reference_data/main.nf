@@ -28,7 +28,7 @@ include { STAGE_FILE_IRIDANEXT       } from '../../../modules/local/custom/stage
 workflow SETUP_REFERENCE_DATA {
 
     take:
-    ch_samplesheet         // channel: samplesheet read in from --input // [ meta(id, single-end), fastqs(f1,f2) ]
+    ch_samplesheet      // channel: samplesheet read in from --input // [ meta(id, single-end), fastqs(f1,f2) ]
     nextclade_dataset   // channel: [ dataset ]
 
     main:
@@ -37,21 +37,6 @@ workflow SETUP_REFERENCE_DATA {
     ch_split_amp_pools_bed = Channel.empty()
     ch_measles_n450_mmi    = Channel
         .value(file("$projectDir/assets/reference/n450/measles_N450_genotypes.mmi", type: 'file', checkIfExists: true))
-
-    // Prepare Function for reference detection
-    // Function: Get FASTA header and use that as ref_id
-    def fastaHeaderId = { Path fasta ->
-        def header = fasta.withReader { r ->
-            String line
-            while ((line = r.readLine()) != null) {
-                line = line.trim()
-                if (line) return line
-            }
-            return null
-        }
-        assert header?.startsWith('>') : "Reference FASTA (${fasta}) must start with a header line"
-        return header.substring(1).tokenize()[0]
-    }
 
     //
     // Modify samplesheet according to params.reference / params.primer_bed
@@ -62,14 +47,14 @@ workflow SETUP_REFERENCE_DATA {
         ch_reference = Channel
             .value( file(params.reference, type: 'file', checkIfExists: true) )
             .map { fasta ->
-                ref_id = fastaHeaderId(fasta)
+                def ref_id = fastaHeaderId(fasta)
                 tuple([ id: ref_id, irida_id: ref_id ], fasta)
             }
 
         // Create a channel with primers if the argument is passed or ouput an empty channel
         if ( params.amplicon && params.primer_bed || params.primer_bed ) {
             ch_primer_bed = ch_reference
-                .map { meta_ref, fasta ->
+                .map { meta_ref, _fasta ->
                     tuple(meta_ref, file(params.primer_bed, type: 'file', checkIfExists: true))
                 }
         } else if( params.amplicon && !params.primer_bed ) {
@@ -80,7 +65,7 @@ workflow SETUP_REFERENCE_DATA {
 
         // Attach ref_id to every sample
         ch_samples = ch_samplesheet
-            .combine(ch_reference.map { meta_ref, fasta -> meta_ref.id } )
+            .combine(ch_reference.map { meta_ref, _fasta -> meta_ref.id } )
             .map { meta, fastqs, meta_ref ->
                 tuple(meta + [ ref_id: meta_ref ], fastqs)
             }
@@ -104,15 +89,15 @@ workflow SETUP_REFERENCE_DATA {
         // Modify module input to create samples, reference, and primers channels
         ch_pred = PREDICT_GENOTYPE.out.samplesheet
             .map { meta, fastqs, genotype ->
-                def ref_path = params."${genotype}_ref" ?: params.default_ref
+                def ref_path = params["${genotype}_ref"] ?: params.default_ref
                 def fasta = file(ref_path, type: 'file', checkIfExists: true)
                 def ref_id = fastaHeaderId(fasta)
                 def primer_bed
                 if ( !params.amplicon ) {
                     primer_bed = ""
-                } else if ( params."${genotype}_ref" && params.amplicon ){
-                    if ( params."${genotype}_bed" ) {
-                        primer_bed = file(params."${genotype}_bed", type: 'file', checkIfExists: true)
+                } else if ( params["${genotype}_ref"] && params.amplicon ){
+                    if ( params["${genotype}_bed"] ) {
+                        primer_bed = file(params["${genotype}_bed"], type: 'file', checkIfExists: true)
                     } else {
                         error "You have specified --amplicon but the ${genotype} predicted genotype doesn't have a valid primer bed file. Provide --${genotype}_bed or remove --amplicon."
                     }
@@ -230,4 +215,25 @@ workflow SETUP_REFERENCE_DATA {
     split_amp_pools_bed = ch_split_amp_pools_bed                     // channel: [ meta(ref_id, pool), *.bed ]
     ref_n450            = ADJUST_FASTA_HEADER.out.consensus          // channel: [ meta(ref_id), consensus ]
     versions            = ch_versions                                // channel: [ path(versions.yml) ]
+}
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    FUNCTIONS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+//
+// Get FASTA header and use that as ref_id
+//
+def fastaHeaderId(fasta) {
+    def header = fasta.withReader { r ->
+        // Read the first line with text. Basically skipping whitespace lines.
+        r.find { it.trim() }?.trim()
+    }
+    if (!header?.startsWith('>')) {
+        error "Reference FASTA (${fasta}) must start with a header line"
+    }
+    // Get the first value after '>'
+    return header.drop(1).tokenize()[0]
 }
