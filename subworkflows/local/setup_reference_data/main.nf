@@ -228,10 +228,12 @@ workflow SETUP_REFERENCE_DATA {
 //
 def fastaHeaderId(fasta) {
     def header = fasta.withReader { r ->
+        // Read the first line with text. Basically skipping whitespace lines.
         r.find { it.trim() }?.trim()
     }
     if (!header?.startsWith('>')) {
         error "Reference FASTA (${fasta}) must start with a header line"
     }
+    // Get the first value after '>'
     return header.drop(1).tokenize()[0]
 }
