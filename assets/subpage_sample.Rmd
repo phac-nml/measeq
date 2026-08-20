@@ -1,5 +1,5 @@
 <!-- Dynamically create individual sample rmd pages under the same datanav menu -->
-`r paste0('# ', sample, '{data-navmenu="Sample Reports"}')`
+`r paste0('# ', sample, ' {#', sample_tab_id, ' data-navmenu="Sample Reports"}')`
 
 ## Row
 

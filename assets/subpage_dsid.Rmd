@@ -7,6 +7,21 @@ DSId Summary
 
 ### {-}
 
+```{r dsid-file-name, echo=FALSE, error=TRUE}
+valueBox(dsid_file, "Name of DSId File Compared Against")
+```
+
+### {-}
+
+```{r prevalent-dsid, echo=FALSE, error=TRUE}
+valueBox(prevalent_dsid, "Most Prevalent DSId")
+```
+
+
+## Row
+
+### {-}
+
 ```{r dsid_summary_table}
 # Select the needed cols
 dsid_df <- select(summary_df,

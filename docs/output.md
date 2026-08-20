@@ -436,7 +436,7 @@ Comparing the output N450 sequences to a multifasta DSId reference to determine 
 <details markdown="1">
 <summary>Output files</summary>
 
-- `dsids.tsv`: TSV file containing each samples DSId call and the completeness of the region
+- `dsids.tsv`: TSV file containing each samples DSId call, the completeness of the region. and the name of the DSId file it was compared against
 - `novel_dsids.tsv`: TSV file containing the different run `Novel-HASH` DSId calls along with its N450 sequence
 
 </details>
