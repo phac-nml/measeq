@@ -18,6 +18,7 @@ Allowing the `--dsid_fasta` file to be gzipped for input, adding in an internal 
 - DSId fasta file can now be gzipped for input if wanted [PR #45](https://github.com/phac-nml/measeq/pull/45)
 - Processes that used stdout as an output were modified to use environment variables to fix an issue where the ouput had a newline within IRIDA Next [PR #48](https://github.com/phac-nml/measeq/pull/48)
 - While loops were removed from pipeline setup as they were not supported by nextflow [PR #48](https://github.com/phac-nml/measeq/pull/48)
+- Fixed an issue where sample names didn't link correctly in the final report [PR #48](https://github.com/phac-nml/measeq/pull/48)
 
 ## [v1.3.0] - 2026-07-13
 

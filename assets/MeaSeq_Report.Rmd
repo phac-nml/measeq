@@ -164,44 +164,12 @@ add_pass_value_int <- function(df, column) {
   return(results)
 }
 
-clean_name <- function(x) {
-  x <- tolower(x)
-  # Track values
-  out <- character(length(x))
-  seen <- list()
-  section_count <- 7 # Start at 7 because thats how it goes apparently
-  
-  for (i in seq_along(x)) {
-    name <- x[i]
-    
-    if (grepl("^\\d+$", name)) {
-      # All numeric get section-7, section-14
-      base <- "section"
-      name_clean <- paste0(base, "-", section_count)
-      # Count updates by 6...
-      section_count <- section_count + 6
-    } else {
-      # Remove everything before the first alphabetical character
-      name_clean <- sub("^[^a-zA-Z]*([a-zA-Z].*)", "\\1", name)
-      # Replace _ and space with -
-      name_clean <- gsub("[ _]+", "-", name_clean)
-      # Count still updates but by 5...
-      section_count <- section_count + 5
-    }
-    
-    # Track if cleaned name has been used already and increment with a -# to follow how flexdashboard works
-    if (is.null(seen[[name_clean]])) {
-      seen[[name_clean]] <- 0
-      final_name <- name_clean
-    } else {
-      seen[[name_clean]] <- seen[[name_clean]] + 1
-      final_name <- paste0(name_clean, "-", seen[[name_clean]])
-    }
-    
-    out[i] <- final_name
-  }
-  
-  return(out)
+# Function to set HTML section ID based on alphanumeric sample name
+make_sample_tab <- function(x) {
+  x <- tolower(as.character(x))
+  x <- gsub("[^a-z0-9]+", "-", x)
+  x <- gsub("^-+|-+$", "", x)
+  paste0("sample-", x)
 }
 
 # Call a plotly plot so it can load later within for loops
@@ -269,7 +237,7 @@ extracted_dsids <- summary_df %>%
 
 prevalent_dsid <- case_when(
   nrow(extracted_dsids) == 0 ~ "No Data",
-  sum(extracted_dsids$n == max(extracted_dsids$n)) >= 2 ~ "2 or more",
+  sum(extracted_dsids$n == max(extracted_dsids$n)) > 1 ~ paste0(max(extracted_dsids$n)," DSIds"),
   TRUE ~ extracted_dsids$matched_dsid[1]
 )
 
@@ -508,8 +476,8 @@ metrics_df <- select(summary_df,
 
 # Add in a link for each sample
 metrics_df$Sample <- sprintf(
-  '<a href="MeaSeq_Report.html#%s" style="color: #000000;">%s</a>',
-  clean_name(metrics_df$Sample),
+  '<a href="#%s" style="color: #000000;">%s</a>',
+  make_sample_tab(metrics_df$Sample),
   metrics_df$Sample
 )
 
@@ -600,6 +568,7 @@ for ( sample_v in samples ) {
   # Assign data to subpage_env
   assign("sample_df", sample_df, subpage_env)
   assign("sample", sample_v, subpage_env)
+  assign("sample_tab_id", make_sample_tab(sample_v), subpage_env)
   assign("params", params, subpage_env)
   assign("iupac_final_col", iupac_final_col, subpage_env)
 
