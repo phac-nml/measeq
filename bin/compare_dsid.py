@@ -4,6 +4,7 @@ import argparse
 import csv
 import gzip
 import hashlib
+import re
 from Bio import SeqIO
 from pathlib import Path
 
@@ -115,10 +116,11 @@ def label_seqs(input_fasta: Path, dsid_seqs: dict, out: str, dsid_fasta: Path | 
 
     # Get the name of the dsid database fasta file without extensions
     if dsid_fasta:
-        dsid_fasta_name = dsid_fasta.name
-        for ext in ['.gz', '.fasta']:
-            if dsid_fasta_name.endswith(ext):
-                dsid_fasta_name = dsid_fasta_name.removesuffix(ext)
+        dsid_fasta_name = re.sub(
+            r'\.fn?a(sta)?(\.gz)?$',
+            '',
+            dsid_fasta.name
+        )
     else:
         dsid_fasta_name = 'None'
 

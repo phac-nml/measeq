@@ -262,6 +262,20 @@ if (params$platform == 'nanopore') {
   iupac_initial_col <- "num_masked"
 }
 
+# Extract the most prevalent DSId for use later
+extracted_dsids <- summary_df %>%
+  filter(!matched_dsid %in% c("No Data", "Incomplete", "Ambiguous Base")) %>%
+  count(matched_dsid, sort = TRUE)
+
+prevalent_dsid <- case_when(
+  nrow(extracted_dsids) == 0 ~ "No Data",
+  sum(extracted_dsids$n == max(extracted_dsids$n)) >= 2 ~ "2 or more",
+  TRUE ~ extracted_dsids$matched_dsid[1]
+)
+
+# Get the name of the DSId file used
+dsid_file <- summary_df$dsid_file_used[1]
+
 # Rename wanted final columns
 #  Select them later for different tables
 summary_df <- summary_df %>%
@@ -270,6 +284,7 @@ summary_df <- summary_df %>%
     "Genotype" = genotype,
     "Reference" = reference,
     "Matched DSId" = matched_dsid,
+    "DSId File Used" = dsid_file_used,
     "# Input Reads" = num_input_reads,
     "# Aligned Reads" = num_aligned_reads,
     "# Consensus Ns" = num_consensus_n,
@@ -478,6 +493,7 @@ metrics_df <- select(summary_df,
   Genotype,
   Reference,
   `Matched DSId`,
+  `DSId File Used`,
   `# Aligned Reads`,
   `Mean Depth`,
   `Median Depth`,

@@ -556,16 +556,19 @@ def parse_dsid_tsv(matched_dsid: Path, sample: str) -> Tuple[str, float, str]:
     Float N450 completeness
     The name of the dsid database fasta file used
     '''
+    # Define dsid_file_used as 'No Data' in case the tsv file is empty
+    dsid_file_used = 'No Data'
+
     # Check for a match
     with open(matched_dsid, 'r') as handle:
         reader = csv.DictReader(handle, delimiter='\t')
         for d in reader:
+            dsid_file_used = str(d['dsid_file_used'])
             if d['sample'] == sample:
                 match = str(d['matched_dsid'])
                 n450_completeness = float(d['completeness'])
-                dsid_file_used = str(d['dsid_file_used'])
                 return match, n450_completeness, dsid_file_used
-    return 'No Data', 0.00
+    return 'No Data', 0.00, dsid_file_used
 
 
 def grade_n450(dsid: str, n450_mean_depth: float, n450_completeness: float) -> str:
@@ -743,6 +746,7 @@ def main() -> None:
         'genotype': [genotype],
         'reference': [args.ref_id],
         'matched_dsid': [matched_dsid],
+        'dsid_file_used': [dsid_file_used],
         'num_input_reads': [num_input_reads],
         'num_aligned_reads': [num_aligned_reads],
         'num_consensus_n': [count_n],
@@ -769,7 +773,6 @@ def main() -> None:
         'qc_status': [qc_status],
         'N450_fasta': [f">{args.sample}-N450\n{n450_seq}"],
         'genome_fasta': [f">{args.sample}\n{consensus.seq.upper()}"],
-        'dsid_file_used': [dsid_file_used],
         'irida_id': [args.irida_id]
     }
     df = pd.DataFrame.from_dict(final)
