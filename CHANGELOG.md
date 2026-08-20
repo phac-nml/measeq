@@ -3,6 +3,23 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.3.1] - 2026-08-20
+
+Allowing the `--dsid_fasta` file to be gzipped for input, adding in an internal specific default DSId file, and adding the dsid file name to the sample's metadata
+
+### `Added`
+
+- New `--default_gsp_dsid` which is just for internal usage but it sets a fall back default file for the DSId assignment [PR #47](https://github.com/phac-nml/measeq/pull/47)
+- New metadata column `dsid_file_used` for better tracking of which DSId database version the sample was compared against [PR #49](https://github.com/phac-nml/measeq/pull/49)
+- Final report DSId summary page now contains value boxes with the name of the DSId file the samples were compared against and the most prevalent DSId [PR #49](https://github.com/phac-nml/measeq/pull/49)
+
+### `Adjusted`
+
+- DSId fasta file can now be gzipped for input if wanted [PR #45](https://github.com/phac-nml/measeq/pull/45)
+- Processes that used stdout as an output were modified to use environment variables to fix an issue where the ouput had a newline within IRIDA Next [PR #48](https://github.com/phac-nml/measeq/pull/48)
+- While loops were removed from pipeline setup as they were not supported by nextflow [PR #48](https://github.com/phac-nml/measeq/pull/48)
+- Fixed an issue where sample names didn't link correctly in the final report [PR #48](https://github.com/phac-nml/measeq/pull/48)
+
 ## [v1.3.0] - 2026-07-13
 
 Code cleanup, exposed nanopore frameshift quality parameter, added excess ambiguity warning, artic version bump to `v1.10.3`, and clair3 version bump from `v1.2.0` to `v2.0.2`.
@@ -33,7 +50,8 @@ Important Note: The Clair3 `v1.2.0` models have to be converted to the new forma
 - Illumina VCF parsing adjusted to better handle complex sites where an INDEL and a SNP are called with the SNP being the final call [PR #43](https://github.com/phac-nml/measeq/pull/43)
 
   - No consensus output differences
-  - Adjusts the calculation for mixed sites so it rem
+  - Adjusts the calculation for multi-SNP sites on what percentage each position is the reference or alt based on the CIGAR string of the variant
+    - For IUPAC base selection
   - Adjusts the need to split ambiguous sites from consensus sites in VCF outputs for downstream processing
     - New filename for the illumina consensus variants file `.consensus.norm.vcf.gz` instead of `.processed.norm.vcf.gz`
 

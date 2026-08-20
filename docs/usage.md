@@ -226,7 +226,8 @@ min_frameshift_qual_c3
 | --min_mask_freq_c3 | Minimum alt allele frequency to mask a variant as an N in the final consensus sequence | False | Number | 0.30 | Nanopore only, alows the user to control how much site discordance is allowed before a site is masked over calling the reference |
 | --min_site_threshold_c3 | Minimum overall site depth threshold for a variant to be included. So default 0.05 = a minimum of 5% of the positions depth for a variant to be included | False | Number | 0.05 | Nanopore only, only should affect amplicon overlap regions |
 | --metadata | Path to metadata TSV file containing at minimum 'sample' column | False | Path | null | See [Metadata TSV](#metadata-tsv) |
-| --dsid_fasta | Path to DSID multi-fasta to match output consensus data to | False | Path | null | See [DSId Matching in README](../README.md#dsids) |
+| --dsid_fasta | Path to DSId multi-fasta to match output consensus data to | False | Path | null | See [DSId Matching in README](../README.md#dsids) |
+| --default_gsp_dsid | Path to default DSId multi-fasta to use, for GSP only really | False | null | GSP related parameter |
 | --min_depth | Minimum depth to call a base | False | Int | 10 | |
 | --no_frameshifts | Fail all indel variants not divisible by 3 | False | Boolean | False | Somewhat crude filter, only use if really needed |
 | --neg_control_pct_threshold | Threshold of genome to be called in a negative control to fail it | False | Int | 10 | |

@@ -121,6 +121,7 @@ nextflow_pipeline {
         tag "illumina"
         tag "contact"
         tag "amplicon"
+        tag "dsid"
 
         when {
             params {
@@ -130,6 +131,7 @@ nextflow_pipeline {
                 platform        = "illumina"
                 primer_bed      = "${projectDir}/test_data/primer.bed"
                 ivar_offset     = 0
+                dsid_fasta      = "${projectDir}/assets/dsid_example.fasta"
                 contact_name    = "Dr. Evil"
                 contact_website = "https://url-test.ca/measles"
                 contact_phone   = "222-222-2222"
@@ -151,10 +153,10 @@ nextflow_pipeline {
 
             // Final QC File
             assert path("$launchDir/results/overall.qc.csv").exists()
-            // Using the first 10 columns in the header only to check that file is made correctly
+            // Using the first 12 columns in the header only to check that file is made correctly
             lines = path("$launchDir/results/overall.qc.csv").text
-            assert lines.contains("sample,genotype,reference,matched_dsid,num_input_reads,num_aligned_reads,num_consensus_n,genome_completeness_percent,mean_sequencing_depth,median_sequencing_depth,total_variants,")
-            assert lines.contains("empty,NA,MH356245.1,No Data,2,0,15894,0.0,0.0,0.0,0,")
+            assert lines.contains("sample,genotype,reference,matched_dsid,dsid_file_used,num_input_reads,num_aligned_reads,num_consensus_n,genome_completeness_percent,mean_sequencing_depth,median_sequencing_depth,total_variants,")
+            assert lines.contains("empty,NA,MH356245.1,No Data,dsid_example,2,0,15894,0.0,0.0,0.0,0,")
 
             // Intermediate generated reference files
             assert path("$launchDir/results/reference/MH356245.1.amplicon.bed").exists()
@@ -240,6 +242,7 @@ nextflow_pipeline {
             assert iridanext_metadata.add_empty.genotype == "NA"
             assert iridanext_metadata.add_empty.reference == "MH356245.1"
             assert iridanext_metadata.add_empty.matched_dsid == "No Data"
+            assert iridanext_metadata.add_empty.dsid_file_used == "dsid_example"
             assert iridanext_metadata.add_empty.num_input_reads == "2"
             assert iridanext_metadata.add_empty.num_aligned_reads == "0"
             assert iridanext_metadata.add_empty.num_consensus_n == "15894"
@@ -260,6 +263,7 @@ nextflow_pipeline {
             assert iridanext_metadata.add_sample1.genotype == "D8"
             assert iridanext_metadata.add_sample1.reference == "MH356245.1"
             assert iridanext_metadata.add_sample1.matched_dsid == "Novel-bcb39a9"
+            assert iridanext_metadata.add_sample1.dsid_file_used == "dsid_example"
             assert iridanext_metadata.add_sample1.num_input_reads == "40476"
             assert iridanext_metadata.add_sample1.num_aligned_reads == "35663"
             assert iridanext_metadata.add_sample1.num_consensus_n == "297"
@@ -280,6 +284,7 @@ nextflow_pipeline {
             assert iridanext_metadata.add_sample2.genotype == "D8"
             assert iridanext_metadata.add_sample2.reference == "MH356245.1"
             assert iridanext_metadata.add_sample2.matched_dsid == "Novel-bcb39a9"
+            assert iridanext_metadata.add_sample2.dsid_file_used == "dsid_example"
             assert iridanext_metadata.add_sample2.num_input_reads == "56368"
             assert iridanext_metadata.add_sample2.num_aligned_reads == "49483"
             assert iridanext_metadata.add_sample2.num_consensus_n == "261"
@@ -309,14 +314,17 @@ nextflow_pipeline {
         tag "illumina"
         tag "amplicon"
         tag "prediction"
+        tag "dsid"
 
         when {
             params {
-                input       = "${projectDir}/assets/ci-samplesheet.csv"
-                outdir      = "results"
-                platform    = "illumina"
-                amplicon    = true
-                ivar_offset = 1
+                input            = "${projectDir}/assets/ci-samplesheet.csv"
+                outdir           = "results"
+                platform         = "illumina"
+                amplicon         = true
+                ivar_offset      = 1
+                dsid_fasta       = "${projectDir}/test_data/notreal_dsids.fasta.gz"
+                default_gsp_dsid = "${projectDir}/test_data/doesntexist.fasta" // To make sure it takes the dsid_fasta over the default
             }
         }
         then {
@@ -334,9 +342,9 @@ nextflow_pipeline {
 
             // Final QC File
             assert path("$launchDir/results/overall.qc.csv").exists()
-            // Using the first 10 columns in the header only to check that file is made correctly
+            // Using the first 12 columns in the header only to check that file is made correctly
             lines = path("$launchDir/results/overall.qc.csv").text
-            assert lines.contains("sample,genotype,reference,matched_dsid,num_input_reads,num_aligned_reads,num_consensus_n,genome_completeness_percent,mean_sequencing_depth,median_sequencing_depth,total_variants,")
+            assert lines.contains("sample,genotype,reference,matched_dsid,dsid_file_used,num_input_reads,num_aligned_reads,num_consensus_n,genome_completeness_percent,mean_sequencing_depth,median_sequencing_depth,total_variants,")
 
             // Intermediate generated reference files
             assert path("$launchDir/results/reference/MH356245.1.amplicon.bed").exists()
@@ -408,7 +416,6 @@ nextflow_pipeline {
             assert iridanext_global.findAll { it.path == "pipeline_info/measeq_software_mqc_versions.yml" }.size() == 1
             assert iridanext_global.findAll { it.path == "reporting/MH356245.1-Amplicon-Summary-MultiQC-Report.html" }.size() == 1
             assert iridanext_global.findAll { it.path == "overall.xlsx" }.size() == 1
-            assert iridanext_global.findAll { it.path == "novel_dsids.tsv" }.size() == 1
             assert iridanext_global.findAll { it.path == "predictions.csv" }.size() == 1
 
             assert iridanext_samples.add_sample1.findAll { it.path == "bam/ivar/sample1.primertrimmed.sorted.bam" }.size() == 1
@@ -427,6 +434,7 @@ nextflow_pipeline {
             assert iridanext_metadata.add_empty.genotype == "NA"
             assert iridanext_metadata.add_empty.reference == "MH356245.1"
             assert iridanext_metadata.add_empty.matched_dsid == "No Data"
+            assert iridanext_metadata.add_empty.dsid_file_used == "notreal_dsids"
             assert iridanext_metadata.add_empty.num_input_reads == "2"
             assert iridanext_metadata.add_empty.num_aligned_reads == "0"
             assert iridanext_metadata.add_empty.num_consensus_n == "15894"
@@ -446,7 +454,8 @@ nextflow_pipeline {
             // Sample Name: sample1
             assert iridanext_metadata.add_sample1.genotype == "D8"
             assert iridanext_metadata.add_sample1.reference == "MH356245.1"
-            assert iridanext_metadata.add_sample1.matched_dsid == "Novel-bcb39a9"
+            assert iridanext_metadata.add_sample1.matched_dsid == "2026"
+            assert iridanext_metadata.add_sample1.dsid_file_used == "notreal_dsids"
             assert iridanext_metadata.add_sample1.num_input_reads == "40476"
             assert iridanext_metadata.add_sample1.num_aligned_reads == "35649"
             assert iridanext_metadata.add_sample1.num_consensus_n == "310"
@@ -466,7 +475,8 @@ nextflow_pipeline {
             // Sample Name: sample2
             assert iridanext_metadata.add_sample2.genotype == "D8"
             assert iridanext_metadata.add_sample2.reference == "MH356245.1"
-            assert iridanext_metadata.add_sample2.matched_dsid == "Novel-bcb39a9"
+            assert iridanext_metadata.add_sample2.matched_dsid == "2026"
+            assert iridanext_metadata.add_sample2.dsid_file_used == "notreal_dsids"
             assert iridanext_metadata.add_sample2.num_input_reads == "56368"
             assert iridanext_metadata.add_sample2.num_aligned_reads == "49451"
             assert iridanext_metadata.add_sample2.num_consensus_n == "287"
@@ -495,12 +505,14 @@ nextflow_pipeline {
         tag "illumina"
         tag "non_amplicon"
         tag "prediction"
+        tag "dsid"
 
         when {
             params {
-                input       = "${projectDir}/assets/ci-samplesheet.csv"
-                outdir      = "results"
-                platform    = "illumina"
+                input            = "${projectDir}/assets/ci-samplesheet.csv"
+                outdir           = "results"
+                platform         = "illumina"
+                default_gsp_dsid = "${projectDir}/test_data/notreal_dsids.fasta.gz"
             }
         }
         then {
@@ -518,9 +530,9 @@ nextflow_pipeline {
 
             // Final QC File
             assert path("$launchDir/results/overall.qc.csv").exists()
-            // Using the first 10 columns in the header only to check that file is made correctly
+            // Using the first 12 columns in the header only to check that file is made correctly
             lines = path("$launchDir/results/overall.qc.csv").text
-            assert lines.contains("sample,genotype,reference,matched_dsid,num_input_reads,num_aligned_reads,num_consensus_n,genome_completeness_percent,mean_sequencing_depth,median_sequencing_depth,total_variants,")
+            assert lines.contains("sample,genotype,reference,matched_dsid,dsid_file_used,num_input_reads,num_aligned_reads,num_consensus_n,genome_completeness_percent,mean_sequencing_depth,median_sequencing_depth,total_variants,")
 
             // Intermediate generated reference files
             assert path("$launchDir/results/reference/MH356245.1.genome.bed").exists()
@@ -564,10 +576,16 @@ nextflow_pipeline {
             lines = path("$launchDir/results/reporting/sample_positional_normalized_depth_stats.csv").readLines()
             assert lines.size() == 15895
 
+            // DSId file
+            assert path("$launchDir/results/dsids.tsv").exists()
+            lines = path("$launchDir/results/dsids.tsv").readLines()
+            assert lines.contains("sample\tmatched_dsid\tcompleteness\tdsid_file_used")
+            assert lines.contains("sample1\t2026\t100.0\tnotreal_dsids")
+            assert lines.size() == 3
+
             // Final Reports
             assert path("$launchDir/results/MeaSeq_Report.html").exists()
             assert path("$launchDir/results/overall.xlsx").exists()
-            assert path("$launchDir/results/dsids.tsv").exists()
             assert path("$launchDir/results/predictions.csv").exists()
             lines = path("$launchDir/results/predictions.csv").readLines()
             assert lines.size() == 4
@@ -581,7 +599,6 @@ nextflow_pipeline {
             assert iridanext_global.findAll { it.path == "MeaSeq_Report.html" }.size() == 1
             assert iridanext_global.findAll { it.path == "pipeline_info/measeq_software_mqc_versions.yml" }.size() == 1
             assert iridanext_global.findAll { it.path == "overall.xlsx" }.size() == 1
-            assert iridanext_global.findAll { it.path == "novel_dsids.tsv" }.size() == 1
             assert iridanext_global.findAll { it.path == "predictions.csv" }.size() == 1
 
             assert iridanext_samples.add_sample1.findAll { it.path == "consensus/sample1.N450.fasta" }.size() == 1
@@ -598,6 +615,7 @@ nextflow_pipeline {
             assert iridanext_metadata.add_empty.genotype == "NA"
             assert iridanext_metadata.add_empty.reference == "MH356245.1"
             assert iridanext_metadata.add_empty.matched_dsid == "No Data"
+            assert iridanext_metadata.add_empty.dsid_file_used == "notreal_dsids"
             assert iridanext_metadata.add_empty.num_input_reads == "2"
             assert iridanext_metadata.add_empty.num_aligned_reads == "0"
             assert iridanext_metadata.add_empty.num_consensus_n == "15894"
@@ -617,7 +635,8 @@ nextflow_pipeline {
             // Sample Name: sample1
             assert iridanext_metadata.add_sample1.genotype == "D8"
             assert iridanext_metadata.add_sample1.reference == "MH356245.1"
-            assert iridanext_metadata.add_sample1.matched_dsid == "Novel-bcb39a9"
+            assert iridanext_metadata.add_sample1.matched_dsid == "2026"
+            assert iridanext_metadata.add_sample1.dsid_file_used == "notreal_dsids"
             assert iridanext_metadata.add_sample1.num_input_reads == "40476"
             assert iridanext_metadata.add_sample1.num_aligned_reads == "39892"
             assert iridanext_metadata.add_sample1.num_consensus_n == "214"
@@ -637,7 +656,8 @@ nextflow_pipeline {
             // Sample Name: sample2
             assert iridanext_metadata.add_sample2.genotype == "D8"
             assert iridanext_metadata.add_sample2.reference == "MH356245.1"
-            assert iridanext_metadata.add_sample2.matched_dsid == "Novel-bcb39a9"
+            assert iridanext_metadata.add_sample2.matched_dsid == "2026"
+            assert iridanext_metadata.add_sample1.dsid_file_used == "notreal_dsids"
             assert iridanext_metadata.add_sample2.num_input_reads == "56368"
             assert iridanext_metadata.add_sample2.num_aligned_reads == "55680"
             assert iridanext_metadata.add_sample2.num_consensus_n == "216"
@@ -693,9 +713,9 @@ nextflow_pipeline {
 
             // Final QC File
             assert path("$launchDir/results/overall.qc.csv").exists()
-            // Using the first 10 columns in the header only to check that file is made correctly
+            // Using the first 12 columns in the header only to check that file is made correctly
             lines = path("$launchDir/results/overall.qc.csv").text
-            assert lines.contains("sample,genotype,reference,matched_dsid,num_input_reads,num_aligned_reads,num_consensus_n,genome_completeness_percent,mean_sequencing_depth,median_sequencing_depth,total_variants,")
+            assert lines.contains("sample,genotype,reference,matched_dsid,dsid_file_used,num_input_reads,num_aligned_reads,num_consensus_n,genome_completeness_percent,mean_sequencing_depth,median_sequencing_depth,total_variants,")
 
             // Intermediate generated reference files
             assert path("$launchDir/results/reference/MH356245.1.amplicon.bed").exists()
@@ -786,6 +806,7 @@ nextflow_pipeline {
             assert iridanext_metadata.add_empty.genotype == "NA"
             assert iridanext_metadata.add_empty.reference == "MH356245.1"
             assert iridanext_metadata.add_empty.matched_dsid == "No Data"
+            assert iridanext_metadata.add_empty.dsid_file_used == "NA"
             assert iridanext_metadata.add_empty.num_input_reads == "2"
             assert iridanext_metadata.add_empty.num_aligned_reads == "0"
             assert iridanext_metadata.add_empty.num_consensus_n == "15894"
@@ -806,6 +827,7 @@ nextflow_pipeline {
             assert iridanext_metadata.add_sample1.genotype == "D8"
             assert iridanext_metadata.add_sample1.reference == "MH356245.1"
             assert iridanext_metadata.add_sample1.matched_dsid == "Novel-bcb39a9"
+            assert iridanext_metadata.add_sample1.dsid_file_used == "NA"
             assert iridanext_metadata.add_sample1.num_input_reads == "40476"
             assert iridanext_metadata.add_sample1.num_aligned_reads == "30921"
             assert iridanext_metadata.add_sample1.num_consensus_n == "316"
@@ -826,6 +848,7 @@ nextflow_pipeline {
             assert iridanext_metadata.add_sample2.genotype == "D8"
             assert iridanext_metadata.add_sample2.reference == "MH356245.1"
             assert iridanext_metadata.add_sample2.matched_dsid == "Novel-bcb39a9"
+            assert iridanext_metadata.add_sample2.dsid_file_used == "NA"
             assert iridanext_metadata.add_sample2.num_input_reads == "56368"
             assert iridanext_metadata.add_sample2.num_aligned_reads == "43438"
             assert iridanext_metadata.add_sample2.num_consensus_n == "294"
@@ -884,9 +907,9 @@ nextflow_pipeline {
 
             // Final QC File
             assert path("$launchDir/results/overall.qc.csv").exists()
-            // Using the first 10 columns in the header only to check that file is made correctly
+            // Using the first 12 columns in the header only to check that file is made correctly
             lines = path("$launchDir/results/overall.qc.csv").text
-            assert lines.contains("sample,genotype,reference,matched_dsid,num_input_reads,num_aligned_reads,num_consensus_n,genome_completeness_percent,mean_sequencing_depth,median_sequencing_depth,total_variants,")
+            assert lines.contains("sample,genotype,reference,matched_dsid,dsid_file_used,num_input_reads,num_aligned_reads,num_consensus_n,genome_completeness_percent,mean_sequencing_depth,median_sequencing_depth,total_variants,")
 
             // Intermediate generated reference files
             assert path("$launchDir/results/reference/MH356245.1.genome.bed").exists()
@@ -969,6 +992,7 @@ nextflow_pipeline {
             assert iridanext_metadata.sample1.genotype == "D8"
             assert iridanext_metadata.sample1.reference == "MH356245.1"
             assert iridanext_metadata.sample1.matched_dsid == "Novel-65d31ec"
+            assert iridanext_metadata.sample1.dsid_file_used == "NA"
             assert iridanext_metadata.sample1.num_input_reads == "9643"
             assert iridanext_metadata.sample1.num_aligned_reads == "9575"
             assert iridanext_metadata.sample1.num_consensus_n == "7"
@@ -988,6 +1012,7 @@ nextflow_pipeline {
             assert iridanext_metadata.sample2.genotype == "B3"
             assert iridanext_metadata.sample2.reference == "MK513622.1"
             assert iridanext_metadata.sample2.matched_dsid == "Novel-0fffef2"
+            assert iridanext_metadata.sample2.dsid_file_used == "NA"
             assert iridanext_metadata.sample2.num_input_reads == "6802"
             assert iridanext_metadata.sample2.num_aligned_reads == "6802"
             assert iridanext_metadata.sample2.num_consensus_n == "11519"
@@ -1045,9 +1070,9 @@ nextflow_pipeline {
 
             // Final QC File
             assert path("$launchDir/results/overall.qc.csv").exists()
-            // Using the first 11 columns in the header only to check that file is made correctly
+            // Using the first 12 columns in the header only to check that file is made correctly
             lines = path("$launchDir/results/overall.qc.csv").text
-            assert lines.contains("sample,genotype,reference,matched_dsid,num_input_reads,num_aligned_reads,num_consensus_n,genome_completeness_percent,mean_sequencing_depth,median_sequencing_depth,total_variants,")
+            assert lines.contains("sample,genotype,reference,matched_dsid,dsid_file_used,num_input_reads,num_aligned_reads,num_consensus_n,genome_completeness_percent,mean_sequencing_depth,median_sequencing_depth,total_variants,")
 
             // Intermediate generated reference files
             assert path("$launchDir/results/reference/MH356245.1.amplicon.bed").exists()
@@ -1116,6 +1141,7 @@ nextflow_pipeline {
             assert iridanext_metadata.sample1.genotype == "D8"
             assert iridanext_metadata.sample1.reference == "MH356245.1"
             assert iridanext_metadata.sample1.matched_dsid == "Novel-65d31ec"
+            assert iridanext_metadata.sample1.dsid_file_used == "NA"
             assert iridanext_metadata.sample1.num_input_reads == "8922"
             assert iridanext_metadata.sample1.num_aligned_reads == "7108"
             assert iridanext_metadata.sample1.num_consensus_n == "1424"
@@ -1173,9 +1199,9 @@ nextflow_pipeline {
 
             // Final QC File
             assert path("$launchDir/results/overall.qc.csv").exists()
-            // Using the first 11 columns in the header only to check that file is made correctly
+            // Using the first 12 columns in the header only to check that file is made correctly
             lines = path("$launchDir/results/overall.qc.csv").text
-            assert lines.contains("sample,genotype,reference,matched_dsid,num_input_reads,num_aligned_reads,num_consensus_n,genome_completeness_percent,mean_sequencing_depth,median_sequencing_depth,total_variants,")
+            assert lines.contains("sample,genotype,reference,matched_dsid,dsid_file_used,num_input_reads,num_aligned_reads,num_consensus_n,genome_completeness_percent,mean_sequencing_depth,median_sequencing_depth,total_variants,")
 
             // Intermediate generated reference files
             assert path("$launchDir/results/reference/MH356245.1.amplicon.bed").exists()
@@ -1274,6 +1300,7 @@ nextflow_pipeline {
             assert iridanext_metadata.sample1.genotype == "D8"
             assert iridanext_metadata.sample1.reference == "MH356245.1"
             assert iridanext_metadata.sample1.matched_dsid == "Novel-65d31ec"
+            assert iridanext_metadata.sample1.dsid_file_used == "NA"
             assert iridanext_metadata.sample1.num_input_reads == "8922"
             assert iridanext_metadata.sample1.num_aligned_reads == "7108"
             assert iridanext_metadata.sample1.num_consensus_n == "1424"
@@ -1293,6 +1320,7 @@ nextflow_pipeline {
             assert iridanext_metadata.sample2.genotype == "NA"
             assert iridanext_metadata.sample2.reference == "MK513622.1"
             assert iridanext_metadata.sample2.matched_dsid == "No Data"
+            assert iridanext_metadata.sample2.dsid_file_used == "NA"
             assert iridanext_metadata.sample2.num_input_reads == "5171"
             assert iridanext_metadata.sample2.num_aligned_reads == "664"
             assert iridanext_metadata.sample2.num_consensus_n == "14581"

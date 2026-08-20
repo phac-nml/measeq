@@ -35,7 +35,9 @@ workflow MEASEQ {
     ch_metadata = params.metadata ? file(params.metadata, type: 'file', checkIfExists: true) : []
     ch_custom_nextclade_dataset = Channel
         .value(file("$projectDir/assets/custom_measles_nextclade_dataset", type: 'dir', checkIfExists: true))
-    ch_id_fasta = params.dsid_fasta ? file(params.dsid_fasta, type: 'file', checkIfExists: true) : []
+    ch_id_fasta = params.dsid_fasta ? file(params.dsid_fasta, type: 'file', checkIfExists: true)
+        : params.default_gsp_dsid ? file(params.default_gsp_dsid, type: 'file', checkIfExists: true)
+        : []
 
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

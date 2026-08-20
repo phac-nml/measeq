@@ -5,7 +5,7 @@ Exact matching of the N450 sequence to input DSId fasta file to determine if we 
     GTCAGTTCCA...
 
     Output is just a TSV that has:
-    sample   matched_dsid   completeness
+    sample   matched_dsid   completeness    dsid_file_name
 */
 process COMPARE_INTERNAL_DSID {
     label 'process_single'
