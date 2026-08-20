@@ -537,7 +537,7 @@ def get_custom_nextclade_vals(nextclade_csv: Path, sample: str) -> Tuple[str, st
         return '', '', ''
 
 
-def parse_dsid_tsv(matched_dsid: Path, sample: str) -> str:
+def parse_dsid_tsv(matched_dsid: Path, sample: str) -> Tuple[str, float, str]:
     '''
     Purpose:
     --------
@@ -554,6 +554,7 @@ def parse_dsid_tsv(matched_dsid: Path, sample: str) -> str:
     --------
     String of DSID or its value in input table or No Data
     Float N450 completeness
+    The name of the dsid database fasta file used
     '''
     # Check for a match
     with open(matched_dsid, 'r') as handle:
@@ -562,7 +563,8 @@ def parse_dsid_tsv(matched_dsid: Path, sample: str) -> str:
             if d['sample'] == sample:
                 match = str(d['matched_dsid'])
                 n450_completeness = float(d['completeness'])
-                return match, n450_completeness
+                dsid_file_used = str(d['dsid_file_used'])
+                return match, n450_completeness, dsid_file_used
     return 'No Data', 0.00
 
 
@@ -699,7 +701,7 @@ def main() -> None:
         seq_primer_overlap = check_primers(args.seq_bed, variant_positions)
 
     # N450 dataset and DSId checks
-    matched_dsid, n450_completeness = parse_dsid_tsv(args.matched_dsid, args.sample)
+    matched_dsid, n450_completeness, dsid_file_used = parse_dsid_tsv(args.matched_dsid, args.sample)
 
     genotype, n450_range = parse_n450_nextclade(args.nextclade_n450, args.sample)
     n450_mean_depth = 0
@@ -767,6 +769,7 @@ def main() -> None:
         'qc_status': [qc_status],
         'N450_fasta': [f">{args.sample}-N450\n{n450_seq}"],
         'genome_fasta': [f">{args.sample}\n{consensus.seq.upper()}"],
+        'dsid_file_used': [dsid_file_used],
         'irida_id': [args.irida_id]
     }
     df = pd.DataFrame.from_dict(final)

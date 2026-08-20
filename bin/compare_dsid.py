@@ -89,7 +89,7 @@ def hash_seq(seq: str, length: int = 7) -> str:
     return hashlib.md5(seq.encode()).hexdigest()[:length]
 
 
-def label_seqs(input_fasta: Path, dsid_seqs: dict, out: str) -> dict:
+def label_seqs(input_fasta: Path, dsid_seqs: dict, out: str, dsid_fasta: Path | None = None) -> dict:
     '''
     Purpose:
     --------
@@ -103,6 +103,8 @@ def label_seqs(input_fasta: Path, dsid_seqs: dict, out: str) -> dict:
         Dict to match sequences to structured as {sequence: disd}
     out - str
         Output name for the files
+    dsid_fasta - Path
+        Path to dsid database fasta to extract file name
 
     Returns:
     --------
@@ -111,10 +113,19 @@ def label_seqs(input_fasta: Path, dsid_seqs: dict, out: str) -> dict:
     # For if novel seqs found
     novel_seqs = {}
 
+    # Get the name of the dsid database fasta file without extensions
+    if dsid_fasta:
+        dsid_fasta_name = dsid_fasta.name
+        for ext in ['.gz', '.fasta']:
+            if dsid_fasta_name.endswith(ext):
+                dsid_fasta_name = dsid_fasta_name.removesuffix(ext)
+    else:
+        dsid_fasta_name = 'None'
+
     # Match
     with open(out, 'w', newline='') as tsvfile:
         writer = csv.writer(tsvfile, delimiter='\t')
-        writer.writerow(['sample', 'matched_dsid', 'completeness'])
+        writer.writerow(['sample', 'matched_dsid', 'completeness', 'dsid_file_used'])
 
         for record in SeqIO.parse(input_fasta, "fasta"):
             seq = str(record.seq).upper()
@@ -139,7 +150,7 @@ def label_seqs(input_fasta: Path, dsid_seqs: dict, out: str) -> dict:
                     novel_seqs[seq] = label
                 dsid = novel_seqs[seq]
 
-            writer.writerow([sample, dsid, completeness])
+            writer.writerow([sample, dsid, completeness, dsid_fasta_name])
 
     return novel_seqs
 
@@ -156,7 +167,7 @@ def main():
         dsid_seqs = load_dsids(args.dsid_fasta)
 
     # Label and output
-    novel_seqs = label_seqs(args.fasta, dsid_seqs, args.outfile)
+    novel_seqs = label_seqs(args.fasta, dsid_seqs, args.outfile, args.dsid_fasta)
 
     if novel_seqs and args.write_novel:
         with open('novel_dsids.tsv', 'w', newline='') as tsvfile:

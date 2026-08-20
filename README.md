@@ -3,7 +3,7 @@
 - [Current Updates](#current-updates)
 - [Introduction](#introduction)
 - [Installation](#installation)
-- [Resource Requirements](#resources-requirements)
+- [Resources Requirements](#resources-requirements)
 - [Usage](#usage)
   - [Illumina](#illumina)
   - [Nanopore](#nanopore)
@@ -31,11 +31,14 @@
 
 ## Current Updates
 
-### _2026-07-13_ Summary
+### _2026-08-20_ Summary
 
-Full release version 1.3.0! Pipeline supports equivalent Illumina and Nanopore workflows allowing whole genome or amplicon sequencing analysis. The MeaSeq workflow generates whole genome consensus sequences, N450 sequences and reporting information, DSId hashing and assigning, and a final QC report. It can be run with a single reference or with the genotyping predictions and a config setup containing a users preferred references.
+Full release version 1.3.1! Pipeline supports equivalent Illumina and Nanopore workflows allowing whole genome or amplicon sequencing analysis. The MeaSeq workflow generates whole genome consensus sequences, N450 sequences and reporting information, DSId hashing and assigning, and a final QC report. It can be run with a single reference or with the genotyping predictions and a config setup containing a user's preferred references.
 
-Major change in version 1.3.0 is the update of [Clair3](https://github.com/HKU-BAL/Clair3/tree/main#v200--feb-9-2026--major-release) from `1.2.0` to `2.0.2`. This should only affect users running with a `--local_model` where they'll need to download the new pytorch models locally. Specifying the model name on the command line will download the pytorch model for the run.
+Release version 1.3.1 adds support for gzipped DSId input files and tracking for DSId database version used for each sample.
+
+> [!WARNING]
+> Major change in version 1.3.0 is the update of [Clair3](https://github.com/HKU-BAL/Clair3/tree/main#v200--feb-9-2026--major-release) from `1.2.0` to `2.0.2`. This should only affect users running with a `--local_model` where they'll need to download the new pytorch models locally. Specifying the model name on the command line will download the pytorch model for the run.
 
 #### Genotype Predictions
 
@@ -205,7 +208,7 @@ Evalutating and adjusting the preset reference genomes and primer bed files is r
 
 While 24 MeV genotypes were initially identified, only 2 have been detected since 2021: B3 and D8. Due to this, the Distinct Sequence Identifier (DSId) system was created to designate a unique 4-digit identifier based on the precise N450 sequence as a sub-genotype nomenclature. The [Measles Nucleotide Surveillance database](https://who-gmrln.org/means2) (MeaNS) is the global resource for these measles virus genetic sequences that is maintained by the WHO. N450 sequences can be submitted to the database to generate a distinct sequence identifier (DSId) for each unique sequence.
 
-There is no way to query the current database so a multifasta file with DSId calls is required to match locally match them. If a match is found, the matching DSId is assigned! If no match is found, or no DSId file is given, the distinct sequence is given a `Novel-<MD5 HASH>` (first 7 characters) identifier so that it can be submitted to the database and so that same IDs can be grouped together.
+There is no way to query the current database so a multifasta file with DSId calls is required to locally match them. If a match is found, the matching DSId is assigned! If no match is found, or no DSId file is given, the distinct sequence is given a `Novel-<MD5 HASH>` (first 7 characters) identifier so that it can be submitted to the database and so that same IDs can be grouped together.
 
 To assign known DSIds locally, use the parameter `--dsid_fasta <FASTA>` with the fasta database file structured to look as such:
 
