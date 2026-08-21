@@ -156,11 +156,12 @@ workflow ILLUMINA_CONSENSUS {
         // MODULE: Run IVAR Trim
         //
         // Prepare Inputs
+        def ivar_primer_pairs = params.ivar_primer_pairs ? file(params.ivar_primer_pairs, checkIfExists: true) : []
         ch_ivar_trim_input = ch_bam_bai
             .map { meta, bam, bai -> tuple(meta.ref_id, meta, bam, bai) }
             .combine(ch_primer_bed.map { meta_ref, bed -> tuple(meta_ref.id, bed) }, by: 0)
             .map { _ref_id, meta, bam, bai, bed ->
-                tuple(meta, bam, bai, bed)
+                tuple(meta, bam, bai, bed, ivar_primer_pairs)
             }
 
         // Run Module

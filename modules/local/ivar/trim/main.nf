@@ -11,7 +11,7 @@ process IVAR_TRIM {
         'biocontainers/ivar:1.4.4--h077b44d_0' }"
 
     input:
-    tuple val(meta), path(bam), path(bai), path(bed)
+    tuple val(meta), path(bam), path(bai), path(bed), path(primer_pairs)
 
     output:
     tuple val(meta), path("${meta.id}.primertrimmed.sorted.bam"), path("${meta.id}.primertrimmed.sorted.bam.bai"), emit: bam
@@ -23,9 +23,11 @@ process IVAR_TRIM {
 
     script:
     def args = task.ext.args ?: ""
+    def primer_pairs_arg = primer_pairs ? "-f ${primer_pairs}" : ""
     """
     ivar trim \\
         $args \\
+        $primer_pairs_arg \\
         -q 25 \\
         -e \\
         -m ${params.ivar_trim_min_read_length} \\
