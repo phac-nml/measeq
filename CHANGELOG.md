@@ -3,6 +3,16 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.3.2] - 2026-09-01
+
+Tiny adjustments including fixing the biopython conda environment, creating a channel for the `--ivar_primer_pairs` parameter and fixing a small reporting bug for low depth deletions that ultimately get ignored
+
+### `Adjusted`
+
+- Creating a chanel for `--ivar_primer_pairs` so they can be found in containers [PR #51](https://github.com/phac-nml/measeq/pull/51)
+- Conda channel for biopython corrected to `conda-forge` [PR #53](https://github.com/phac-nml/measeq/pull/53)
+- Rare issue where variant counts contained masked sites when the depth was below the depth threshold [PR #54](https://github.com/phac-nml/measeq/pull/54)
+
 ## [v1.3.1] - 2026-08-20
 
 Allowing the `--dsid_fasta` file to be gzipped for input, adding in an internal specific default DSId file, and adding the dsid file name to the sample's metadata
