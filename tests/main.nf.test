@@ -125,17 +125,17 @@ nextflow_pipeline {
 
         when {
             params {
-                input           = "${projectDir}/assets/ci-samplesheet.csv"
-                outdir          = "results"
-                reference       = "${projectDir}/assets/reference/D8/MH356245.1.reference.fasta"
-                platform        = "illumina"
-                primer_bed      = "${projectDir}/test_data/primer.bed"
-                ivar_offset     = 0
-                dsid_fasta      = "${projectDir}/assets/dsid_example.fasta"
-                contact_name    = "Dr. Evil"
-                contact_website = "https://url-test.ca/measles"
-                contact_phone   = "222-222-2222"
-                contact_email   = "Dr.Evil@phac-aspc.gc.ca"
+                input             = "${projectDir}/assets/ci-samplesheet.csv"
+                outdir            = "results"
+                reference         = "${projectDir}/assets/reference/D8/MH356245.1.reference.fasta"
+                platform          = "illumina"
+                primer_bed        = "${projectDir}/test_data/primer.bed"
+                ivar_offset       = 0
+                dsid_fasta        = "${projectDir}/assets/dsid_example.fasta"
+                contact_name      = "Dr. Evil"
+                contact_website   = "https://url-test.ca/measles"
+                contact_phone     = "222-222-2222"
+                contact_email     = "Dr.Evil@phac-aspc.gc.ca"
             }
         }
         then {
@@ -315,16 +315,18 @@ nextflow_pipeline {
         tag "amplicon"
         tag "prediction"
         tag "dsid"
+        tag "primer_pairs"
 
         when {
             params {
-                input            = "${projectDir}/assets/ci-samplesheet.csv"
-                outdir           = "results"
-                platform         = "illumina"
-                amplicon         = true
-                ivar_offset      = 1
-                dsid_fasta       = "${projectDir}/test_data/notreal_dsids.fasta.gz"
-                default_gsp_dsid = "${projectDir}/test_data/doesntexist.fasta" // To make sure it takes the dsid_fasta over the default
+                input             = "${projectDir}/assets/ci-samplesheet.csv"
+                outdir            = "results"
+                platform          = "illumina"
+                amplicon          = true
+                ivar_offset       = 1
+                ivar_primer_pairs = "${projectDir}/test_data/primer_pairs.tsv"
+                dsid_fasta        = "${projectDir}/test_data/notreal_dsids.fasta.gz"
+                default_gsp_dsid  = "${projectDir}/test_data/doesntexist.fasta" // To make sure it takes the dsid_fasta over the default
             }
         }
         then {
@@ -374,14 +376,14 @@ nextflow_pipeline {
             assert lines.size() == 266
             assert path("$launchDir/results/consensus/empty.N450.fasta").md5 == "d41d8cd98f00b204e9800998ecf8427e"
 
-            assert path("$launchDir/results/consensus/sample1.consensus.fasta").md5 == "cb1576e2ef35b5610929d5029c367262"
+            assert path("$launchDir/results/consensus/sample1.consensus.fasta").md5 == "7666b416f1d025c8c96f74f1b641b02e"
             lines = path("$launchDir/results/consensus/sample1.consensus.fasta").readLines()
             assert lines.contains(">sample1 MH356245.1")
             assert lines.contains("NNNNNNNNNNNNNNNNNNNNNNNNNNTCAATCAATGATCATATTCTAGTACACTTAGGAT")
             assert lines.size() == 266
             assert path("$launchDir/results/consensus/sample1.N450.fasta").md5 == "49dad01767d044fc73d87a6818765410"
 
-            assert path("$launchDir/results/consensus/sample2.consensus.fasta").md5 == "1b12e9c7113df05aa3fabd9c87259481"
+            assert path("$launchDir/results/consensus/sample2.consensus.fasta").md5 == "5d69ba63abe6f786672637287aac6082"
             lines = path("$launchDir/results/consensus/sample2.consensus.fasta").readLines()
             assert lines.contains(">sample2 MH356245.1")
             assert lines.contains("NNNNNNNNNNNNNNNNNNNNNNNNNNTCAATCAATGATCATATTCTAGTACACTTAGGAT")
@@ -457,18 +459,18 @@ nextflow_pipeline {
             assert iridanext_metadata.add_sample1.matched_dsid == "2026"
             assert iridanext_metadata.add_sample1.dsid_file_used == "notreal_dsids"
             assert iridanext_metadata.add_sample1.num_input_reads == "40476"
-            assert iridanext_metadata.add_sample1.num_aligned_reads == "35649"
-            assert iridanext_metadata.add_sample1.num_consensus_n == "310"
-            assert iridanext_metadata.add_sample1.genome_completeness_percent == "98.05"
-            assert iridanext_metadata.add_sample1.mean_sequencing_depth == "295.62"
-            assert iridanext_metadata.add_sample1.median_sequencing_depth == "262.0"
+            assert iridanext_metadata.add_sample1.num_aligned_reads == "30997"
+            assert iridanext_metadata.add_sample1.num_consensus_n == "316"
+            assert iridanext_metadata.add_sample1.genome_completeness_percent == "98.01"
+            assert iridanext_metadata.add_sample1.mean_sequencing_depth == "255.43"
+            assert iridanext_metadata.add_sample1.median_sequencing_depth == "225.0"
             assert iridanext_metadata.add_sample1.total_variants == "269"
             assert iridanext_metadata.add_sample1.num_snps == "269"
             assert iridanext_metadata.add_sample1.num_iupac == "0"
             assert iridanext_metadata.add_sample1.genome_length == "15894"
             assert iridanext_metadata.add_sample1.divisible_by_6 == "PASS"
             assert iridanext_metadata.add_sample1.N450_completeness == "100.0"
-            assert iridanext_metadata.add_sample1.N450_mean_depth == "268.51"
+            assert iridanext_metadata.add_sample1.N450_mean_depth == "254.78"
             assert iridanext_metadata.add_sample1.N450_status == "PASS"
             assert iridanext_metadata.add_sample1.qc_status == "PASS"
 
@@ -478,18 +480,18 @@ nextflow_pipeline {
             assert iridanext_metadata.add_sample2.matched_dsid == "2026"
             assert iridanext_metadata.add_sample2.dsid_file_used == "notreal_dsids"
             assert iridanext_metadata.add_sample2.num_input_reads == "56368"
-            assert iridanext_metadata.add_sample2.num_aligned_reads == "49451"
-            assert iridanext_metadata.add_sample2.num_consensus_n == "287"
-            assert iridanext_metadata.add_sample2.genome_completeness_percent == "98.19"
-            assert iridanext_metadata.add_sample2.mean_sequencing_depth == "413.61"
-            assert iridanext_metadata.add_sample2.median_sequencing_depth == "412.0"
-            assert iridanext_metadata.add_sample2.total_variants == "273"
-            assert iridanext_metadata.add_sample2.num_snps == "273"
+            assert iridanext_metadata.add_sample2.num_aligned_reads == "42302"
+            assert iridanext_metadata.add_sample2.num_consensus_n == "430"
+            assert iridanext_metadata.add_sample2.genome_completeness_percent == "97.29"
+            assert iridanext_metadata.add_sample2.mean_sequencing_depth == "351.41"
+            assert iridanext_metadata.add_sample2.median_sequencing_depth == "350.0"
+            assert iridanext_metadata.add_sample2.total_variants == "264"
+            assert iridanext_metadata.add_sample2.num_snps == "264"
             assert iridanext_metadata.add_sample2.num_iupac == "0"
             assert iridanext_metadata.add_sample2.genome_length == "15894"
             assert iridanext_metadata.add_sample2.divisible_by_6 == "PASS"
             assert iridanext_metadata.add_sample2.N450_completeness == "100.0"
-            assert iridanext_metadata.add_sample2.N450_mean_depth == "465.13"
+            assert iridanext_metadata.add_sample2.N450_mean_depth == "438.78"
             assert iridanext_metadata.add_sample2.N450_status == "PASS"
             assert iridanext_metadata.add_sample2.qc_status == "PASS"
 
