@@ -28,7 +28,7 @@ jobs:
       matrix:
         NXF_VER:
           - "24.10.0"
-          - "25.10.4"
+          - "25.10.7"
         test_name:
           - "nf-test"
     steps:
