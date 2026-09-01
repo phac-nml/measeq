@@ -329,9 +329,12 @@ def parse_vcf(vcf_file: Path, n_pos: list) -> Tuple[str, list, str, dict]:
             # Other odd issue, skip positions where alt is None
             if record.ALT[0] is None:
                 continue
+
             # Make sure the variant wasn't masked by depth mask
-            if int(record.POS) in n_pos:
+            positions = [ record.POS + i for i in range(len(record.REF)) ]
+            if any(pos in n_pos for pos in positions):
                 continue
+
             # Multiple alleles not supported warning
             #  These should have been corrected in previous processing steps as well to only have 1
             if len(record.ALT) > 1:

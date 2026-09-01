@@ -379,9 +379,17 @@ def main() -> None:
                     consensus_tag = "indel"
             # Otherwise data is between the upper and lower frequency so setup and apply IUPAC
             else:
-                tsv_tag = "AMBIGUOUS"
-                consensus_tag = "ambiguous"
+                # Determine base
                 iupac_base, fzset = get_base_code(out_tuple[1], args.upper_ambiguity_frequency)
+
+                # Set designation based on if the iupac base is actually an IUPAC or if the ambiguity is from DEL reads
+                #  If its from DEL reads we don't want to later call it an IUPAC variant
+                if iupac_base in ["A", "T", "C", "G"]:
+                    tsv_tag = "PASS"
+                    consensus_tag = "consensus"
+                else:
+                    tsv_tag = "AMBIGUOUS"
+                    consensus_tag = "ambiguous"
 
                 # Set genotype for bcftools with the `-I` arg to properly use
                 #  `-I` will apply an IUPAC based on the given genotype (ex. (0,1) will give an IUPAC based on the ref and alt)
