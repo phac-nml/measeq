@@ -20,23 +20,23 @@
                                     },
                                     {
                                         "pattern": "^.*MeaSeq_Report.html$",
-                                        "description": ""
+                                        "description": "Final report with all metrics and visualizations"
                                     },
                                     {
                                         "pattern": "^.*overall.xlsx$",
-                                        "description": ""
+                                        "description": "Final combined QC information file in excel format that also has the genomes in fasta format"
                                     },
                                     {
                                         "pattern": "^.*novel_dsids.tsv$",
-                                        "description": ""
+                                        "description": "TSV file containing the different run Novel-HASH DSId calls along with its N450 sequence"
                                     },
                                     {
                                         "pattern": "^.*predictions.csv$",
-                                        "description": ""
+                                        "description": "file containing each sample's predicted genotype with other metrics regarding the prediction quality"
                                     },
                                     {
                                         "pattern": "^.*reporting/.*-Amplicon-Summary-MultiQC-Report.html$",
-                                        "description": ""
+                                        "description": "file containing plots showing how well each amplicon was sequenced"
                                     }
                                 ]
                             }
@@ -56,35 +56,35 @@
                                         "anyOf": [
                                             {
                                                 "pattern": "^.*consensus/.*.N450.fasta$",
-                                                "description": ""
+                                                "description": "Reference N450 sequence"
                                             },
                                             {
                                                 "pattern": "^.*consensus/.*.consensus.fasta$",
-                                                "description": ""
+                                                "description": "Final sample consensus sequence with consensus and ambiguous variants applied along with the masked sites"
                                             },
                                             {
                                                 "pattern": "^.*vcf/.*processed_vcf/.*.consensus.norm.vcf.gz$",
-                                                "description": ""
+                                                "description": "Consensus BCFTools normalized variants to be applied to the consensus sequence"
                                             },
                                             {
                                                 "pattern": "^.*bam/.*ivar/.*.primertrimmed.sorted.bam.bai$",
-                                                "description": ""
+                                                "description": "Index of primertrimmed coordinate sorted BAM file containing read alignment information."
                                             },
                                             {
                                                 "pattern": "^.*bam/.*ivar/.*.primertrimmed.sorted.bam$",
-                                                "description": ""
+                                                "description": "Primertrimmed coordinate sorted BAM file containing read alignment information."
                                             },
                                             {
                                                 "pattern": "^.*vcf/.*final/.*.pass.norm.vcf.gz$",
-                                                "description": ""
+                                                "description": "Normalized merged variants passing the variant filters"
                                             },
                                             {
                                                 "pattern": "^.*bam/.*artic/.*.primertrimmed.rg.sorted.bam.bai$",
-                                                "description": ""
+                                                "description": "Index of the primertrimmed sorted alignments file"
                                             },
                                             {
                                                 "pattern": "^.*bam/.*artic/.*.primertrimmed.rg.sorted.bam$",
-                                                "description": ""
+                                                "description": "Amplicon primertrimmed and sorted alignments file of reads mapped to given reference"
                                             }
                                         ]
                                     }
