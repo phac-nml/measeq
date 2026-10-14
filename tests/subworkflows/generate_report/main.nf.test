@@ -59,6 +59,9 @@ nextflow_workflow {
                 { assert workflow.success }
             )
 
+            def combined_stdout = workflow.stdout.join(",")
+            assert combined_stdout.contains("JSON did not match schema") == false
+
             // Files exist
             // Reporting Stats
             assert path("${launchDir}/results/reporting/positional_n/sample1.per_base_n.tsv").exists()

@@ -3,6 +3,12 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+
+- A MeaSeq-specific JSON output schema that the nf-iridanext plugin will automatically validate its output against. Currently, this schema enforcement is only enabled during testing. [PR 56](https://github.com/phac-nml/measeq/pull/56)
+
 ## [v1.3.2] - 2026-09-01
 
 Tiny adjustments including fixing the biopython conda environment, creating a channel for the `--ivar_primer_pairs` parameter and fixing a small reporting bug for low depth deletions that ultimately get ignored

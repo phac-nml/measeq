@@ -63,6 +63,9 @@ nextflow_workflow {
                 { assert workflow.success }
             )
 
+            def combined_stdout = workflow.stdout.join(",")
+            assert combined_stdout.contains("JSON did not match schema") == false
+
             // Channels
             def meta = {}
             meta = workflow.out.consensus.get(0)[0]

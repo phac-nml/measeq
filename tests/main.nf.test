@@ -145,6 +145,9 @@ nextflow_pipeline {
             assert workflow.success
             assert workflow.trace.failed().size() == 0
 
+            def combined_stdout = workflow.stdout.join(",")
+            assert combined_stdout.contains("JSON did not match schema") == false
+
             //
             // Channels and Files Exist
             //
@@ -336,6 +339,9 @@ nextflow_pipeline {
             assert workflow.success
             assert workflow.trace.failed().size() == 0
 
+            def combined_stdout = workflow.stdout.join(",")
+            assert combined_stdout.contains("JSON did not match schema") == false
+
             //
             // Channels and Files Exist
             //
@@ -524,6 +530,9 @@ nextflow_pipeline {
             assert workflow.success
             assert workflow.trace.failed().size() == 0
 
+            def combined_stdout = workflow.stdout.join(",")
+            assert combined_stdout.contains("JSON did not match schema") == false
+
             //
             // Channels and Files Exist
             //
@@ -706,6 +715,9 @@ nextflow_pipeline {
             //
             assert workflow.success
             assert workflow.trace.failed().size() == 0
+
+            def combined_stdout = workflow.stdout.join(",")
+            assert combined_stdout.contains("JSON did not match schema") == false
 
             //
             // Channels and Files Exist
@@ -901,6 +913,9 @@ nextflow_pipeline {
             assert workflow.success
             assert workflow.trace.failed().size() == 0
 
+            def combined_stdout = workflow.stdout.join(",")
+            assert combined_stdout.contains("JSON did not match schema") == false
+
             //
             // Channels and Files Exist
             //
@@ -1064,6 +1079,9 @@ nextflow_pipeline {
             assert workflow.success
             assert workflow.trace.failed().size() == 0
 
+            def combined_stdout = workflow.stdout.join(",")
+            assert combined_stdout.contains("JSON did not match schema") == false
+
             //
             // Channels and Files Exist
             //
@@ -1192,6 +1210,9 @@ nextflow_pipeline {
             //
             assert workflow.success
             assert workflow.trace.failed().size() == 0
+
+            def combined_stdout = workflow.stdout.join(",")
+            assert combined_stdout.contains("JSON did not match schema") == false
 
             //
             // Channels and Files Exist

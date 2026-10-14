@@ -1,0 +1,219 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/phac-nml/measeq/main/assets/schema_output.json",
+    "title": "MeaSeq Output Schema",
+    "description": "The MeaSeq-specific schema used for validating IRIDA Next JSON output data",
+    "type": "object",
+    "properties": {
+        "files": {
+            "type": "object",
+            "properties": {
+                "global": {
+                    "type": "array",
+                    "items": {
+                        "properties": {
+                            "path": {
+                                "anyOf": [
+                                    {
+                                        "pattern": "^.*pipeline_info/.*measeq_software_mqc_versions.yml$",
+                                        "description": "Software versions used by the pipeline."
+                                    },
+                                    {
+                                        "pattern": "^.*MeaSeq_Report.html$",
+                                        "description": ""
+                                    },
+                                    {
+                                        "pattern": "^.*overall.xlsx$",
+                                        "description": ""
+                                    },
+                                    {
+                                        "pattern": "^.*novel_dsids.tsv$",
+                                        "description": ""
+                                    },
+                                    {
+                                        "pattern": "^.*predictions.csv$",
+                                        "description": ""
+                                    },
+                                    {
+                                        "pattern": "^.*reporting/.*-Amplicon-Summary-MultiQC-Report.html$",
+                                        "description": ""
+                                    }
+                                ]
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "uniqueItems": true
+                },
+                "samples": {
+                    "type": "object",
+                    "patternProperties": {
+                        "^.*$": {
+                            "type": "array",
+                            "items": {
+                                "properties": {
+                                    "path": {
+                                        "anyOf": [
+                                            {
+                                                "pattern": "^.*consensus/.*.N450.fasta$",
+                                                "description": ""
+                                            },
+                                            {
+                                                "pattern": "^.*consensus/.*.consensus.fasta$",
+                                                "description": ""
+                                            },
+                                            {
+                                                "pattern": "^.*vcf/.*processed_vcf/.*.consensus.norm.vcf.gz$",
+                                                "description": ""
+                                            },
+                                            {
+                                                "pattern": "^.*bam/.*ivar/.*.primertrimmed.sorted.bam.bai$",
+                                                "description": ""
+                                            },
+                                            {
+                                                "pattern": "^.*bam/.*ivar/.*.primertrimmed.sorted.bam$",
+                                                "description": ""
+                                            },
+                                            {
+                                                "pattern": "^.*vcf/.*final/.*.pass.norm.vcf.gz$",
+                                                "description": ""
+                                            },
+                                            {
+                                                "pattern": "^.*bam/.*artic/.*.primertrimmed.rg.sorted.bam.bai$",
+                                                "description": ""
+                                            },
+                                            {
+                                                "pattern": "^.*bam/.*artic/.*.primertrimmed.rg.sorted.bam$",
+                                                "description": ""
+                                            }
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "uniqueItems": true
+                        }
+                    }
+                }
+            }
+        },
+        "metadata": {
+            "type": "object",
+            "properties": {
+                "samples": {
+                    "type": "object",
+                    "patternProperties": {
+                        "^.*$": {
+                            "type": "object",
+                            "properties": {
+                                "genotype": {
+                                    "description": ""
+                                },
+                                "reference": {
+                                    "description": ""
+                                },
+                                "matched_dsid": {
+                                    "description": ""
+                                },
+                                "dsid_file_used": {
+                                    "description": ""
+                                },
+                                "num_input_reads": {
+                                    "description": ""
+                                },
+                                "num_aligned_reads": {
+                                    "description": ""
+                                },
+                                "num_consensus_n": {
+                                    "description": ""
+                                },
+                                "genome_completeness_percent": {
+                                    "description": ""
+                                },
+                                "mean_sequencing_depth": {
+                                    "description": ""
+                                },
+                                "median_sequencing_depth": {
+                                    "description": ""
+                                },
+                                "total_variants": {
+                                    "description": ""
+                                },
+                                "num_snps": {
+                                    "description": ""
+                                },
+                                "num_iupac": {
+                                    "description": ""
+                                },
+                                "num_deletions": {
+                                    "description": ""
+                                },
+                                "num_deletion_sites": {
+                                    "description": ""
+                                },
+                                "num_insertions": {
+                                    "description": ""
+                                },
+                                "num_insertion_sites": {
+                                    "description": ""
+                                },
+                                "genome_length": {
+                                    "description": ""
+                                },
+                                "divisible_by_6": {
+                                    "description": ""
+                                },
+                                "frameshifts": {
+                                    "description": ""
+                                },
+                                "metaframeshiftsdata_1": {
+                                    "description": ""
+                                },
+                                "nonsense_mutation": {
+                                    "description": ""
+                                },
+                                "mutated_stop_codon": {
+                                    "description": ""
+                                },
+                                "variants": {
+                                    "description": ""
+                                },
+                                "sequencing_primer_variants": {
+                                    "description": ""
+                                },
+                                "N450_completeness": {
+                                    "description": ""
+                                },
+                                "N450_mean_depth": {
+                                    "description": ""
+                                },
+                                "N450_status": {
+                                    "description": ""
+                                },
+                                "qc_status": {
+                                    "description": ""
+                                },
+                                "run_status": {
+                                    "description": ""
+                                },
+                                "run_summary": {
+                                    "description": ""
+                                },
+                                "pipeline_name": {
+                                    "description": ""
+                                },
+                                "pipeline_version": {
+                                    "description": ""
+                                },
+                                "num_masked": {
+                                    "description": ""
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
