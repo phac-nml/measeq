@@ -1,0 +1,28 @@
+nextflow_pipeline {
+
+    name "MeaSeq JSON Output Schema Integration Testing"
+    script "main.nf"
+
+    test("Schema - Bad File") {
+        tag "schema_bad_file"
+        config "${projectDir}/test_data/configs/iridanext_bad_file.config"
+
+        when{
+            params {
+                input            = "${projectDir}/assets/ci-samplesheet.csv"
+                outdir           = "results"
+                platform         = "illumina"
+                default_gsp_dsid = "${projectDir}/test_data/notreal_dsids.fasta.gz"
+            }
+        }
+
+        then {
+            assert workflow.success
+
+            def combined_stdout = workflow.stdout.join(",")
+
+            assert combined_stdout.contains("JSON did not match schema")
+            assert combined_stdout.contains('Validation errors: "overall.qc.csv"')
+        }
+    }
+}
