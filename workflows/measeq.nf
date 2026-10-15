@@ -11,6 +11,7 @@ include { ADJUST_FASTA_HEADER as ADJUST_N450_FASTA_HEADER } from '../modules/loc
 include { NEXTCLADE_DATASETGET    } from '../modules/nf-core/nextclade/datasetget/main'
 include { NEXTCLADE_RUN as NEXTCLADE_RUN_N450             } from '../modules/nf-core/nextclade/run/main'
 include { NEXTCLADE_RUN as NEXTCLADE_RUN_CUSTOM           } from '../modules/nf-core/nextclade/run/main'
+include { TRIM_GENOME_UTRS        } from '../modules/local/custom/trim_genome/main'
 include { SAMTOOLS_DEPTH          } from '../modules/nf-core/samtools/depth/main'
 include { COMPARE_INTERNAL_DSID   } from '../modules/local/custom/compare_internal_dsid/main'
 include { MAKE_SAMPLE_QC_CSV      } from '../modules/local/qc/sample/main'
@@ -164,6 +165,20 @@ workflow MEASEQ {
         ch_custom_nextclade_dataset
     )
     ch_versions = ch_versions.mix(NEXTCLADE_RUN_CUSTOM.out.versions.first())
+
+    //
+    // MODULE: Optionally trim the 5' and 3' UTRs using minimap2 and an already trimmed guide
+    //
+    if( params.trimmed_output ) {
+        // Our B3 reference is trimmed like this so we can use that
+        ch_guide_reference = Channel
+            .value(file("$projectDir/assets/reference/B3/MK513622.1.reference.fasta", type: 'file', checkIfExists: true))
+        TRIM_GENOME_UTRS(
+            ch_consensus,
+            ch_guide_reference
+        )
+        ch_versions = ch_versions.mix(TRIM_GENOME_UTRS.out.versions.first())
+    }
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // QC

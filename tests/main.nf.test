@@ -508,6 +508,7 @@ nextflow_pipeline {
         tag "non_amplicon"
         tag "prediction"
         tag "dsid"
+        tag "trimmed"
 
         when {
             params {
@@ -515,6 +516,7 @@ nextflow_pipeline {
                 outdir           = "results"
                 platform         = "illumina"
                 default_gsp_dsid = "${projectDir}/test_data/notreal_dsids.fasta.gz"
+                trimmed_output   = true
             }
         }
         then {
@@ -568,6 +570,13 @@ nextflow_pipeline {
             assert lines.contains("ACCAAACAAAGTTGGGTAAGGATAGATCAATCAATGATCATATTCTAGTACACTTAGGAT")
             assert lines.size() == 266
             assert path("$launchDir/results/consensus/sample2.N450.fasta").md5 == "896c7f643c3fdd5af4f0b4c8195a01df"
+
+            // Checking the trimmed genome output
+            assert path("$launchDir/results/consensus/sample2.trimmed.consensus.fasta").md5 == "fda3eecba4b63f721297f42a67784956"
+            lines = path("$launchDir/results/consensus/sample2.trimmed.consensus.fasta").readLines()
+            assert lines.contains(">sample2:108-15785")
+            assert lines.contains("ATGGCCACACTTTTAAGGAGCTTAGCATTGTTCAAAAGAAACAAGGACAAACCACCCATT")
+            assert lines.size() == 263
 
             //  Reporting files
             assert path("$launchDir/results/reporting/sample_positional_normalized_depth.csv").exists()

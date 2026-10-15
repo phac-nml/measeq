@@ -230,6 +230,7 @@ min_frameshift_qual_c3
 | --default_gsp_dsid | Path to default DSId multi-fasta to use, for GSP only really | False | null | GSP related parameter |
 | --min_depth | Minimum depth to call a base | False | Int | 10 | |
 | --no_frameshifts | Fail all indel variants not divisible by 3 | False | Boolean | False | Somewhat crude filter, only use if really needed |
+| --trimmed_output | Additionally output a UTR-trimmed final consensus genome with the default consensus genome | False | Boolean | False | |
 | --neg_control_pct_threshold | Threshold of genome to be called in a negative control to fail it | False | Int | 10 | |
 | --neg_ctrl_substrings | Substrings to match to sample names to identify negative controls. Separated by a , | False | String | neg,ntc,blank,en | |
 | --skip_negative_grading | Skip grading negative controls and just output a PASS for Run QC | False | Boolean | False | |
