@@ -54,7 +54,7 @@ The pipeline is built using Nextflow and processes data using the following step
 - [Quality Control](#quality-control)
 
   - [Nextclade](#nextclade) - Run nextclade on N450 dataset to get genotype and on the custom dataset to get frameshift and nonsense mutation information
-  - [Trim Genome UTRs](#trim-genome-utrs) -
+  - [Trim Genome UTRs](#trim-genome-utrs) - Output an additional genome per sample that has the 5' and 3' UTR regions trimmed
   - [Samtools Depth](#samtools-depth) - Calculate and summarize per-position depth
   - [Compare DSId](#compare-dsid) - Compare sample N450 to DSId fastas (if available) to assign DSId or Novel hash to type sample
   - [Make Sample QC](#make-sample-qc) - Concatenate relevant sample-specific files for QC evaluation and determine QC result
