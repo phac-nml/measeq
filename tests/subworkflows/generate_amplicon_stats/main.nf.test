@@ -43,6 +43,9 @@ nextflow_workflow {
                 { assert workflow.success }
             )
 
+            def combined_stdout = workflow.stdout.join(",")
+            assert combined_stdout.contains("JSON did not match schema") == false
+
             // Files exist
             // Amplicon Stats
             assert path("${launchDir}/results/reporting/amplicon/sample1_amplicon_completeness.tsv").exists()
