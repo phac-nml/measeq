@@ -4,6 +4,7 @@ nextflow_pipeline {
     script "main.nf"
 
     test("Schema - Bad File") {
+        tag "fail"
         tag "schema_bad_file"
         config "${projectDir}/test_data/configs/iridanext_bad_file.config"
 
