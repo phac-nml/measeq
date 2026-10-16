@@ -54,6 +54,7 @@ The pipeline is built using Nextflow and processes data using the following step
 - [Quality Control](#quality-control)
 
   - [Nextclade](#nextclade) - Run nextclade on N450 dataset to get genotype and on the custom dataset to get frameshift and nonsense mutation information
+  - [Trim Genome UTRs](#trim-genome-utrs) - Output an additional genome per sample that has the 5' and 3' UTR regions trimmed
   - [Samtools Depth](#samtools-depth) - Calculate and summarize per-position depth
   - [Compare DSId](#compare-dsid) - Compare sample N450 to DSId fastas (if available) to assign DSId or Novel hash to type sample
   - [Make Sample QC](#make-sample-qc) - Concatenate relevant sample-specific files for QC evaluation and determine QC result
@@ -416,6 +417,18 @@ Quality control modules and reporting
 </details>
 
 Nextclade is run using the previously described N450 dataset to determine the genotype of each of the samples along with to pull out the N450 region. It is then run again with a second custom dataset to determine if any of the genes have been unexpectedly distrupted
+
+#### Trim Genome UTRs
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `consensus/`
+  - `<SAMPLE>.trimmed.consensus.fasta`: 5' and 3' UTR trimmed genome made from consensus genome
+
+</details>
+
+The 5' and 3' UTR regions are trimmed through a minimap2 alignment of the output consensus sequence and an already trimmed reference genome
 
 #### Samtools Depth
 

@@ -11,7 +11,7 @@
     - [Variant Quality Filtering and Masking Mixed Sites](#variant-quality-filtering-and-masking-mixed-sites)
   - [Reference Assignment](#reference-assignment)
     - [Specifying Singular Reference](#specifying-singular-reference)
-  - [Amplicon Data and Primer Files](#amplicon-data-and-primer-files)
+    - [Amplicon Data and Primer Files](#amplicon-data-and-primer-files)
     - [Changing the Preset References and Primer Files](#changing-the-preset-references-and-primer-files)
   - [DSIds](#dsids)
   - [Contact Information](#contact-information)
@@ -33,23 +33,12 @@
 
 ### _2026-08-20_ Summary
 
-Full release version 1.3.1! Pipeline supports equivalent Illumina and Nanopore workflows allowing whole genome or amplicon sequencing analysis. The MeaSeq workflow generates whole genome consensus sequences, N450 sequences and reporting information, DSId hashing and assigning, and a final QC report. It can be run with a single reference or with the genotyping predictions and a config setup containing a user's preferred references.
+The MeaSeq pipeline supports equivalent Illumina and Nanopore workflows allowing whole genome or amplicon sequencing analysis and reporting. The workflow generates whole genome consensus sequences, N450 sequences, DSId hashing and assigning, and a final summarized QC report. It can be run with a single reference genome or with a genotype-based analysis (default) that relys on predicting the samples genotype before running with that genotypes provided reference.
 
-Release version 1.3.1 adds support for gzipped DSId input files and tracking for DSId database version used for each sample.
+Users can run with predicted genotype-based reference mapping (default) or with a singular reference genome (using `--reference <FASTA>` and for amplicon data additionally `--primer_bed <BED>`) See [Reference Assignment](#reference-assignment) for more information on adjusting these settings if the defaults need to be adjusted to meet your requirements.
 
 > [!WARNING]
 > Major change in version 1.3.0 is the update of [Clair3](https://github.com/HKU-BAL/Clair3/tree/main#v200--feb-9-2026--major-release) from `1.2.0` to `2.0.2`. This should only affect users running with a `--local_model` where they'll need to download the new pytorch models locally. Specifying the model name on the command line will download the pytorch model for the run.
-
-#### Genotype Predictions
-
-- Sample references are set based on the predicted genotype with a default fallback for non-supplied genotypes or unknown/mixed samples.
-  - Included in the repo are genotypes: A, B3, D8
-  - Includes primer files for artic (run with `-profile artic_primers`) and, by default, the local PHAC scheme.
-  - _Recommended_ users set their own references and primers
-  - Users can supply their own references for other genotypes or update the current genotype ones based on their needs
-  - Users can set their own whole run reference (no predictions or genotype specific analysis) with `--reference <REF>` (and `--primer_bed <BED>` for amplicon).
-  - [References Config](conf/reference.config)
-  - More total information available in the [References and Predictions section](#reference-assignment)
 
 #### Future Direction and Support
 
@@ -57,7 +46,7 @@ Release version 1.3.1 adds support for gzipped DSId input files and tracking for
 
 ## Introduction
 
-**MeaSeq** is a measles virus (MeV) specific pipeline established for use in surveillance and outbreak analysis. This pipeline utilizes a reference-based read mapping approach for Whole Genome or Amplicon sequencing data from both the Illumina and Nanopore platforms to output MeV consensus sequences (whole genome and N450), variant data, sequencing qualtiy information, and custom summary reports.
+**MeaSeq** is a measles virus (MeV) specific pipeline established for use in surveillance and outbreak analysis. This pipeline utilizes a genotype-specific reference-based read mapping approach for Whole Genome or Amplicon sequencing data from both the Illumina and Nanopore platforms to output MeV consensus sequences (whole genome and N450), variant data, sequencing qualtiy information, and custom summary reports.
 
 ![MeaSeq Workflow Diagram](./MeaSeq_Workflow_COG.png)
 
@@ -96,7 +85,7 @@ By default, the `bwamem2` step has a minimum resource usage allocation set to `1
 
 This can be adjusted (along with the other labels) by creating and passing a [custom configuration file](https://nf-co.re/docs/usage/getting_started/configuration) with `-c <config>`. More info can be found in the [usage doc](./docs/usage.md)
 
-The pipeline has also been tested using as low as `2 cpus` and `8GB memory` with a few throttling steps but functional.
+The pipeline has also been tested using as low as `2 cpus` and `8GB memory` for 6 samples with ~50x coverage each resulting in a few steps throttling execution time but no functional output differences or issues.
 
 ## Usage
 
@@ -167,19 +156,23 @@ To adjust this behaviour, you can set the `--min_variant_qual_c3`, `--min_frames
 
 ### Reference Assignment
 
-With [MeaSeq v0.5.0](https://github.com/phac-nml/measeq/releases/tag/0.5.0) and later, the `--reference` parameter is no longer required. Instead, the pipeline now runs by default on a per-sample reference assignment based on predicting the input sample's most likely genotype. Included in the pipeline are 3 reference files based on for MeV genotypes B3, D8, and A. If a sample is predicted to be one of these genotypes, then the pipeline processes the sample using the corresponding reference FASTA file. If the sample's most likely genotype doesn't correspond to one of these genotypes, then the pipeline defaults to the set `--default_ref` reference FASTA file which matches the D8 reference genome by default.
+With [MeaSeq v0.5.0](https://github.com/phac-nml/measeq/releases/tag/0.5.0) and later, the `--reference` parameter is no longer required. Instead, the pipeline now runs by default on a per-sample reference assignment based on predicting the input sample's most likely genotype. Included in the pipeline are 3 reference files based on for MeV genotypes _B3_, _D8_, and _A_. If a sample is predicted to be one of these genotypes, then the pipeline processes the sample using the corresponding reference FASTA file set. If the sample's most likely genotype doesn't correspond to one of these genotypes, then the pipeline defaults to the set `--default_ref` reference FASTA file which matches the _D8_ reference genome by default.
 
-It is _highly recommended_ that users evaluate and setup their own reference sequences and especially primer files when running with predictions as they may differ from what is provided by default (PHAC specific references and primers). This should only need to be done once and then the setup can be used for subsequent runs. [Instructions are available](docs/usage.md#specifying-parameters-to-preset-specific-reference-fasta-and-primer-bed-files) to set this up.
+If adjusting references and primers from the included set, [instructions are available](docs/usage.md#specifying-parameters-to-preset-specific-reference-fasta-and-primer-bed-files) to set this up such that it should only need to be done once with the setup being able to be used for subsequent runs.
+
+The [references config](conf/reference.config) contains all of the default reference and primer information setup with the actual files found in the [assets directory](./assets/reference/)
 
 #### Specifying Singular Reference
 
 Users can turn off reference prediction and instead run all samples with their own reference genome using the `--reference <FASTA>` parameter.
 
-### Amplicon Data and Primer Files
+#### Amplicon Data and Primer Files
 
-_Both_ Illumina and Nanopore support running amplicon data using a primer bed file to trim primer positions with either [`iVar`](https://github.com/andersen-lab/ivar) or [`ARTIC`](https://github.com/artic-network/align_trim). To run amplicon data when running with genotype predictions, specify the `--amplicon` parameter and the primer file associated with the predicted genotype will be used to trim the reads.
+_Both_ Illumina and Nanopore workflows support running amplicon data using a primer bed file to trim primer positions with either [`iVar`](https://github.com/andersen-lab/ivar) or [`ARTIC`](https://github.com/artic-network/align_trim). When running with genotype predictions, include the **`--amplicon`** flag in the command and the primer file associated with the predicted genotype will be used to trim the reads.
 
-If running the pipeline with your own reference using `--reference <FASTA>`, you have to specify your own primer bed file with `--primer_bed <PRIMER_BED>` to run amplicon data. The primer bed file details the location of where the primers map to in the reference genome. An example primer bed file looks as such:
+The pipeline defaults to using primers from [Measles Whole Genome Sequencing by an Illumina Tiled Amplification Method](https://doi.org/10.1016/j.jviromet.2026.115477) by Zubach et al. with the [ARTIC primers](https://github.com/quick-lab/primerschemes/tree/main/primerschemes/artic-measles/400/v1.0.0) additionally available by using the `artic_primers` profile (`-profile artic_primers`).
+
+If running the pipeline with your own reference using `--reference <FASTA>`, you have to specify your own primer bed file with `--primer_bed <PRIMER_BED>` to run amplicon data. The primer bed file details the location of where the primers map to the reference genome. An example primer bed file looks as such:
 
 **primer.bed**
 
@@ -202,7 +195,7 @@ _Note_: The first line in the example file is just to display what each line exp
 
 #### Changing the Preset References and Primer Files
 
-Evalutating and adjusting the preset reference genomes and primer bed files is recommended; especially the primers files if running with amplicon data. To make these adjustments, you can pass a `-params-file` or use the command line to specify genotype reference or primer bed files to change. More detailed information about changing the preset files is found within [the usage file](docs/usage.md#changing-preset-reference-files).
+The default PHAC and ARTIC primers have both been validated with the provided reference sequences. If running the pipeline with different references or using a custom amplicon scheme, it is **required** to create/adjust the primer bed file to match the new reference or primer trimming will not work! Once created, you can pass a `-params-file` or use the command line arguments to specify genotype references and/or primer bed files that have changed. More detailed information about changing the preset files is found within [the usage file](docs/usage.md#changing-preset-reference-files).
 
 ### DSIds
 

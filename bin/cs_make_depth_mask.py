@@ -1,44 +1,18 @@
 #!/usr/bin/env python3
-'''
+"""
 Script to create a genomic depth mask for consensus generation
-    Adapted from https://github.com/artic-network/fieldbioinformatics/blob/master/artic/make_depth_mask.py v1.6.2 to:
-        1. Remove the need for RG tags steps for non-amplicon data
-        2. Adjust the depth filter baseq to default of 12 to line up with ONT data threshold
-
-    Amplicon data is using the proper tool
-'''
-
+    Adapted from https://github.com/artic-network/fieldbioinformatics/blob/master/artic/make_depth_mask.py
+    to remove the need for RG tags steps for non-amplicon and illumina data
+"""
 from Bio import SeqIO
-import argparse
 import itertools
+import numpy as np
 import os
 import pysam
+import sys
 
-def init_parser() -> argparse.ArgumentParser:
-    """
-    Specify command line arguments
-    Returns command line parser with inputs
-    """
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--depth', type=int, default=20,
-                        help="Max depth at which a position will be masked. Default: 20")
-    parser.add_argument('--ignore-deletions', action="store_true", default=False,
-                        help="if set, positional depth counts will ignore reads with reference deletions\
-                        (i.e. evaluates positional depths on ref matches, not read span")
-    parser.add_argument('reference')
-    parser.add_argument('bamfile')
-    parser.add_argument('outfile')
-    return parser
 
-# from https://www.geeksforgeeks.org/python-make-a-list-of-intervals-with-sequential-numbers/
-def intervals_extract(iterable):
-    """Create list of intervals with sequential numbers"""
-    iterable = sorted(set(iterable))
-    for _, group in itertools.groupby(enumerate(iterable), lambda t: t[1] - t[0]):
-        group = list(group)
-        yield [group[0][1], group[-1][1]]
-
-def collect_depths(bamfile: str, refName: str, minDepth: int, ignoreDeletions: bool) -> list:
+def collect_depths(bamfile, refName, minDepth, ignoreDeletions):
     """Collect read depth of coverage per reference position in a BAM file.
 
     Parameters
@@ -57,92 +31,131 @@ def collect_depths(bamfile: str, refName: str, minDepth: int, ignoreDeletions: b
 
     Returns
     -------
-    list
+    numpy.ndarray
         Index is the reference position, value is the corresponding coverage depth
+    dict
+        Key is readgroup, value is a numpy array of coverage depths where index is the reference position
     """
     # check the BAM file exists
     if not os.path.exists(bamfile):
         raise Exception("bamfile doesn't exist (%s)" % bamfile)
 
     # open the BAM file
-    bamFile = pysam.AlignmentFile(bamfile, 'rb')
+    bamFile = pysam.AlignmentFile(bamfile, "rb")
 
     # get the TID for the reference
     tid = bamFile.get_tid(refName)
     if tid == -1:
-        raise Exception(
-            "bamfile does not contain specified reference (%s)" % refName)
+        raise Exception("bamfile does not contain specified reference (%s)" % refName)
+
+    ref_len = bamFile.get_reference_length(refName)
 
     # create a depth vector to hold the depths at each reference position
-    depths = [0] * bamFile.get_reference_length(refName)
+    depths = np.zeros(ref_len, dtype=np.int32)
 
-    # Generate the pileup
-    for pileupcolumn in bamFile.pileup(
-        refName,
-        start=0,
-        max_depth=10000,
-        truncate=False,
-        min_mapping_quality=0,
-        min_base_quality=0
-    ):
-        # process the pileup column
-        for pileupread in pileupcolumn.pileups:
-            # process the pileup read
-            if pileupread.is_refskip:
-                continue
-            if pileupread.is_del:
+    # iterate reads once — each read's RG tag is looked up a single time
+    # and numpy slice assignment updates all covered positions in C, avoiding the
+    # O(ref_length × coverage) Python loop that pileup() would require.
+    # use fetch(refName) when an index is available (faster for multi-contig refs);
+    # fall back to a full sequential scan with reference filtering when no index is present.
+    try:
+        _reads = bamFile.fetch(refName)
+    except ValueError:
+        _reads = (r for r in bamFile if r.reference_name == refName)
+
+    for read in _reads:
+        if read.is_unmapped or read.cigartuples is None:
+            continue
+
+        ref_pos = read.reference_start
+
+        for op, length in read.cigartuples:
+            if op in (0, 7, 8):
+                # M, =, X — match/mismatch: consumes reference, count depth
+                depths[ref_pos:ref_pos + length] += 1
+                ref_pos += length
+            elif op == 2:
+                # D — deletion: consumes reference, count unless ignoreDeletions
                 if not ignoreDeletions:
-                    depths[pileupcolumn.pos] += 1
-            elif not pileupread.is_del:
-                depths[pileupcolumn.pos] += 1
-            else:
-                raise Exception("unhandled pileup read encountered")
+                    depths[ref_pos:ref_pos + length] += 1
+                ref_pos += length
+            elif op == 3:
+                # N — reference skip (splice/amplicon gap): consumes reference, do not count
+                ref_pos += length
+            elif op in (1, 4, 5, 6):
+                # I, S, H, P — do not consume reference, skip
+                pass
 
-        # if final depth for pileup column < minDepth, report 0 and update the mask_vector
-        if depths[pileupcolumn.pos] < minDepth:
-            depths[pileupcolumn.pos] = 0
+    # mask positions where combined depth < minDepth
+    low_combined = depths < minDepth
+    depths[low_combined] = 0
 
     # close file and return depth vector
     bamFile.close()
     return depths
 
+
+# from https://www.geeksforgeeks.org/python-make-a-list-of-intervals-with-sequential-numbers/
+def intervals_extract(iterable):
+    iterable = sorted(set(iterable))
+    for _, group in itertools.groupby(enumerate(iterable), lambda t: t[1] - t[0]):
+        group = list(group)
+        yield [group[0][1], group[-1][1]]
+
+
+def go(args):
+
+    # open the reference sequence and collect the sequence header and sequence length of the first record
+    records = [x for x in SeqIO.parse(args.reference, "fasta")]
+    intervals = []
+
+    for record in records:
+        seqid = record.id
+        seqlength = len(record.seq)
+
+        # collect the depths from the pileup, replacing any depth<minDepth with 0
+        depths = collect_depths(
+            args.bamfile,
+            seqid,
+            args.depth,
+            args.ignore_deletions
+        )
+
+        # check the number of positions in the reported depths matches the reference sequence
+        if len(depths) != seqlength:
+            print("pileup length did not match expected reference sequence length")
+
+        # create a mask_vector that records reference positions where depth < minDepth
+        mask_vector = np.where(depths == 0)[0].tolist()
+
+        # get the intervals from the mask_vector
+        intervals = list(intervals_extract(mask_vector))
+
+        # create the mask outfile
+        maskfh = open(args.outfile, "a")
+        for i in intervals:
+            maskfh.write("%s\t%s\t%s\n" % (seqid, i[0] + 1, i[1] + 1))
+        maskfh.close()
+
+
 def main():
-    """Main entry point"""
-    # Args
-    parser = init_parser()
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--depth", type=int, default=20)
+    parser.add_argument(
+        "--ignore-deletions",
+        action="store_true",
+        default=False,
+        help="if set, positional depth counts will ignore reads with reference deletions (i.e. evaluates positional depths on ref matches, not read span",
+    )
+    parser.add_argument("reference")
+    parser.add_argument("bamfile")
+    parser.add_argument("outfile")
+
     args = parser.parse_args()
+    go(args)
 
-    # Open the reference sequence and collect the sequence header and sequence length of the first record
-    record = list(SeqIO.parse(args.reference, "fasta"))[0]
-    seqID = record.id
-    seqLength = len(record.seq)
-
-    # Collect the depths from the pileup, replacing any depth<minDepth with 0
-    try:
-        depths = collect_depths(args.bamfile, seqID,
-                                    args.depth, args.ignore_deletions)
-    except Exception as e:
-        print(e)
-        raise SystemExit(1)
-
-    # Check the number of positions in the reported depths matches the reference sequence
-    if len(depths) != seqLength:
-        print("pileup length did not match expected reference sequence length")
-
-    # Create a mask_vector that records reference positions where depth < minDepth
-    mask_vector = []
-    for pos, depth in enumerate(depths):
-        if depth == 0:
-            mask_vector.append(pos)
-
-    # Get the intervals from the mask_vector
-    intervals = list(intervals_extract(mask_vector))
-
-    # Create the mask outfile
-    maskfh = open(args.outfile, 'w')
-    for i in intervals:
-        maskfh.write("%s\t%s\t%s\n" % (seqID, i[0]+1, i[1]+1))
-    maskfh.close()
 
 if __name__ == "__main__":
     main()

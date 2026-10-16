@@ -270,6 +270,10 @@
                     "type": "boolean",
                     "description": "Fail all indel variants not divisible by 3"
                 },
+                "trimmed_output": {
+                    "type": "boolean",
+                    "description": "Additionally output a UTR-trimmed final consensus genome with the default consensus genome"
+                },
                 "neg_control_pct_threshold": {
                     "type": "integer",
                     "default": 10,
