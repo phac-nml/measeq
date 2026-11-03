@@ -54,7 +54,12 @@ def yield_alt_base(cigar: str, alt: str) -> Generator:
     expanded_cigar = ''.join(int(n) * op for n, op in parts)
 
     alt_pos = 0
+    # Check if we have an indel based on the number of Ds and Is in the cigar string
+    not_indel = expanded_cigar.count('D') == expanded_cigar.count('I')
     for cigar_str in expanded_cigar:
+        # Complex site with SNPs
+        if cigar_str in ['I', 'D'] and not_indel:
+            continue
         if cigar_str == 'I':
             alt_pos += 1
         elif cigar_str == 'D':
@@ -279,7 +284,7 @@ def init_parser() -> argparse.ArgumentParser:
     parser.add_argument('-m', '--minimum-indel-threshold', type=float, default=0.60,
             help="Indel variants with frequency less than the -m threshold will be skipped")
 
-    parser.add_argument('-q', '--min-quality', type=int, default=20,
+    parser.add_argument('-q', '--min-quality', type=int, default=0,
             help="Minimum quality to call a variant")
 
     parser.add_argument('-n', '--no-frameshifts', action="store_true",
@@ -356,7 +361,9 @@ def main() -> None:
                 continue
 
             # Discard low quality sites as recommended by freebayes
-            if base_record.qual < args.min_quality:
+            #  Adjusting to default 0 due to how ploidy interacts
+            #  with mixed sites favoring the ref
+            if base_record.qual <= args.min_quality:
                 continue
 
             # Discard fs indels if provided the arg
