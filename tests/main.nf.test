@@ -145,6 +145,9 @@ nextflow_pipeline {
             assert workflow.success
             assert workflow.trace.failed().size() == 0
 
+            def combined_stdout = workflow.stdout.join(",")
+            assert combined_stdout.contains("JSON did not match schema") == false
+
             //
             // Channels and Files Exist
             //
@@ -336,6 +339,9 @@ nextflow_pipeline {
             assert workflow.success
             assert workflow.trace.failed().size() == 0
 
+            def combined_stdout = workflow.stdout.join(",")
+            assert combined_stdout.contains("JSON did not match schema") == false
+
             //
             // Channels and Files Exist
             //
@@ -376,7 +382,7 @@ nextflow_pipeline {
             assert lines.size() == 266
             assert path("$launchDir/results/consensus/empty.N450.fasta").md5 == "d41d8cd98f00b204e9800998ecf8427e"
 
-            assert path("$launchDir/results/consensus/sample1.consensus.fasta").md5 == "7666b416f1d025c8c96f74f1b641b02e"
+            assert path("$launchDir/results/consensus/sample1.consensus.fasta").md5 == "5be0c10f9cf1325c79673a962f2ee6da"
             lines = path("$launchDir/results/consensus/sample1.consensus.fasta").readLines()
             assert lines.contains(">sample1 MH356245.1")
             assert lines.contains("NNNNNNNNNNNNNNNNNNNNNNNNNNTCAATCAATGATCATATTCTAGTACACTTAGGAT")
@@ -464,9 +470,9 @@ nextflow_pipeline {
             assert iridanext_metadata.add_sample1.genome_completeness_percent == "98.01"
             assert iridanext_metadata.add_sample1.mean_sequencing_depth == "255.43"
             assert iridanext_metadata.add_sample1.median_sequencing_depth == "225.0"
-            assert iridanext_metadata.add_sample1.total_variants == "269"
+            assert iridanext_metadata.add_sample1.total_variants == "270"
             assert iridanext_metadata.add_sample1.num_snps == "269"
-            assert iridanext_metadata.add_sample1.num_iupac == "0"
+            assert iridanext_metadata.add_sample1.num_iupac == "1"
             assert iridanext_metadata.add_sample1.genome_length == "15894"
             assert iridanext_metadata.add_sample1.divisible_by_6 == "PASS"
             assert iridanext_metadata.add_sample1.N450_completeness == "100.0"
@@ -523,6 +529,9 @@ nextflow_pipeline {
             //
             assert workflow.success
             assert workflow.trace.failed().size() == 0
+
+            def combined_stdout = workflow.stdout.join(",")
+            assert combined_stdout.contains("JSON did not match schema") == false
 
             //
             // Channels and Files Exist
@@ -707,6 +716,9 @@ nextflow_pipeline {
             assert workflow.success
             assert workflow.trace.failed().size() == 0
 
+            def combined_stdout = workflow.stdout.join(",")
+            assert combined_stdout.contains("JSON did not match schema") == false
+
             //
             // Channels and Files Exist
             //
@@ -747,7 +759,7 @@ nextflow_pipeline {
             assert lines.size() == 266
             assert path("$launchDir/results/consensus/empty.N450.fasta").md5 == "d41d8cd98f00b204e9800998ecf8427e"
 
-            assert path("$launchDir/results/consensus/sample1.consensus.fasta").md5 == "7666b416f1d025c8c96f74f1b641b02e"
+            assert path("$launchDir/results/consensus/sample1.consensus.fasta").md5 == "5be0c10f9cf1325c79673a962f2ee6da"
             lines = path("$launchDir/results/consensus/sample1.consensus.fasta").readLines()
             assert lines.contains(">sample1 MH356245.1")
             assert lines.contains("NNNNNNNNNNNNNNNNNNNNNNNNNNTCAATCAATGATCATATTCTAGTACACTTAGGAT")
@@ -836,9 +848,9 @@ nextflow_pipeline {
             assert iridanext_metadata.add_sample1.genome_completeness_percent == "98.01"
             assert iridanext_metadata.add_sample1.mean_sequencing_depth == "257.85"
             assert iridanext_metadata.add_sample1.median_sequencing_depth == "229.0"
-            assert iridanext_metadata.add_sample1.total_variants == "269"
+            assert iridanext_metadata.add_sample1.total_variants == "270"
             assert iridanext_metadata.add_sample1.num_snps == "269"
-            assert iridanext_metadata.add_sample1.num_iupac == "0"
+            assert iridanext_metadata.add_sample1.num_iupac == "1"
             assert iridanext_metadata.add_sample1.genome_length == "15894"
             assert iridanext_metadata.add_sample1.divisible_by_6 == "PASS"
             assert iridanext_metadata.add_sample1.N450_completeness == "100.0"
@@ -900,6 +912,9 @@ nextflow_pipeline {
             //
             assert workflow.success
             assert workflow.trace.failed().size() == 0
+
+            def combined_stdout = workflow.stdout.join(",")
+            assert combined_stdout.contains("JSON did not match schema") == false
 
             //
             // Channels and Files Exist
@@ -1064,6 +1079,9 @@ nextflow_pipeline {
             assert workflow.success
             assert workflow.trace.failed().size() == 0
 
+            def combined_stdout = workflow.stdout.join(",")
+            assert combined_stdout.contains("JSON did not match schema") == false
+
             //
             // Channels and Files Exist
             //
@@ -1192,6 +1210,9 @@ nextflow_pipeline {
             //
             assert workflow.success
             assert workflow.trace.failed().size() == 0
+
+            def combined_stdout = workflow.stdout.join(",")
+            assert combined_stdout.contains("JSON did not match schema") == false
 
             //
             // Channels and Files Exist

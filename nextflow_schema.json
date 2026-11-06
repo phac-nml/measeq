@@ -133,7 +133,7 @@
                 "min_variant_qual_freebayes": {
                     "type": "integer",
                     "description": "Minimum freebayes quality (probability) to filter variants",
-                    "default": 20,
+                    "default": 0,
                     "minimum": 0,
                     "fa_icon": "far fa-minus-square"
                 },

@@ -1,0 +1,232 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/phac-nml/measeq/main/assets/schema_output.json",
+    "title": "MeaSeq Output Schema",
+    "description": "The MeaSeq-specific schema used for validating IRIDA Next JSON output data",
+    "type": "object",
+    "properties": {
+        "files": {
+            "type": "object",
+            "properties": {
+                "global": {
+                    "type": "array",
+                    "items": {
+                        "properties": {
+                            "path": {
+                                "anyOf": [
+                                    {
+                                        "pattern": "^.*pipeline_info/.*measeq_software_mqc_versions.yml$",
+                                        "description": "Software versions used by the pipeline."
+                                    },
+                                    {
+                                        "pattern": "^.*MeaSeq_Report.html$",
+                                        "description": "Final report with all metrics and visualizations included"
+                                    },
+                                    {
+                                        "pattern": "^.*overall.xlsx$",
+                                        "description": "Final combined QC file in excel format that also includes the genomes and N450s in FASTA format"
+                                    },
+                                    {
+                                        "pattern": "^.*novel_dsids.tsv$",
+                                        "description": "TSV file containing the different run-level Novel-HASH DSId calls along with its corresponding N450 sequence"
+                                    },
+                                    {
+                                        "pattern": "^.*predictions.csv$",
+                                        "description": "CSV file containing each samples predicted genotype along with metrics regarding the prediction quality"
+                                    },
+                                    {
+                                        "pattern": "^.*reporting/.*-Amplicon-Summary-MultiQC-Report.html$",
+                                        "description": "Amplicon report containing plots and metrics to show how well each amplicon was sequenced"
+                                    }
+                                ]
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "uniqueItems": true
+                },
+                "samples": {
+                    "type": "object",
+                    "patternProperties": {
+                        "^.*$": {
+                            "type": "array",
+                            "items": {
+                                "properties": {
+                                    "path": {
+                                        "anyOf": [
+                                            {
+                                                "pattern": "^.*consensus/.*.N450.fasta$",
+                                                "description": "Sample N450 sequence extracted from the final consensus sequence"
+                                            },
+                                            {
+                                                "pattern": "^.*consensus/.*.consensus.fasta$",
+                                                "description": "Final sample consensus sequence with variants applied and low depth/quality sites masked"
+                                            },
+                                            {
+                                                "pattern": "^.*vcf/.*processed_vcf/.*.consensus.norm.vcf.gz$",
+                                                "description": "Freebayes identified and BCFTools normalized Illumina variants passing the variant filters and applied to the final consensus sequence"
+                                            },
+                                            {
+                                                "pattern": "^.*bam/.*ivar/.*.primertrimmed.sorted.bam.bai$",
+                                                "description": "Index of iVar primertrimmed coordinate sorted BAM file containing read alignment information."
+                                            },
+                                            {
+                                                "pattern": "^.*bam/.*ivar/.*.primertrimmed.sorted.bam$",
+                                                "description": "iVar amplicon primertrimmed coordinate sorted BAM file of reads reads mapped to the given reference"
+                                            },
+                                            {
+                                                "pattern": "^.*vcf/.*final/.*.pass.norm.vcf.gz$",
+                                                "description": "Clair3 identified and BCFTools normalized Nanopore variants passing the variant filters and applied to the final consensus sequence"
+                                            },
+                                            {
+                                                "pattern": "^.*bam/.*artic/.*.primertrimmed.rg.sorted.bam.bai$",
+                                                "description": "Index of the artic primertrimmed coordinate alignments file"
+                                            },
+                                            {
+                                                "pattern": "^.*bam/.*artic/.*.primertrimmed.rg.sorted.bam$",
+                                                "description": "Artic amplicon primertrimmed coordinate sorted BAM file of reads mapped to the given reference"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "uniqueItems": true
+                        }
+                    }
+                }
+            }
+        },
+        "metadata": {
+            "type": "object",
+            "properties": {
+                "samples": {
+                    "type": "object",
+                    "patternProperties": {
+                        "^.*$": {
+                            "type": "object",
+                            "properties": {
+                                "genotype": {
+                                    "description": "Detected measles genotype for the sample",
+                                    "type": "string"
+                                },
+                                "reference": {
+                                    "description": "Reference genome used for the analysis of the sample",
+                                    "type": "string"
+                                },
+                                "matched_dsid": {
+                                    "description": "DSId assigned to the sample. Either a novel designation with a hash or a match to the provided DSId file",
+                                    "type": "string"
+                                },
+                                "dsid_file_used": {
+                                    "description": "The input DSId file used to assign DSIds",
+                                    "type": "string"
+                                },
+                                "num_input_reads": {
+                                    "description": "Number of reads initially put into the pipeline for the sample"
+                                },
+                                "num_aligned_reads": {
+                                    "description": "Number of reads aligned to the reference for the sample"
+                                },
+                                "num_consensus_n": {
+                                    "description": "Number of Ns found in the final sample consensus sequence"
+                                },
+                                "genome_completeness_percent": {
+                                    "description": "Percent of the samples genome covered by base calls"
+                                },
+                                "mean_sequencing_depth": {
+                                    "description": "Mean sequencing depth across the genome for the sample"
+                                },
+                                "median_sequencing_depth": {
+                                    "description": "Median sequencing depth across the genome for the sample"
+                                },
+                                "total_variants": {
+                                    "description": "Number of variants (SNPs and INDELs) compared to the reference for the sample"
+                                },
+                                "num_snps": {
+                                    "description": "Number of SNPs identified in the sample compared to the reference"
+                                },
+                                "num_iupac": {
+                                    "description": "Number of IUPAC variants (from ambiguous sites in Illumina data) identified in the sample"
+                                },
+                                "num_deletions": {
+                                    "description": "Number of deletion variant sites identified in the sample compared to the reference"
+                                },
+                                "num_deletion_sites": {
+                                    "description": "Total number of deleted bases compared to the reference"
+                                },
+                                "num_insertions": {
+                                    "description": "Number of insertion variant sites identified in the sample compared to the reference"
+                                },
+                                "num_insertion_sites": {
+                                    "description": "Total number of inserted bases compared to the reference"
+                                },
+                                "genome_length": {
+                                    "description": "Length of the final sample consensus genome generated"
+                                },
+                                "divisible_by_6": {
+                                    "description": "QC flag displaying if the samples final genome length is divisible by 6",
+                                    "type": "string"
+                                },
+                                "frameshifts": {
+                                    "description": "QC status displaying any frameshift variants identified with Nextclade",
+                                    "type": "string"
+                                },
+                                "nonsense_mutation": {
+                                    "description": "QC status displaying any nonsense variants identified with Nextclade",
+                                    "type": "string"
+                                },
+                                "mutated_stop_codon": {
+                                    "description": "QC status displaying any mutated stop codons identified with Nextclade",
+                                    "type": "string"
+                                },
+                                "variants": {
+                                    "description": "Semicolon separated list of all variants identified in the sample formatted as RefPosAlt",
+                                    "type": "string"
+                                },
+                                "sequencing_primer_variants": {
+                                    "description": "Semicolon separated list of all variants overlapping a sequencing primer region in the sample",
+                                    "type": "string"
+                                },
+                                "N450_completeness": {
+                                    "description": "Percentage of the samples N450 diagnostic region covered by base calls"
+                                },
+                                "N450_mean_depth": {
+                                    "description": "Mean depth of the samples N450 diagnostic region"
+                                },
+                                "N450_status": {
+                                    "description": "Status of the samples N450 diagnostic region taking into account completeness, ambiguity, and INDELs",
+                                    "type": "string"
+                                },
+                                "qc_status": {
+                                    "description": "Overall QC status of the sample. PASS for fully passing, a semicolon separated list of identified issues otherwise",
+                                    "type": "string"
+                                },
+                                "run_status": {
+                                    "description": "Overall run status. Mostly just checks if there are negative controls and if they are contaminated giving either PASS or WARN",
+                                    "type": "string"
+                                },
+                                "run_summary": {
+                                    "description": "Text summary explaining the run_status",
+                                    "type": "string"
+                                },
+                                "pipeline_name": {
+                                    "description": "Name of the pipeline",
+                                    "type": "string"
+                                },
+                                "pipeline_version": {
+                                    "description": "Version of the pipeline used",
+                                    "type": "string"
+                                },
+                                "num_masked": {
+                                    "description": "Number of low quality sites identified and masked in Nanopore data"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

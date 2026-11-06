@@ -3,6 +3,22 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.3.3] - 2026-11-xx
+
+Small adjustment to Illumina Freebayes variant quality filtering for mixed sites where the reference allele was favoured. No indel changes noted in test dataset with this update.
+
+### `Adjusted`
+
+- Illumina variant filtering adjustment [PR #58](https://github.com/phac-nml/measeq/pull/58)
+  - Set the minimum variant filtering quality to 0 due to mixed sites being reporting as the reference base if the underlying mixture was >50% reference allele which caused the freebayes quality to be below 1 and thus be filtered out
+    - Setting the variant quality back up to the previous default (20) reverts this if you require more stringency for a ambiguous basecalls
+
+## Unreleased
+
+### Added
+
+- A MeaSeq-specific JSON output schema that the nf-iridanext plugin will automatically validate its output against. Currently, this schema enforcement is only enabled during testing. [PR 56](https://github.com/phac-nml/measeq/pull/56)
+
 ## [v1.3.2] - 2026-09-01
 
 Tiny adjustments including fixing the biopython conda environment, creating a channel for the `--ivar_primer_pairs` parameter and fixing a small reporting bug for low depth deletions that ultimately get ignored
@@ -390,6 +406,10 @@ Small addition of Picard MarkDuplicates workflow along with some new tests
 
 - MeaSeq pipeline created and initial code added
 
+[v1.3.3]: https://github.com/phac-nml/measeq/releases/tag/1.3.3
+[v1.3.2]: https://github.com/phac-nml/measeq/releases/tag/1.3.2
+[v1.3.1]: https://github.com/phac-nml/measeq/releases/tag/1.3.1
+[v1.3.0]: https://github.com/phac-nml/measeq/releases/tag/1.3.0
 [v1.2.0]: https://github.com/phac-nml/measeq/releases/tag/1.2.0
 [v1.1.0]: https://github.com/phac-nml/measeq/releases/tag/1.1.0
 [v1.0.1]: https://github.com/phac-nml/measeq/releases/tag/1.0.1
